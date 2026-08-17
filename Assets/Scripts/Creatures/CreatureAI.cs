@@ -49,6 +49,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
     {
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         spawnPoint = transform.position;
+        transform.localScale = data.size;
 
         if (data != null)
         {
@@ -63,6 +64,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
             if (agent == null) agent = gameObject.AddComponent<NavMeshAgent>();
             agent.speed = data.wanderSpeed;
         }
+
 
         var playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null) player = playerObj.transform;
@@ -81,6 +83,11 @@ public class CreatureAI : MonoBehaviour, ICapturable
     private void Start()
     {
         EnterState(State.Idle);
+        if (data.movementMode == CreatureMovementMode.Flying)
+        {
+            agent = GetComponent<NavMeshAgent>();
+            if (agent != null) agent.baseOffset = data.flightHeightMin;
+        }
     }
 
     private void Update()

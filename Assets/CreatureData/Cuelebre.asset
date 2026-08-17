@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
+  m_Name: Cuelebre
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureData
+  creatureName: Cuelebre
+  sprites:
+  - {fileID: 21300000, guid: 5266e7f16f2f45d48b531e98a7dc6449, type: 3}
+  - {fileID: 21300000, guid: 9decfa2a1c4683240a9f9d39deb52c29, type: 3}
+  - {fileID: 21300000, guid: c9aeccce69844484f9c675a783d76bfb, type: 3}
+  - {fileID: 21300000, guid: 1c34ab6aa73203e4784eb30bf1b91beb, type: 3}
+  size: {x: 0.2, y: 0.2, z: 0.2}
+  description: 
+  movementMode: 1
+  wanderSpeed: 10
+  fleeSpeed: 4
+  wanderRadius: 8
+  idleTimeRange: {x: 2, y: 5}
+  wanderIntervalRange: {x: 3, y: 8}
+  flightHeightMin: 20
+  flightHeightMax: 20
+  detectionRadius: 6
+  fleeDistance: 10
+  baseCaptureChance: 1
+  stunDuration: 3

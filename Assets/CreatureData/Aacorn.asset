@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
+  m_Name: Aacorn
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureData
+  creatureName: Acorn
+  sprites:
+  - {fileID: 21300000, guid: 4d2a28fd64289274183f7868fe54da3c, type: 3}
+  - {fileID: 21300000, guid: e16ac3ff905c8fe4bab25c50031462b5, type: 3}
+  - {fileID: 21300000, guid: add171ce79880704196f7d396793795b, type: 3}
+  - {fileID: 21300000, guid: 6567442954e1e134fafea7224ba7253c, type: 3}
+  size: {x: 0.2, y: 0.2, z: 0.2}
+  description: 
+  movementMode: 0
+  wanderSpeed: 1.5
+  fleeSpeed: 4
+  wanderRadius: 8
+  idleTimeRange: {x: 2, y: 5}
+  wanderIntervalRange: {x: 3, y: 8}
+  flightHeightMin: 2
+  flightHeightMax: 5
+  detectionRadius: 6
+  fleeDistance: 10
+  baseCaptureChance: 1
+  stunDuration: 3

@@ -27,6 +27,8 @@ public class CreatureData : ScriptableObject
     */
     public Sprite[] sprites;
 
+    public Vector3 size;
+
     [TextArea] public string description;
 
     [Header("Movement")]

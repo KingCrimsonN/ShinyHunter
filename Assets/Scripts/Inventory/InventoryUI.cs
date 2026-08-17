@@ -1,9 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// Rebuilds a simple list of "icon / name / count" rows whenever the
+/// Rebuilds a list of "icon / name / rarity / count" rows whenever the
 /// inventory changes. Attach to a UI panel with a vertical layout group
 /// as listParent, and assign an InventorySlotUI prefab.
+/// One row per (species, rarity) combo that has at least one capture.
 /// </summary>
 public class InventoryUI : MonoBehaviour
 {
@@ -30,7 +31,7 @@ public class InventoryUI : MonoBehaviour
         foreach (var kvp in InventoryManager.Instance.GetAll())
         {
             var slot = Instantiate(slotPrefab, listParent);
-            slot.Set(kvp.Key, kvp.Value);
+            slot.Set(kvp.Key.species, kvp.Key.rarity, kvp.Value);
         }
     }
 }

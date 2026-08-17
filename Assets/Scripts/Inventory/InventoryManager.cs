@@ -3,17 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Central store of how many of each creature the player has captured.
-/// Fires OnInventoryChanged so UI (and later, the bestiary/stew system)
-/// can react without polling.
+/// Central store of how many of each (species, rarity) combo the player has
+/// captured. Fires OnInventoryChanged so UI (and later, the bestiary/stew
+/// system) can react without polling.
 /// </summary>
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
-    private readonly Dictionary<CreatureData, int> counts = new Dictionary<CreatureData, int>();
+    /// <summary>Key = species + rarity. A captured Rare rabbit and a Normal rabbit are separate entries.</summary>
+    private readonly Dictionary<(CreatureData species, CreatureData.Rarity rarity), int> counts =
+        new Dictionary<(CreatureData, CreatureData.Rarity), int>();
 
     public event Action OnInventoryChanged;
+
+    public GameObject inventoryUI;
 
     private void Awake()
     {
@@ -27,21 +31,36 @@ public class InventoryManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void AddCreature(CreatureData data, int amount = 1)
+
+    public void AddCreature(CreatureData species, CreatureData.Rarity rarity, int amount = 1)
     {
-        if (data == null) return;
+        if (species == null) return;
 
-        if (!counts.ContainsKey(data))
-            counts[data] = 0;
+        var key = (species, rarity);
+        if (!counts.ContainsKey(key))
+            counts[key] = 0;
 
-        counts[data] += amount;
+        counts[key] += amount;
         OnInventoryChanged?.Invoke();
     }
 
-    public int GetCount(CreatureData data)
+    /// <summary>Count of one specific species+rarity combo.</summary>
+    public int GetCount(CreatureData species, CreatureData.Rarity rarity)
     {
-        return counts.TryGetValue(data, out int c) ? c : 0;
+        return counts.TryGetValue((species, rarity), out int c) ? c : 0;
     }
 
-    public IReadOnlyDictionary<CreatureData, int> GetAll() => counts;
+    /// <summary>Total captured of a species across all rarities - handy for bestiary "seen" checks.</summary>
+    public int GetTotalCount(CreatureData species)
+    {
+        int total = 0;
+        foreach (var kvp in counts)
+        {
+            if (kvp.Key.species == species)
+                total += kvp.Value;
+        }
+        return total;
+    }
+
+    public IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int> GetAll() => counts;
 }

@@ -18,8 +18,21 @@ public class CreatureAI : MonoBehaviour, ICapturable
     [SerializeField] private CreatureData data;
     public CreatureData Data => data;
 
+    [Header("Rarity odds (rolled once per instance)")]
+    [SerializeField, Range(0f, 1f)] private float legendaryChance = 0.05f;
+    [SerializeField, Range(0f, 1f)] private float rareChance = 0.15f;
+    [SerializeField, Range(0f, 1f)] private float uncommonChance = 0.35f;
+
     [Header("Debug (read-only)")]
     [SerializeField] private State currentState = State.Idle;
+    [SerializeField] private CreatureData.Rarity rolledRarity = CreatureData.Rarity.Normal;
+
+    /// <summary>
+    /// This instance's rolled rarity. Rolled once in Awake and kept locally -
+    /// NEVER written back onto the shared CreatureData asset (see CreatureData's
+    /// class comment for why).
+    /// </summary>
+    public CreatureData.Rarity Rarity => rolledRarity;
 
     private Transform player;
     private NavMeshAgent agent;
@@ -39,12 +52,9 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
         if (data != null)
         {
-            data.rarity = Random.value < 0.05f ? CreatureData.Rarity.Legendary :
-                          Random.value < 0.15f ? CreatureData.Rarity.Rare :
-                          Random.value < 0.35f ? CreatureData.Rarity.Uncommon :
-                          CreatureData.Rarity.Normal;
-            spriteRenderer.sprite = data.sprites[(int)data.rarity];
-            data.icon = data.sprites[(int)data.rarity];
+            rolledRarity = RollRarity();
+            if (spriteRenderer != null)
+                spriteRenderer.sprite = data.GetSprite(rolledRarity);
         }
 
         if (data.movementMode != CreatureMovementMode.Flying)
@@ -57,6 +67,15 @@ public class CreatureAI : MonoBehaviour, ICapturable
         var playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null) player = playerObj.transform;
         else Debug.LogWarning($"{name}: no GameObject tagged 'Player' found in scene.");
+    }
+
+    private CreatureData.Rarity RollRarity()
+    {
+        float roll = Random.value;
+        if (roll < legendaryChance) return CreatureData.Rarity.Legendary;
+        if (roll < legendaryChance + rareChance) return CreatureData.Rarity.Rare;
+        if (roll < legendaryChance + rareChance + uncommonChance) return CreatureData.Rarity.Uncommon;
+        return CreatureData.Rarity.Normal;
     }
 
     private void Start()
@@ -221,7 +240,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
         if (success)
         {
             currentState = State.Captured;
-            InventoryManager.Instance.AddCreature(data, 1);
+            InventoryManager.Instance.AddCreature(data, rolledRarity, 1);
             gameObject.SetActive(false); // swap for a pool-return call if using pooling
         }
         else

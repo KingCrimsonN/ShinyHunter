@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 5451578842744822950}
   - component: {fileID: 3014754310240752836}
   - component: {fileID: 8546044283301508518}
+  - component: {fileID: 6783043108836218301}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -318,6 +319,18 @@ MonoBehaviour:
   poisonRate: 1
   maxHealth: 300
   currentHealth: 0
+--- !u!114 &6783043108836218301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1812649766070916139}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42f3a266c602287498972b94bc59160b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
 --- !u!1 &3585429584273620925
 GameObject:
   m_ObjectHideFlags: 0

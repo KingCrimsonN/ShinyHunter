@@ -911,6 +911,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: door
       objectReference: {fileID: 0}
+    - target: {fileID: 5417556091563511556, guid: 7a6c26fd7ec70b147a50ac9068714b92, type: 3}
+      propertyPath: m_TagString
+      value: Door
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -918,6 +922,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5417556091563511556, guid: 7a6c26fd7ec70b147a50ac9068714b92, type: 3}
       insertIndex: -1
       addedObject: {fileID: 462737111}
+    - targetCorrespondingSourceObject: {fileID: 5417556091563511556, guid: 7a6c26fd7ec70b147a50ac9068714b92, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 462737112}
   m_SourcePrefab: {fileID: 100100000, guid: 7a6c26fd7ec70b147a50ac9068714b92, type: 3}
 --- !u!1001 &259822540
 PrefabInstance:
@@ -1918,8 +1925,21 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.2914485, y: 2.6733966, z: 2.335682}
-  m_Center: {x: -0.55458504, y: 0.08789253, z: 0.09877586}
+  m_Size: {x: 0.36242294, y: 2.6733966, z: 2.335682}
+  m_Center: {x: -0.090072215, y: 0.08789253, z: 0.09877586}
+--- !u!114 &462737112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 462737107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5717b5ed9e883f54789e86fecb832ae7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Doors
+  sceneName: SampleScene
 --- !u!1001 &481540202
 PrefabInstance:
   m_ObjectHideFlags: 0

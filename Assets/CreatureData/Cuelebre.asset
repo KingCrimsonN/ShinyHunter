@@ -21,14 +21,14 @@ MonoBehaviour:
   size: {x: 0.2, y: 0.2, z: 0.2}
   description: 
   movementMode: 1
-  wanderSpeed: 10
-  fleeSpeed: 4
-  wanderRadius: 8
+  wanderSpeed: 4
+  fleeSpeed: 10
+  wanderRadius: 20
   idleTimeRange: {x: 2, y: 5}
   wanderIntervalRange: {x: 3, y: 8}
-  flightHeightMin: 20
+  flightHeightMin: 10
   flightHeightMax: 20
-  detectionRadius: 6
+  detectionRadius: 4
   fleeDistance: 10
   baseCaptureChance: 1
   stunDuration: 3

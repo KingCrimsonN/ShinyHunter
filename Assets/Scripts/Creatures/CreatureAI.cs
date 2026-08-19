@@ -43,6 +43,8 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     private SpriteRenderer spriteRenderer;
 
+    [SerializeField] GameObject stunParticles;
+
     public bool IsStunned => currentState == State.Stunned;
 
     private void Awake()
@@ -113,6 +115,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
         switch (newState)
         {
             case State.Idle:
+                stunParticles.SetActive(false);
                 stateTimer = Random.Range(data.idleTimeRange.x, data.idleTimeRange.y);
                 if (agent != null) agent.isStopped = true;
                 break;
@@ -129,6 +132,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
             case State.Stunned:
                 stunTimer = data.stunDuration;
+                stunParticles.SetActive(true);
                 if (agent != null) agent.isStopped = true;
                 break;
         }
@@ -249,6 +253,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
             currentState = State.Captured;
             InventoryManager.Instance.AddCreature(data, rolledRarity, 1);
             gameObject.SetActive(false); // swap for a pool-return call if using pooling
+            Destroy(gameObject, 1f);
         }
         else
         {

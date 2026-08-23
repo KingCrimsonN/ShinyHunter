@@ -18,7 +18,7 @@ public class InventorySlotUI : MonoBehaviour
 
     public void Set(CreatureData species, CreatureData.Rarity rarity, int count)
     {
-        if (icon != null) icon.sprite = species.GetSprite(rarity);
+        if (icon != null) icon.sprite = species.GetIcon(rarity);
         if (nameText != null) nameText.text = species.creatureName;
         if (countText != null) countText.text = "x" + count;
 

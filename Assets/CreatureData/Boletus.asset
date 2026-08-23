@@ -13,13 +13,66 @@ MonoBehaviour:
   m_Name: Boletus
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: Shroom
-  sprites:
-  - {fileID: 21300000, guid: 03b059a020525dc4e8919be13413f57f, type: 3}
-  - {fileID: 21300000, guid: d806da33dc9176f4eafddeb5012320ae, type: 3}
-  - {fileID: 21300000, guid: 942587178dfc7bc4f80772633ebd1b2e, type: 3}
-  - {fileID: 21300000, guid: 2c2a40fa8a40bfa448a6fae012a2a45d, type: 3}
-  size: {x: 0.15, y: 0.15, z: 0.15}
   description: 
+  variants:
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 493058907, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
+      - {fileID: 493058907, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
+      - {fileID: 1091610612, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
+      - {fileID: -1442780887, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
+      - {fileID: -254270314, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
+      - {fileID: -254270314, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
+      - {fileID: -1442780887, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
+      - {fileID: 1091610612, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
+      frameRate: 10
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 1172696919, guid: d83d0450ff127a34a81b94d5935124d1, type: 3}
+      - {fileID: 1172696919, guid: d83d0450ff127a34a81b94d5935124d1, type: 3}
+      - {fileID: -1581280788, guid: d83d0450ff127a34a81b94d5935124d1, type: 3}
+      - {fileID: -196581492, guid: d83d0450ff127a34a81b94d5935124d1, type: 3}
+      - {fileID: 9104026, guid: d83d0450ff127a34a81b94d5935124d1, type: 3}
+      - {fileID: 9104026, guid: d83d0450ff127a34a81b94d5935124d1, type: 3}
+      - {fileID: -196581492, guid: d83d0450ff127a34a81b94d5935124d1, type: 3}
+      - {fileID: -1581280788, guid: d83d0450ff127a34a81b94d5935124d1, type: 3}
+      frameRate: 10
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 884737656, guid: 95514708a185a6c4f8eef3b9ce81bf9d, type: 3}
+      - {fileID: 884737656, guid: 95514708a185a6c4f8eef3b9ce81bf9d, type: 3}
+      - {fileID: 1826225760, guid: 95514708a185a6c4f8eef3b9ce81bf9d, type: 3}
+      - {fileID: -399964761, guid: 95514708a185a6c4f8eef3b9ce81bf9d, type: 3}
+      - {fileID: -230780098, guid: 95514708a185a6c4f8eef3b9ce81bf9d, type: 3}
+      - {fileID: -230780098, guid: 95514708a185a6c4f8eef3b9ce81bf9d, type: 3}
+      - {fileID: -399964761, guid: 95514708a185a6c4f8eef3b9ce81bf9d, type: 3}
+      - {fileID: 1826225760, guid: 95514708a185a6c4f8eef3b9ce81bf9d, type: 3}
+      frameRate: 10
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 701371047, guid: 2646e0b80f831c9468dba35d33442a56, type: 3}
+      - {fileID: 701371047, guid: 2646e0b80f831c9468dba35d33442a56, type: 3}
+      - {fileID: -531965547, guid: 2646e0b80f831c9468dba35d33442a56, type: 3}
+      - {fileID: -680827564, guid: 2646e0b80f831c9468dba35d33442a56, type: 3}
+      - {fileID: -1818537821, guid: 2646e0b80f831c9468dba35d33442a56, type: 3}
+      - {fileID: -1818537821, guid: 2646e0b80f831c9468dba35d33442a56, type: 3}
+      - {fileID: -680827564, guid: 2646e0b80f831c9468dba35d33442a56, type: 3}
+      - {fileID: -531965547, guid: 2646e0b80f831c9468dba35d33442a56, type: 3}
+      frameRate: 10
+      loop: 1
+  icons:
+  - {fileID: 493058907, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
+  - {fileID: 1172696919, guid: d83d0450ff127a34a81b94d5935124d1, type: 3}
+  - {fileID: 884737656, guid: 95514708a185a6c4f8eef3b9ce81bf9d, type: 3}
+  - {fileID: 701371047, guid: 2646e0b80f831c9468dba35d33442a56, type: 3}
+  size: {x: 0.15, y: 0.15, z: 0.15}
   movementMode: 0
   wanderSpeed: 2
   fleeSpeed: 5

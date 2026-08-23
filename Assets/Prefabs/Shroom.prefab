@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 2484358039248839425}
   - component: {fileID: 8088657778383106192}
   m_Layer: 0
-  m_Name: Snipe
+  m_Name: Shroom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -71,7 +71,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 358e46d497c0e4247895df9820cd19be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreatureAI
-  data: {fileID: 11400000, guid: 59dbf38d880aa184a972547c662661d3, type: 2}
+  data: {fileID: 11400000, guid: 043c6ba6ae11d2e47b78203c725e4d36, type: 2}
   legendaryChance: 0.05
   rareChance: 0.15
   uncommonChance: 0.35
@@ -162,7 +162,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 50b61097c38ded447b4c9aecb28de0c1, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 03b059a020525dc4e8919be13413f57f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

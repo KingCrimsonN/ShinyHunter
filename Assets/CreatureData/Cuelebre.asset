@@ -13,13 +13,38 @@ MonoBehaviour:
   m_Name: Cuelebre
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: Cuelebre
-  sprites:
-  - {fileID: 21300000, guid: 5266e7f16f2f45d48b531e98a7dc6449, type: 3}
-  - {fileID: 21300000, guid: 9decfa2a1c4683240a9f9d39deb52c29, type: 3}
-  - {fileID: 21300000, guid: c9aeccce69844484f9c675a783d76bfb, type: 3}
-  - {fileID: 21300000, guid: 1c34ab6aa73203e4784eb30bf1b91beb, type: 3}
-  size: {x: 0.2, y: 0.2, z: 0.2}
   description: 
+  variants:
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: 1c34ab6aa73203e4784eb30bf1b91beb, type: 3}
+      frameRate: 0
+      loop: 0
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: 9decfa2a1c4683240a9f9d39deb52c29, type: 3}
+      frameRate: 0
+      loop: 0
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: c9aeccce69844484f9c675a783d76bfb, type: 3}
+      frameRate: 0
+      loop: 0
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: 1c34ab6aa73203e4784eb30bf1b91beb, type: 3}
+      frameRate: 0
+      loop: 0
+  icons:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  size: {x: 0.2, y: 0.2, z: 0.2}
   movementMode: 1
   wanderSpeed: 4
   fleeSpeed: 10

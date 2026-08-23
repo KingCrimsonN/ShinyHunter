@@ -19,17 +19,16 @@ public class CreatureData : ScriptableObject
 
     public enum Rarity { Normal, Uncommon, Rare, Legendary }
 
-    /* Sprites indexed by rarity:
-        0 = Normal
-        1 = Uncommon
-        2 = Rare
-        3 = Legendary
-    */
-    public Sprite[] sprites;
+    [TextArea] public string description;
+
+    [Header("Visuals per rarity")]
+    [Tooltip("Index 0=Normal, 1=Uncommon, 2=Rare, 3=Legendary. Each entry holds that variant's full set of named animations (Idle, Move, Flee, etc). Fine to leave states unauthored while art is still coming in - they simply won't play.")]
+    public CreatureVariantVisuals[] variants = new CreatureVariantVisuals[4];
+
+    [Tooltip("Static thumbnails per rarity, for UI (inventory/bestiary) - separate from the in-world animation frames.")]
+    public Sprite[] icons = new Sprite[4];
 
     public Vector3 size;
-
-    [TextArea] public string description;
 
     [Header("Movement")]
     public CreatureMovementMode movementMode = CreatureMovementMode.Ground;
@@ -57,11 +56,19 @@ public class CreatureData : ScriptableObject
     [Tooltip("Seconds the creature stays stunned/vulnerable after being hit with the stick.")]
     public float stunDuration = 3f;
 
-    /// <summary>Sprite for a given rolled rarity. Falls back to index 0 if array is short.</summary>
-    public Sprite GetSprite(Rarity rarity)
+    /// <summary>Animation set for a given rolled rarity. Falls back to index 0 if the array is short.</summary>
+    public CreatureVariantVisuals GetVariant(Rarity rarity)
     {
+        if (variants == null || variants.Length == 0) return null;
         int index = (int)rarity;
-        if (sprites == null || sprites.Length == 0) return null;
-        return index < sprites.Length ? sprites[index] : sprites[0];
+        return index < variants.Length ? variants[index] : variants[0];
+    }
+
+    /// <summary>UI thumbnail for a given rolled rarity. Falls back to index 0 if the array is short.</summary>
+    public Sprite GetIcon(Rarity rarity)
+    {
+        if (icons == null || icons.Length == 0) return null;
+        int index = (int)rarity;
+        return index < icons.Length ? icons[index] : icons[0];
     }
 }

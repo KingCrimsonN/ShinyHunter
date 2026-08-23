@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: d83d0450ff127a34a81b94d5935124d1
+guid: eed1235bac79e5242bb1076c499c3416
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -123,13 +123,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: spritesheetsparkingboletus_0
+      name: spritesheetbirdidleradiant_0
       rect:
         serializedVersion: 2
-        x: 207
-        y: 209
-        width: 610
-        height: 666
+        x: 201
+        y: 189
+        width: 592
+        height: 778
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -138,20 +138,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: efb183429342d904698f9ff665bb7191
-      internalID: 1172696919
+      spriteID: 8243a572b7dedf94fbe248db6e1882e1
+      internalID: -620525778
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: spritesheetsparkingboletus_1
+      name: spritesheetbirdidleradiant_1
       rect:
         serializedVersion: 2
-        x: 1225
-        y: 207
-        width: 642
-        height: 655
+        x: 1259
+        y: 191
+        width: 568
+        height: 790
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -160,20 +160,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: eff6b0de5a2bad94eb01170a9e27ee91
-      internalID: -1581280788
+      spriteID: f5ebabb209256b848a96aac1e525282e
+      internalID: -908626083
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: spritesheetsparkingboletus_2
+      name: spritesheetbirdidleradiant_2
       rect:
         serializedVersion: 2
-        x: 2235
-        y: 209
-        width: 674
-        height: 640
+        x: 2219
+        y: 736
+        width: 8
+        height: 13
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -182,20 +182,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 89b90c0c07b53b846953e02ba23f9cbe
-      internalID: -196581492
+      spriteID: 93e0c05d740660c4394442a3db286f50
+      internalID: 776533800
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: spritesheetsparkingboletus_3
+      name: spritesheetbirdidleradiant_3
       rect:
         serializedVersion: 2
-        x: 3227
-        y: 215
-        width: 726
-        height: 618
+        x: 2283
+        y: 187
+        width: 564
+        height: 806
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -204,8 +204,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 472c2fe26b2783b409d163448e921cd7
-      internalID: 9104026
+      spriteID: c591739b501ccc34c9d26edc8e5c51f1
+      internalID: 648136861
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheetbirdidleradiant_4
+      rect:
+        serializedVersion: 2
+        x: 3303
+        y: 187
+        width: 574
+        height: 814
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 590049333479da14db1c27bfbb40e509
+      internalID: 389088400
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: spritesheetbirdidleradiant_5
+      rect:
+        serializedVersion: 2
+        x: 1242
+        y: 660
+        width: 4
+        height: 4
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a0a94c32d53acef4a898f1af3bb5be4b
+      internalID: -1281415242
       vertices: []
       indices: 
       edges: []
@@ -214,7 +258,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 84fc6623271a74a4f88892fdda87d7e3
+    spriteID: ea766933ab1fec249bad4ee375453a62
     internalID: 0
     vertices: []
     indices: 
@@ -224,12 +268,14 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":100.0,"y":100.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      spritesheetsparkingboletus_0: 1172696919
-      spritesheetsparkingboletus_1: -1581280788
-      spritesheetsparkingboletus_2: -196581492
-      spritesheetsparkingboletus_3: 9104026
+      spritesheetbirdidleradiant_0: -620525778
+      spritesheetbirdidleradiant_1: -908626083
+      spritesheetbirdidleradiant_2: 776533800
+      spritesheetbirdidleradiant_3: 648136861
+      spritesheetbirdidleradiant_4: 389088400
+      spritesheetbirdidleradiant_5: -1281415242
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

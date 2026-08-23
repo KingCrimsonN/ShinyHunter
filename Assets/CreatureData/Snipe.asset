@@ -13,13 +13,91 @@ MonoBehaviour:
   m_Name: Snipe
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: Snipe
-  sprites:
+  description: 
+  variants:
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 1391137689, guid: a73ea960c227f984aaa19686ce06621e, type: 3}
+      - {fileID: 1391137689, guid: a73ea960c227f984aaa19686ce06621e, type: 3}
+      - {fileID: -1988120726, guid: a73ea960c227f984aaa19686ce06621e, type: 3}
+      - {fileID: 731269036, guid: a73ea960c227f984aaa19686ce06621e, type: 3}
+      - {fileID: 1913815291, guid: a73ea960c227f984aaa19686ce06621e, type: 3}
+      - {fileID: 1913815291, guid: a73ea960c227f984aaa19686ce06621e, type: 3}
+      - {fileID: 731269036, guid: a73ea960c227f984aaa19686ce06621e, type: 3}
+      - {fileID: -1988120726, guid: a73ea960c227f984aaa19686ce06621e, type: 3}
+      frameRate: 10
+      loop: 1
+    - state: 1
+      frames:
+      - {fileID: 1391137689, guid: a73ea960c227f984aaa19686ce06621e, type: 3}
+      frameRate: 10
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: -1616666190, guid: 1d3df00e57ed1a64a9652d084b81d27f, type: 3}
+      - {fileID: -1616666190, guid: 1d3df00e57ed1a64a9652d084b81d27f, type: 3}
+      - {fileID: 262909955, guid: 1d3df00e57ed1a64a9652d084b81d27f, type: 3}
+      - {fileID: -315875021, guid: 1d3df00e57ed1a64a9652d084b81d27f, type: 3}
+      - {fileID: 942475950, guid: 1d3df00e57ed1a64a9652d084b81d27f, type: 3}
+      - {fileID: 942475950, guid: 1d3df00e57ed1a64a9652d084b81d27f, type: 3}
+      - {fileID: -315875021, guid: 1d3df00e57ed1a64a9652d084b81d27f, type: 3}
+      - {fileID: 942475950, guid: 1d3df00e57ed1a64a9652d084b81d27f, type: 3}
+      frameRate: 10
+      loop: 1
+    - state: 1
+      frames:
+      - {fileID: -1616666190, guid: 1d3df00e57ed1a64a9652d084b81d27f, type: 3}
+      frameRate: 10
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 152010782, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: 152010782, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: 564065427, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: -1536838532, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: -1710927260, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: -1710927260, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: -1536838532, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: 564065427, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      frameRate: 10
+      loop: 1
+    - state: 1
+      frames:
+      - {fileID: 152010782, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      frameRate: 10
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: -620525778, guid: eed1235bac79e5242bb1076c499c3416, type: 3}
+      - {fileID: -620525778, guid: eed1235bac79e5242bb1076c499c3416, type: 3}
+      - {fileID: 564065427, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: -1536838532, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: -1710927260, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: -1536838532, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: 564065427, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      frameRate: 10
+      loop: 0
+    - state: 0
+      frames:
+      - {fileID: -620525778, guid: eed1235bac79e5242bb1076c499c3416, type: 3}
+      - {fileID: -620525778, guid: eed1235bac79e5242bb1076c499c3416, type: 3}
+      - {fileID: 564065427, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: -1536838532, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: -1710927260, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: -1536838532, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: 564065427, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      frameRate: 10
+      loop: 0
+  icons:
   - {fileID: 21300000, guid: 50b61097c38ded447b4c9aecb28de0c1, type: 3}
   - {fileID: 21300000, guid: 5275f301f51270d4abc949a3dc4faeeb, type: 3}
   - {fileID: 21300000, guid: 1a7839547bcba2b43b416585ff38e1e3, type: 3}
   - {fileID: 21300000, guid: 6cc10b9d4ab004544a7c5f7a2f6d6066, type: 3}
   size: {x: 0.15, y: 0.15, z: 0.15}
-  description: 
   movementMode: 0
   wanderSpeed: 2
   fleeSpeed: 5

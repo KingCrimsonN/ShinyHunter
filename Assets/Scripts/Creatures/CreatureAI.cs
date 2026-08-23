@@ -8,6 +8,9 @@ using UnityEngine.AI;
 /// Ground/Swimming creatures use NavMeshAgent (bake a NavMesh in the scene).
 /// Flying creatures use a simple point-to-point mover so they aren't
 /// constrained to the mesh's walkable surface.
+///
+/// Visuals are delegated to CreatureSpriteAnimator - this script only calls
+/// Play(state) on transitions, it never touches the SpriteRenderer.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class CreatureAI : MonoBehaviour, ICapturable
@@ -22,6 +25,9 @@ public class CreatureAI : MonoBehaviour, ICapturable
     [SerializeField, Range(0f, 1f)] private float legendaryChance = 0.05f;
     [SerializeField, Range(0f, 1f)] private float rareChance = 0.15f;
     [SerializeField, Range(0f, 1f)] private float uncommonChance = 0.35f;
+
+    [Header("Effects")]
+    [SerializeField] private GameObject stunParticles;
 
     [Header("Debug (read-only)")]
     [SerializeField] private State currentState = State.Idle;
@@ -41,23 +47,21 @@ public class CreatureAI : MonoBehaviour, ICapturable
     private float stateTimer;
     private float stunTimer;
 
-    private SpriteRenderer spriteRenderer;
-
-    [SerializeField] GameObject stunParticles;
+    private CreatureSpriteAnimator animator;
 
     public bool IsStunned => currentState == State.Stunned;
 
     private void Awake()
     {
-        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        animator = GetComponent<CreatureSpriteAnimator>();
         spawnPoint = transform.position;
         transform.localScale = data.size;
 
         if (data != null)
         {
             rolledRarity = RollRarity();
-            if (spriteRenderer != null)
-                spriteRenderer.sprite = data.GetSprite(rolledRarity);
+            if (animator != null)
+                animator.Initialize(data.GetVariant(rolledRarity));
         }
 
         if (data.movementMode != CreatureMovementMode.Flying)
@@ -66,7 +70,13 @@ public class CreatureAI : MonoBehaviour, ICapturable
             if (agent == null) agent = gameObject.AddComponent<NavMeshAgent>();
             agent.speed = data.wanderSpeed;
         }
-
+        else
+        {
+            // Flying creatures don't path with NavMeshAgent (see MoveTowardsFlyTarget),
+            // but if one happens to be present on the prefab, align its render offset.
+            agent = GetComponent<NavMeshAgent>();
+            if (agent != null) agent.baseOffset = data.flightHeightMin;
+        }
 
         var playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null) player = playerObj.transform;
@@ -85,11 +95,6 @@ public class CreatureAI : MonoBehaviour, ICapturable
     private void Start()
     {
         EnterState(State.Idle);
-        if (data.movementMode == CreatureMovementMode.Flying)
-        {
-            agent = GetComponent<NavMeshAgent>();
-            if (agent != null) agent.baseOffset = data.flightHeightMin;
-        }
     }
 
     private void Update()
@@ -112,28 +117,39 @@ public class CreatureAI : MonoBehaviour, ICapturable
     private void EnterState(State newState)
     {
         currentState = newState;
+
+        // Stun particles only ever belong to the Stunned state - set this
+        // generically here rather than per-case, so any transition OUT of
+        // Stunned (Idle, Wander, Flee, Captured) clears it. Previously this
+        // only cleared in the Idle case, which left particles running if a
+        // failed capture sent the creature straight into Flee.
+        if (stunParticles != null)
+            stunParticles.SetActive(newState == State.Stunned);
+
         switch (newState)
         {
             case State.Idle:
-                stunParticles.SetActive(false);
                 stateTimer = Random.Range(data.idleTimeRange.x, data.idleTimeRange.y);
                 if (agent != null) agent.isStopped = true;
+                animator?.Play(CreatureAnimState.Idle);
                 break;
 
             case State.Wander:
                 stateTimer = Random.Range(data.wanderIntervalRange.x, data.wanderIntervalRange.y);
                 if (agent != null) { agent.isStopped = false; agent.speed = data.wanderSpeed; }
                 PickNewWanderTarget();
+                animator?.Play(CreatureAnimState.Move);
                 break;
 
             case State.Flee:
                 if (agent != null) { agent.isStopped = false; agent.speed = data.fleeSpeed; }
+                animator?.Play(CreatureAnimState.Flee);
                 break;
 
             case State.Stunned:
                 stunTimer = data.stunDuration;
-                stunParticles.SetActive(true);
                 if (agent != null) agent.isStopped = true;
+                animator?.Play(CreatureAnimState.Hit);
                 break;
         }
     }
@@ -252,8 +268,18 @@ public class CreatureAI : MonoBehaviour, ICapturable
         {
             currentState = State.Captured;
             InventoryManager.Instance.AddCreature(data, rolledRarity, 1);
-            gameObject.SetActive(false); // swap for a pool-return call if using pooling
-            Destroy(gameObject, 1f);
+
+            if (stunParticles != null) stunParticles.SetActive(false);
+            if (agent != null) agent.isStopped = true;
+
+            // Play the capture reaction if this variant has one, and only
+            // destroy once it finishes. Falls back to destroying immediately
+            // if no Captured clip is authored for this rarity yet.
+            bool playingCaptureAnim = animator != null &&
+                animator.Play(CreatureAnimState.Captured, () => Destroy(gameObject));
+
+            if (!playingCaptureAnim)
+                Destroy(gameObject); // swap for a pool-return call if using pooling
         }
         else
         {

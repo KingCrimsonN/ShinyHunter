@@ -28,7 +28,9 @@ public class CreatureData : ScriptableObject
     [Tooltip("Static thumbnails per rarity, for UI (inventory/bestiary) - separate from the in-world animation frames.")]
     public Sprite[] icons = new Sprite[4];
 
-    public Vector3 size;
+    [Header("Physical")]
+    [Tooltip("Applied to transform.localScale on spawn.")]
+    public Vector3 size = Vector3.one;
 
     [Header("Movement")]
     public CreatureMovementMode movementMode = CreatureMovementMode.Ground;
@@ -55,6 +57,18 @@ public class CreatureData : ScriptableObject
     [Range(0f, 1f)] public float baseCaptureChance = 0.5f;
     [Tooltip("Seconds the creature stays stunned/vulnerable after being hit with the stick.")]
     public float stunDuration = 3f;
+
+    [Header("Stew Resource (placeholder - full ingredient/stew system not built yet)")]
+    [Tooltip("0-10 relative scent values this creature's ingredient contributes to a stew. Display-only for now (see GDD Stews section).")]
+    public float sweetScent;
+    public float freshScent;
+    public float putridScent;
+    public float metallicScent;
+    public float marineScent;
+
+    [Tooltip("The ingredient obtained from recycling this creature - shown in the CritterDex, not yet consumed by a real stew system.")]
+    public string resourceName;
+    public Sprite resourceIcon;
 
     /// <summary>Animation set for a given rolled rarity. Falls back to index 0 if the array is short.</summary>
     public CreatureVariantVisuals GetVariant(Rarity rarity)

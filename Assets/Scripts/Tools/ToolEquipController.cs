@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -12,11 +13,14 @@ public class ToolEquipController : MonoBehaviour
     [SerializeField] private Transform handSocket;
     [SerializeField] private KeyCode useKey = KeyCode.Mouse0;
 
+    public bool CanUse;
+
     private ToolBehaviour currentToolInstance;
     private ToolData currentToolData;
 
     private void OnEnable()
     {
+        CanUse = true;
         ToolInventoryManager.Instance.OnEquippedChanged += HandleEquippedChanged;
         ToolInventoryManager.Instance.OnInventoryChanged += RefreshHeldToolIfChanged;
         SpawnEquippedTool();
@@ -31,8 +35,21 @@ public class ToolEquipController : MonoBehaviour
         }
     }
 
+    public void EnableUse()
+    {
+        StartCoroutine(UseCooldownCoroutine(0.1f));
+    }
+
+    private IEnumerator UseCooldownCoroutine(float cooldown)
+    {
+        CanUse = false;
+        yield return new WaitForSeconds(cooldown);
+        CanUse = true;
+    }
+
     private void Update()
     {
+        if (!CanUse) return;
         HandleScrollInput();
         HandleNumberKeyInput();
 

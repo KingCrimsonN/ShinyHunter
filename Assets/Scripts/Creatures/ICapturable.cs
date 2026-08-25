@@ -14,4 +14,13 @@ public interface ICapturable
 
     /// <summary>Attempt to capture. Only meaningful while IsStunned. Returns success.</summary>
     bool TryCapture();
+
+    /// <summary>
+    /// Attempt to capture, only meaningful while IsStunned. captureChance
+    /// (0-1) is computed by whoever's resolving the attempt - currently
+    /// CaptureMinigameController, from the wheel minigame's hit ratio.
+    /// Returns whether the capture succeeded.
+    /// </summary>
+    bool TryCapture(float captureChance);
+    void StartCapture(float captureTime);
 }

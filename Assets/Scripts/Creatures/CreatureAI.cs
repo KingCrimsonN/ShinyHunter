@@ -28,6 +28,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     [Header("Effects")]
     [SerializeField] private GameObject stunParticles;
+    [SerializeField] private GameObject captureParticles;
 
     [Header("Debug (read-only)")]
     [SerializeField] private State currentState = State.Idle;
@@ -258,6 +259,12 @@ public class CreatureAI : MonoBehaviour, ICapturable
         EnterState(State.Stunned);
     }
 
+    public void StartCapture(float captureTime)
+    {
+        if (currentState != State.Stunned) return;
+        stunTimer = captureTime;
+    }
+
     public bool TryCapture()
     {
         if (currentState != State.Stunned) return false;
@@ -271,6 +278,39 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
             if (stunParticles != null) stunParticles.SetActive(false);
             if (agent != null) agent.isStopped = true;
+
+            // Play the capture reaction if this variant has one, and only
+            // destroy once it finishes. Falls back to destroying immediately
+            // if no Captured clip is authored for this rarity yet.
+            bool playingCaptureAnim = animator != null &&
+                animator.Play(CreatureAnimState.Captured, () => Destroy(gameObject));
+
+            if (!playingCaptureAnim)
+                Destroy(gameObject); // swap for a pool-return call if using pooling
+        }
+        else
+        {
+            EnterState(State.Flee); // struggled free
+        }
+
+        return success;
+    }
+
+    public bool TryCapture(float captureChance)
+    {
+        if (currentState != State.Stunned) return false;
+
+        bool success = Random.value <= Mathf.Clamp01(captureChance);
+
+        if (success)
+        {
+            currentState = State.Captured;
+            InventoryManager.Instance.AddCreature(data, rolledRarity, 1);
+
+            if (stunParticles != null) stunParticles.SetActive(false);
+            if (agent != null) agent.isStopped = true;
+            captureParticles.SetActive(true);
+            captureParticles.transform.SetParent(null); // detach so it doesn't move with the creature
 
             // Play the capture reaction if this variant has one, and only
             // destroy once it finishes. Falls back to destroying immediately

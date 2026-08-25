@@ -54,6 +54,7 @@ public class CreatureData : ScriptableObject
     public float fleeDistance = 10f;
 
     [Header("Capture")]
+    [Tooltip("NOT currently used - capture chance now comes from the capture minigame's hit ratio (see CaptureMinigameController). Left in place in case you want to fold it back in as a per-species multiplier later.")]
     [Range(0f, 1f)] public float baseCaptureChance = 0.5f;
     [Tooltip("Seconds the creature stays stunned/vulnerable after being hit with the stick.")]
     public float stunDuration = 3f;

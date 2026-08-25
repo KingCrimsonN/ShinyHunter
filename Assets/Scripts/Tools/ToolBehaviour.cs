@@ -20,4 +20,6 @@ public class ToolBehaviour : MonoBehaviour
 
     /// <summary>Primary use input while this tool is equipped and held.</summary>
     public virtual void UseTool() { }
+
+    public virtual void Update() { }
 }

@@ -50,11 +50,17 @@ public class ToolEquipController : MonoBehaviour
     private void Update()
     {
         if (!CanUse) return;
+        UpdateTool();
         HandleScrollInput();
         HandleNumberKeyInput();
 
         if (Input.GetKeyDown(useKey))
             currentToolInstance?.UseTool();
+    }
+
+    private void UpdateTool()
+    {
+        currentToolInstance?.Update();
     }
 
     private void HandleScrollInput()

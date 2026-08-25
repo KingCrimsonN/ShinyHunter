@@ -13,6 +13,9 @@ public class PlayerCapture : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Camera playerCamera;
+    [SerializeField] private Animator handAnimator;
+    [SerializeField] private AudioClip hitSound;
+    [SerializeField] private AudioClip swingSound;
 
     [Header("Stick Hit")]
     [SerializeField] private float hitRange = 2.5f;
@@ -28,39 +31,45 @@ public class PlayerCapture : MonoBehaviour
 
     private void Update()
     {
-        UpdateTargetedCreature();
+        // UpdateTargetedCreature();
 
         if (Input.GetKeyDown(hitKey))
             TrySwingStick();
 
         if (Input.GetKeyDown(captureKey))
         {
-            TryCaptureTargeted();
+            // TryCaptureTargeted();
         }
     }
 
-    private void UpdateTargetedCreature()
-    {
-        targetedCreature = null;
+    // private void UpdateTargetedCreature()
+    // {
+    //     targetedCreature = null;
 
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward,
-                out RaycastHit hit, captureRange, creatureLayer))
-        {
-            // print(hit.collider.gameObject.name);
-            targetedCreature = hit.collider.GetComponentInParent<ICapturable>();
-        }
-    }
+    //     if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward,
+    //             out RaycastHit hit, captureRange, creatureLayer))
+    //     {
+    //         // print(hit.collider.gameObject.name);
+    //         targetedCreature = hit.collider.GetComponentInParent<ICapturable>();
+    //     }
+    // }
 
     private void TrySwingStick()
     {
-        // Vector3 origin = playerCamera.transform.position;
-        // Vector3 dir = playerCamera.transform.forward;
+        Vector3 origin = Camera.main.transform.position;
+        Vector3 dir = Camera.main.transform.forward;
+        handAnimator.SetTrigger("Hit");
+        SoundFXManager.instance.PlaySoundFX(swingSound, transform, 0.5f);
 
-        // if (Physics.SphereCast(origin, hitRadius, dir, out RaycastHit hit, hitRange, creatureLayer))
-        // {
-        //     var creature = hit.collider.GetComponentInParent<ICapturable>();
-        //     creature?.OnHit();
-        // }
+        if (Physics.SphereCast(origin, hitRadius, dir, out RaycastHit hit, hitRange, creatureLayer))
+        {
+            var creature = hit.collider.GetComponentInParent<ICapturable>();
+            creature?.OnHit();
+            if (creature != null)
+            {
+                SoundFXManager.instance.PlaySoundFX(hitSound, transform, 0.5f);
+            }
+        }
     }
 
     private void TryCaptureTargeted()

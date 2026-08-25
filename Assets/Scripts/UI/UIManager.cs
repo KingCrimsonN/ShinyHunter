@@ -7,6 +7,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private FirstPersonController playerMovement;
     [SerializeField] private ToolEquipController toolEquip;
 
+    private void Start()
+    {
+        if (inventoryUI != null) inventoryUI.SetActive(false);
+    }
 
     // Update is called once per frame
     private void Update()

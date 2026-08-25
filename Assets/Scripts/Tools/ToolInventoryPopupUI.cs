@@ -93,6 +93,7 @@ public class ToolInventoryPopupUI : MonoBehaviour
         {
             var slot = slots[i];
             var ui = slotUIs[i].SlotUI;
+            // print("Refreshing slot " + i + ": " + (ui == null ? "null" : slot.data.name));
             if (slot == null || slot.data == null) ui.SetEmpty();
             else ui.SetItem(slot.data, slot.count);
         }

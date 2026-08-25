@@ -21,7 +21,7 @@ public class DraggableToolSlot : MonoBehaviour, IBeginDragHandler, IDragHandler,
 
     public TMPro.TMP_Text descriptionText;
 
-    public int SlotIndex { get; set; }
+    [SerializeField] public int SlotIndex;
     public ToolSlotUI SlotUI { get; private set; }
 
     private void Awake()

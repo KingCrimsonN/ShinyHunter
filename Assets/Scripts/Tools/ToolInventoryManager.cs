@@ -22,7 +22,8 @@ public class ToolInventoryManager : MonoBehaviour
         public int count;
     }
 
-    [SerializeField] private int capacity = 10;
+    [SerializeField] private int capacity = 25;
+    [SerializeField] private int equipCapacity = 3;
 
     [Header("Starting Loadout (optional)")]
     [Tooltip("Filled into slots 0, 1, 2... at game start, useful for testing.")]
@@ -34,6 +35,7 @@ public class ToolInventoryManager : MonoBehaviour
     private int equippedIndex = 0;
 
     public int Capacity => capacity;
+    public int EquipCapacity => equipCapacity;
     public int EquippedIndex => equippedIndex;
     public IReadOnlyList<ToolSlot> Slots => slots;
     public ToolSlot EquippedSlot => IsValidIndex(equippedIndex) ? slots[equippedIndex] : null;
@@ -133,8 +135,8 @@ public class ToolInventoryManager : MonoBehaviour
     /// <summary>direction: +1 for next slot, -1 for previous, wraps around.</summary>
     public void CycleEquipped(int direction)
     {
-        if (capacity == 0) return;
-        int next = ((equippedIndex + direction) % capacity + capacity) % capacity;
+        if (equipCapacity == 0) return;
+        int next = ((equippedIndex + direction) % equipCapacity + equipCapacity) % equipCapacity;
         SetEquippedIndex(next);
     }
 

@@ -14,9 +14,10 @@ public class ToolHotbarUI : MonoBehaviour
     private void Start()
     {
         int capacity = ToolInventoryManager.Instance.Capacity;
-        slotUIs = new ToolSlotUI[capacity];
+        int equipCapacity = ToolInventoryManager.Instance.EquipCapacity;
+        slotUIs = new ToolSlotUI[equipCapacity];
 
-        for (int i = 0; i < capacity; i++)
+        for (int i = 0; i < equipCapacity; i++)
         {
             var slotUI = Instantiate(slotPrefab, slotParent);
             slotUI.SetKeybindLabel(i == capacity - 1 ? "0" : (i + 1).ToString());

@@ -46,7 +46,7 @@ public class PlayerCapture : MonoBehaviour
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward,
                 out RaycastHit hit, captureRange, creatureLayer))
         {
-            print(hit.collider.gameObject.name);
+            // print(hit.collider.gameObject.name);
             targetedCreature = hit.collider.GetComponentInParent<ICapturable>();
         }
     }

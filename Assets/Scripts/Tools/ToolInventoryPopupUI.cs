@@ -17,6 +17,7 @@ public class ToolInventoryPopupUI : MonoBehaviour
     [SerializeField] private KeyCode toggleKey = KeyCode.Tab;
 
     private DraggableToolSlot[] slotUIs;
+    [SerializeField] private DraggableToolSlot[] equipSlots;
 
     private void Awake()
     {
@@ -28,9 +29,15 @@ public class ToolInventoryPopupUI : MonoBehaviour
     private void Start()
     {
         int capacity = ToolInventoryManager.Instance.Capacity;
+        int equipCapacity = ToolInventoryManager.Instance.EquipCapacity;
         slotUIs = new DraggableToolSlot[capacity];
 
-        for (int i = 0; i < capacity; i++)
+        for (int i = 0; i < equipCapacity; i++)
+        {
+            slotUIs[i] = equipSlots[i];
+        }
+
+        for (int i = equipCapacity; i < capacity; i++)
         {
             var slot = Instantiate(slotPrefab, slotParent);
             slot.SlotIndex = i;
@@ -40,6 +47,7 @@ public class ToolInventoryPopupUI : MonoBehaviour
         }
 
         ToolInventoryManager.Instance.OnInventoryChanged += Refresh;
+        RefreshStart();
     }
 
     private void OnDestroy()
@@ -75,6 +83,19 @@ public class ToolInventoryPopupUI : MonoBehaviour
         // Free the cursor while browsing, relock when closing.
         Cursor.lockState = opening ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = opening;
+    }
+
+    private void RefreshStart()
+    {
+        var slots = ToolInventoryManager.Instance.Slots;
+        var equipCapacity = ToolInventoryManager.Instance.EquipCapacity;
+        for (int i = 0; i < equipCapacity; i++)
+        {
+            var slot = slots[i];
+            var ui = slotUIs[i].SlotUI;
+            if (slot == null || slot.data == null) ui.SetEmpty();
+            else ui.SetItem(slot.data, slot.count);
+        }
     }
 
     private void Refresh()

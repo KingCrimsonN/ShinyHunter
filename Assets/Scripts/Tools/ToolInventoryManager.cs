@@ -138,5 +138,11 @@ public class ToolInventoryManager : MonoBehaviour
         SetEquippedIndex(next);
     }
 
+    public string GetToolDescription(int index)
+    {
+        if (!IsValidIndex(index) || slots[index].data == null) return string.Empty;
+        return slots[index].data.description;
+    }
+
     private bool IsValidIndex(int index) => slots != null && index >= 0 && index < slots.Length;
 }

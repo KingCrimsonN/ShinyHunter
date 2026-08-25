@@ -4,11 +4,9 @@ public class UIManager : MonoBehaviour
 {
 
     [SerializeField] private GameObject inventoryUI;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
+    [SerializeField] private FirstPersonController playerMovement;
+    [SerializeField] private ToolEquipController toolEquip;
 
-    }
 
     // Update is called once per frame
     private void Update()
@@ -18,6 +16,10 @@ public class UIManager : MonoBehaviour
             if (inventoryUI != null)
                 inventoryUI.SetActive(!inventoryUI.activeSelf);
             Time.timeScale = inventoryUI.activeSelf ? 0 : 1;
+            playerMovement.enabled = !inventoryUI.activeSelf;
+            if (toolEquip != null) toolEquip.CanUse = !inventoryUI.activeSelf;
+            Cursor.lockState = inventoryUI.activeSelf ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = inventoryUI.activeSelf;
         }
     }
 }

@@ -11,6 +11,7 @@ public class ToolInventoryPopupUI : MonoBehaviour
     [SerializeField] private GameObject popupRoot;
     [SerializeField] private Transform slotParent;
     [SerializeField] private DraggableToolSlot slotPrefab;
+    [SerializeField] private TMPro.TMP_Text descriptionText;
     [Tooltip("Shared floating icon shown while dragging. Should be a UI Image under this popup's Canvas, Raycast Target OFF, inactive by default.")]
     [SerializeField] private Image dragIconTemplate;
     [SerializeField] private KeyCode toggleKey = KeyCode.Tab;
@@ -33,6 +34,7 @@ public class ToolInventoryPopupUI : MonoBehaviour
         {
             var slot = Instantiate(slotPrefab, slotParent);
             slot.SlotIndex = i;
+            slot.descriptionText = descriptionText;
             // slot.SlotUI.SetKeybindLabel(i == capacity - 1 ? "0" : (i + 1).ToString());
             slotUIs[i] = slot;
         }
@@ -51,6 +53,18 @@ public class ToolInventoryPopupUI : MonoBehaviour
         if (Input.GetKeyDown(toggleKey))
             TogglePopup();
     }
+
+    public void Show()
+    {
+        popupRoot.SetActive(true);
+        Refresh();
+    }
+
+    public void Hide()
+    {
+        popupRoot.SetActive(false);
+    }
+
 
     private void TogglePopup()
     {

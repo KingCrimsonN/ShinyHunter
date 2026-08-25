@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 /// <summary>
 /// Drives the capture minigame: spins a needle around a wheel with randomly
@@ -96,7 +97,7 @@ public class CaptureMinigameController : MonoBehaviour
             HandleHitAttempt();
 
         if (timeRemaining <= 0f || attemptsRemaining <= 0 || hitsScored >= hitAreaCount)
-            EndMinigame();
+            StartCoroutine(WaitAndEnd(0.5f)); // short delay so player sees the last hit/miss feedback
     }
 
     /// <summary>Entry point - call this instead of ICapturable.TryCapture directly.</summary>
@@ -191,6 +192,12 @@ public class CaptureMinigameController : MonoBehaviour
         creatureData = null;
 
         OnMinigameEnded?.Invoke(success);
+    }
+
+    private IEnumerator WaitAndEnd(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        EndMinigame();
     }
 
     private void SetupCenterIcon()

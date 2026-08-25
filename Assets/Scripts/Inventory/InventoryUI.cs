@@ -10,6 +10,7 @@ public class InventoryUI : MonoBehaviour
 {
     [SerializeField] private Transform listParent;
     [SerializeField] private InventorySlotUI slotPrefab;
+    [SerializeField] private TMPro.TMP_Text descriptionText;
 
     private void OnEnable()
     {
@@ -32,6 +33,7 @@ public class InventoryUI : MonoBehaviour
         {
             var slot = Instantiate(slotPrefab, listParent);
             slot.Set(kvp.Key.species, kvp.Key.rarity, kvp.Value);
+            slot.descriptionText = descriptionText;
         }
     }
 }

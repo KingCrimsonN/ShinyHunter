@@ -1,14 +1,18 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
 
 /// <summary>One row in the inventory list: rarity-correct icon, name, rarity label, count.</summary>
-public class InventorySlotUI : MonoBehaviour
+public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text nameText;
     // [SerializeField] private TMP_Text rarityText;
     [SerializeField] private TMP_Text countText;
+    [SerializeField] public TMP_Text descriptionText;
+
+    private string description;
 
     [Header("Rarity Colors")]
     [SerializeField] private Color normalColor = Color.white;
@@ -21,6 +25,7 @@ public class InventorySlotUI : MonoBehaviour
         if (icon != null) icon.sprite = species.GetIcon(rarity);
         if (nameText != null) nameText.text = species.creatureName;
         if (countText != null) countText.text = "x" + count;
+        description = species.description;
 
         // if (rarityText != null)
         // {
@@ -39,4 +44,26 @@ public class InventorySlotUI : MonoBehaviour
             default: return normalColor;
         }
     }
+
+    private void OnMouseEnter()
+    {
+
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (descriptionText != null)
+        {
+            descriptionText.text = description;
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (descriptionText != null)
+        {
+            descriptionText.text = "";
+        }
+    }
+
 }

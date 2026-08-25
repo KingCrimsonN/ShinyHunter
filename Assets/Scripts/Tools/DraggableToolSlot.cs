@@ -12,12 +12,14 @@ using UnityEngine.UI;
 /// every slot drags the same floating icon rather than each needing its own.
 /// </summary>
 [RequireComponent(typeof(ToolSlotUI))]
-public class DraggableToolSlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+public class DraggableToolSlot : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
     /// <summary>Set once by ToolInventoryPopupUI.Awake().</summary>
     public static Image DragIcon;
 
     private static DraggableToolSlot draggedFrom;
+
+    public TMPro.TMP_Text descriptionText;
 
     public int SlotIndex { get; set; }
     public ToolSlotUI SlotUI { get; private set; }
@@ -49,9 +51,30 @@ public class DraggableToolSlot : MonoBehaviour, IBeginDragHandler, IDragHandler,
         draggedFrom = null;
     }
 
+    public void SetDescriptionText(TMPro.TMP_Text text)
+    {
+        descriptionText = text;
+    }
+
     public void OnDrop(PointerEventData eventData)
     {
         if (draggedFrom == null || draggedFrom == this) return;
         ToolInventoryManager.Instance.SwapSlots(draggedFrom.SlotIndex, SlotIndex);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (descriptionText != null && SlotUI.HasItem)
+        {
+            descriptionText.text = ToolInventoryManager.Instance.GetToolDescription(SlotIndex);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (descriptionText != null)
+        {
+            descriptionText.text = string.Empty;
+        }
     }
 }

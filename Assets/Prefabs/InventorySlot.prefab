@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 76.7, y: 75.9}
+  m_AnchoredPosition: {x: 56.347275, y: 58.650856}
   m_SizeDelta: {x: 22.8943, y: 23.5853}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4508950004724605944
@@ -163,7 +163,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1876901782141657985}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -231,6 +231,7 @@ MonoBehaviour:
   icon: {fileID: 5164627413115716563}
   nameText: {fileID: 1968723938426680829}
   countText: {fileID: 1409753521680030925}
+  descriptionText: {fileID: 0}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   uncommonColor: {r: 0.3, g: 0.8, b: 0.3, a: 1}
   rareColor: {r: 0.3, g: 0.5, b: 1, a: 1}
@@ -269,7 +270,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.000017166, y: -74.2}
+  m_AnchoredPosition: {x: 0.000017166, y: -64.22325}
   m_SizeDelta: {x: 149.6089, y: 21.5535}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3201140406183796888
@@ -332,7 +333,7 @@ MonoBehaviour:
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_fontSizeMax: 20
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -405,9 +406,9 @@ RectTransform:
   m_Father: {fileID: 485325919525456947}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.000026703, y: 11.4}
-  m_SizeDelta: {x: 67.1122, y: 68.7566}
+  m_AnchorMax: {x: 0.64000005, y: 0.5}
+  m_AnchoredPosition: {x: -10.499966, y: -0.000024795532}
+  m_SizeDelta: {x: 30.2182, y: 52.4732}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5365378354855396565
 CanvasRenderer:

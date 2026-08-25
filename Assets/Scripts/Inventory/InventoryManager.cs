@@ -17,7 +17,7 @@ public class InventoryManager : MonoBehaviour
 
     public event Action OnInventoryChanged;
 
-    public GameObject inventoryUI;
+    // public GameObject inventoryUI;
 
     private void Awake()
     {
@@ -31,15 +31,15 @@ public class InventoryManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void Show()
-    {
-        inventoryUI.SetActive(!inventoryUI.activeSelf);
-    }
+    // public void Show()
+    // {
+    //     inventoryUI.SetActive(!inventoryUI.activeSelf);
+    // }
 
-    public void Hide()
-    {
-        inventoryUI.SetActive(false);
-    }
+    // public void Hide()
+    // {
+    //     inventoryUI.SetActive(false);
+    // }
 
 
     public void AddCreature(CreatureData species, CreatureData.Rarity rarity, int amount = 1)

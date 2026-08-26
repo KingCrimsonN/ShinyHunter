@@ -31,16 +31,6 @@ public class InventoryManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    // public void Show()
-    // {
-    //     inventoryUI.SetActive(!inventoryUI.activeSelf);
-    // }
-
-    // public void Hide()
-    // {
-    //     inventoryUI.SetActive(false);
-    // }
-
 
     public void AddCreature(CreatureData species, CreatureData.Rarity rarity, int amount = 1)
     {
@@ -70,6 +60,28 @@ public class InventoryManager : MonoBehaviour
                 total += kvp.Value;
         }
         return total;
+    }
+
+    public int CalculateCaptureValue()
+    {
+        int totalValue = 0;
+        foreach (var kvp in counts)
+        {
+            var species = kvp.Key.species;
+            var rarity = kvp.Key.rarity;
+            int count = kvp.Value;
+
+            if (species != null && species.valuePerRarity != null)
+            {
+                int rarityIndex = (int)rarity;
+                if (rarityIndex >= 0 && rarityIndex < species.valuePerRarity.Length)
+                {
+                    int valuePerCreature = species.valuePerRarity[rarityIndex];
+                    totalValue += valuePerCreature * count;
+                }
+            }
+        }
+        return totalValue;
     }
 
     public IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int> GetAll() => counts;

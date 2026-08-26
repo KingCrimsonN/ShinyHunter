@@ -71,6 +71,9 @@ public class CreatureData : ScriptableObject
     public string resourceName;
     public Sprite resourceIcon;
 
+    [Header("Money")]
+    public int[] valuePerRarity = new int[4] { 1, 2, 3, 4 };
+
     /// <summary>Animation set for a given rolled rarity. Falls back to index 0 if the array is short.</summary>
     public CreatureVariantVisuals GetVariant(Rarity rarity)
     {

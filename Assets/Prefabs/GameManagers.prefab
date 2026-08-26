@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8670404275170498310}
   - component: {fileID: 298805411370606080}
-  - component: {fileID: 2500348265505873463}
-  - component: {fileID: 3188378460868815688}
   - component: {fileID: 8877221585314159816}
+  - component: {fileID: 8738606116236178406}
+  - component: {fileID: 2942401906674857423}
   m_Layer: 0
   m_Name: GameManagers
   m_TagString: Untagged
@@ -48,36 +48,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ToolInventoryManager
   capacity: 10
+  equipCapacity: 3
   startingTools:
   - {fileID: 11400000, guid: 300653a05cf68d5419ad6c2eae65472d, type: 2}
   - {fileID: 11400000, guid: fc6ffb07f42c8e246b24b597cc5b811b, type: 2}
   slots: []
---- !u!114 &2500348265505873463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4849510073749518910}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdab278bd5ff54945bc8d64fefbde8be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIManager
-  inventoryUI: {fileID: 0}
---- !u!114 &3188378460868815688
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4849510073749518910}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b363704e8eb3f9443b0792406868c1a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
-  inventoryUI: {fileID: 0}
 --- !u!114 &8877221585314159816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -91,3 +66,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoundFXManager
   soundObject: {fileID: 8092430112531759284, guid: a57395a26f0646447a919b58c5701985, type: 3}
+--- !u!114 &8738606116236178406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4849510073749518910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b363704e8eb3f9443b0792406868c1a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
+--- !u!114 &2942401906674857423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4849510073749518910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a97e018f8e8f96a42a48a9ccd810a620, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MoneyManager
+  startingMoney: 100
+  moneySound: {fileID: 8300000, guid: 9a61b5d7390db2b4885b8f2273261551, type: 3}

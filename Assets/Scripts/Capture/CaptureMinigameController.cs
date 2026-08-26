@@ -52,6 +52,13 @@ public class CaptureMinigameController : MonoBehaviour
     [Tooltip("Minimum angular gap enforced between adjacent arcs, on top of their width, so they never touch or overlap.")]
     [SerializeField] private float minGapBetweenAreasDegrees = 10f;
     [SerializeField] private KeyCode hitKey = KeyCode.Mouse0;
+    [SerializeField] private float defaultCooldown = 0.3f;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip hitSound;
+    [SerializeField] private AudioClip missSound;
+    [SerializeField] private AudioClip successSound;
+    [SerializeField] private AudioClip failSound;
 
     /// <summary>Fires each time the player scores a hit on an arc.</summary>
     public event Action OnHitScored;
@@ -73,6 +80,9 @@ public class CaptureMinigameController : MonoBehaviour
     private int attemptsRemaining;
     private int hitsScored;
     private float needleAngle;
+
+    private bool ending;
+    private bool cooldown;
 
     private void Awake()
     {
@@ -97,7 +107,12 @@ public class CaptureMinigameController : MonoBehaviour
             HandleHitAttempt();
 
         if (timeRemaining <= 0f || attemptsRemaining <= 0 || hitsScored >= hitAreaCount)
-            StartCoroutine(WaitAndEnd(0.5f)); // short delay so player sees the last hit/miss feedback
+            if (!ending)
+            {
+                ending = true;
+                StartCoroutine(WaitAndEnd(0.5f)); // short delay so player sees the last hit/miss feedback
+            }
+
     }
 
     /// <summary>Entry point - call this instead of ICapturable.TryCapture directly.</summary>
@@ -151,6 +166,7 @@ public class CaptureMinigameController : MonoBehaviour
 
     private void HandleHitAttempt()
     {
+        if (cooldown) return;
         attemptsRemaining--;
         needleAnimator.SetTrigger("Hit");
         bool hitSomething = false;
@@ -165,10 +181,19 @@ public class CaptureMinigameController : MonoBehaviour
             }
         }
 
-        if (hitSomething) OnHitScored?.Invoke();
-        else OnMiss?.Invoke();
+        if (hitSomething)
+        {
+            SoundFXManager.instance.PlaySoundFX(hitSound, transform, 0.5f);
+            OnHitScored?.Invoke();
+        }
+        else
+        {
+            SoundFXManager.instance.PlaySoundFX(missSound, transform, 0.5f);
+            OnMiss?.Invoke();
+        }
 
         UpdateAttemptsUI();
+        StartCoroutine(CoolDown());
     }
 
     private void EndMinigame()
@@ -191,13 +216,26 @@ public class CaptureMinigameController : MonoBehaviour
         targetCreature = null;
         creatureData = null;
 
+        if (success)
+            SoundFXManager.instance.PlaySoundFX(successSound, transform, 0.5f);
+        else
+            SoundFXManager.instance.PlaySoundFX(failSound, transform, 0.5f);
+
         OnMinigameEnded?.Invoke(success);
+        ending = false;
     }
 
     private IEnumerator WaitAndEnd(float delay)
     {
         yield return new WaitForSeconds(delay);
         EndMinigame();
+    }
+
+    private IEnumerator CoolDown()
+    {
+        cooldown = true;
+        yield return new WaitForSeconds(defaultCooldown);
+        cooldown = false;
     }
 
     private void SetupCenterIcon()

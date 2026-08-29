@@ -59,17 +59,9 @@ public class CreatureData : ScriptableObject
     [Tooltip("Seconds the creature stays stunned/vulnerable after being hit with the stick.")]
     public float stunDuration = 3f;
 
-    [Header("Stew Resource (placeholder - full ingredient/stew system not built yet)")]
-    [Tooltip("0-10 relative scent values this creature's ingredient contributes to a stew. Display-only for now (see GDD Stews section).")]
-    public float sweetScent;
-    public float freshScent;
-    public float putridScent;
-    public float metallicScent;
-    public float marineScent;
-
-    [Tooltip("The ingredient obtained from recycling this creature - shown in the CritterDex, not yet consumed by a real stew system.")]
-    public string resourceName;
-    public Sprite resourceIcon;
+    [Header("Resources")]
+    [Tooltip("Index 0=Normal, 1=Uncommon, 2=Rare, 3=Legendary. The resource obtained when a creature of this species+rarity is turned into resources.")]
+    public ResourceData[] resources = new ResourceData[4];
 
     [Header("Money")]
     public int[] valuePerRarity = new int[4] { 1, 2, 3, 4 };
@@ -88,5 +80,13 @@ public class CreatureData : ScriptableObject
         if (icons == null || icons.Length == 0) return null;
         int index = (int)rarity;
         return index < icons.Length ? icons[index] : icons[0];
+    }
+
+    /// <summary>The resource yielded by this species at a given rarity. Falls back to index 0 if the array is short.</summary>
+    public ResourceData GetResource(Rarity rarity)
+    {
+        if (resources == null || resources.Length == 0) return null;
+        int index = (int)rarity;
+        return index < resources.Length ? resources[index] : resources[0];
     }
 }

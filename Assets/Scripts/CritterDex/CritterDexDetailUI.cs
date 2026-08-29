@@ -58,12 +58,13 @@ public class CritterDexDetailUI : MonoBehaviour
 
         SetScentTexts(species);
 
+        var resource = species.GetResource(CreatureData.Rarity.Normal);
         if (resourceIcon != null)
         {
-            resourceIcon.sprite = species.resourceIcon;
-            resourceIcon.enabled = species.resourceIcon != null;
+            resourceIcon.sprite = resource != null ? resource.icon : null;
+            resourceIcon.enabled = resource != null && resource.icon != null;
         }
-        if (resourceNameText != null) resourceNameText.text = species.resourceName;
+        if (resourceNameText != null) resourceNameText.text = resource != null ? resource.resourceName : "-";
 
         RefreshRarityBadges(species);
     }
@@ -91,11 +92,12 @@ public class CritterDexDetailUI : MonoBehaviour
 
     private void SetScentTexts(CreatureData species)
     {
-        if (sweetText != null) sweetText.text = species.sweetScent.ToString("0.#");
-        if (freshText != null) freshText.text = species.freshScent.ToString("0.#");
-        if (putridText != null) putridText.text = species.putridScent.ToString("0.#");
-        if (metallicText != null) metallicText.text = species.metallicScent.ToString("0.#");
-        if (marineText != null) marineText.text = species.marineScent.ToString("0.#");
+        var resource = species.GetResource(CreatureData.Rarity.Normal);
+        if (sweetText != null) sweetText.text = resource != null ? resource.sweetScent.ToString("0.#") : "-";
+        if (freshText != null) freshText.text = resource != null ? resource.freshScent.ToString("0.#") : "-";
+        if (putridText != null) putridText.text = resource != null ? resource.putridScent.ToString("0.#") : "-";
+        if (metallicText != null) metallicText.text = resource != null ? resource.metallicScent.ToString("0.#") : "-";
+        if (marineText != null) marineText.text = resource != null ? resource.marineScent.ToString("0.#") : "-";
     }
 
     private void RefreshRarityBadges(CreatureData species)

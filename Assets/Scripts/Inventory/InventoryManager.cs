@@ -17,8 +17,6 @@ public class InventoryManager : MonoBehaviour
 
     public event Action OnInventoryChanged;
 
-    // public GameObject inventoryUI;
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -41,6 +39,18 @@ public class InventoryManager : MonoBehaviour
             counts[key] = 0;
 
         counts[key] += amount;
+        OnInventoryChanged?.Invoke();
+    }
+
+    /// <summary>Removes captured creatures of a species+rarity (e.g. consumed by transforming them into resources).</summary>
+    public void RemoveCreatures(CreatureData species, CreatureData.Rarity rarity, int amount)
+    {
+        var key = (species, rarity);
+        if (!counts.ContainsKey(key)) return;
+
+        counts[key] -= amount;
+        if (counts[key] <= 0) counts.Remove(key);
+
         OnInventoryChanged?.Invoke();
     }
 

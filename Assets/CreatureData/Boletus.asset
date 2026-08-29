@@ -85,10 +85,9 @@ MonoBehaviour:
   fleeDistance: 5
   baseCaptureChance: 1
   stunDuration: 3
-  sweetScent: 0
-  freshScent: 0
-  putridScent: 0
-  metallicScent: 0
-  marineScent: 0
-  resourceName: 
-  resourceIcon: {fileID: 0}
+  resources:
+  - {fileID: 11400000, guid: 205eb5021a098a54aa63aee99006761e, type: 2}
+  - {fileID: 11400000, guid: 6a1f5710ddcb74d47b2db93a3a0b1856, type: 2}
+  - {fileID: 11400000, guid: bf4da25f880c70f44af9b55e0f71e54e, type: 2}
+  - {fileID: 11400000, guid: a4b64982aa357fc47a47aaaa9ca583da, type: 2}
+  valuePerRarity: 01000000020000000300000004000000

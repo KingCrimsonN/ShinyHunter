@@ -33,34 +33,45 @@ public class UIManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            if (tabletUI != null)
-                tabletUI.SetActive(!tabletUI.activeSelf);
-            if (creatureInventoryUI != null)
-                creatureInventoryUI.SetActive(tabletUI.activeSelf);
-            if (playerCapture != null)
-                playerCapture.enabled = !tabletUI.activeSelf;
-            Time.timeScale = tabletUI.activeSelf ? 0 : 1;
-            playerMovement.enabled = !tabletUI.activeSelf;
-            if (toolEquip != null) toolEquip.CanUse = !tabletUI.activeSelf;
-            Cursor.lockState = tabletUI.activeSelf ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = tabletUI.activeSelf;
+            ToggleTabletUI();
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (tabletUI != null && tabletUI.activeSelf)
-            {
-                tabletUI.SetActive(false);
-                if (creatureInventoryUI != null)
-                    creatureInventoryUI.SetActive(false);
-                if (playerCapture != null)
-                    playerCapture.enabled = true;
-                Time.timeScale = 1;
-                playerMovement.enabled = true;
-                if (toolEquip != null) toolEquip.CanUse = true;
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
+            HideTabletUI();
+            CreatureTransformStationUI.Instance.Close();
+        }
+    }
+
+    public void ToggleTabletUI()
+    {
+        if (tabletUI != null)
+            tabletUI.SetActive(!tabletUI.activeSelf);
+        if (creatureInventoryUI != null)
+            creatureInventoryUI.SetActive(tabletUI.activeSelf);
+        if (playerCapture != null)
+            playerCapture.enabled = !tabletUI.activeSelf;
+        Time.timeScale = tabletUI.activeSelf ? 0 : 1;
+        playerMovement.enabled = !tabletUI.activeSelf;
+        if (toolEquip != null) toolEquip.CanUse = !tabletUI.activeSelf;
+        Cursor.lockState = tabletUI.activeSelf ? CursorLockMode.None : CursorLockMode.Locked;
+        Cursor.visible = tabletUI.activeSelf;
+    }
+
+    public void HideTabletUI()
+    {
+        if (tabletUI != null && tabletUI.activeSelf)
+        {
+            tabletUI.SetActive(false);
+            if (creatureInventoryUI != null)
+                creatureInventoryUI.SetActive(false);
+            if (playerCapture != null)
+                playerCapture.enabled = true;
+            Time.timeScale = 1;
+            playerMovement.enabled = true;
+            if (toolEquip != null) toolEquip.CanUse = true;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
     }
 

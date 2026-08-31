@@ -23,36 +23,20 @@ public class PlayerCapture : MonoBehaviour
     [SerializeField] private LayerMask creatureLayer;
     [SerializeField] private KeyCode hitKey = KeyCode.Mouse0;
 
-    [Header("Capture")]
-    [SerializeField] private float captureRange = 3f;
-    [SerializeField] private KeyCode captureKey = KeyCode.Mouse1;
-
     private ICapturable targetedCreature;
+
+    public bool isActive;
 
     private void Update()
     {
-        // UpdateTargetedCreature();
+        if (!isActive)
+        {
+            return;
+        }
 
         if (Input.GetKeyDown(hitKey))
             TrySwingStick();
-
-        if (Input.GetKeyDown(captureKey))
-        {
-            // TryCaptureTargeted();
-        }
     }
-
-    // private void UpdateTargetedCreature()
-    // {
-    //     targetedCreature = null;
-
-    //     if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward,
-    //             out RaycastHit hit, captureRange, creatureLayer))
-    //     {
-    //         // print(hit.collider.gameObject.name);
-    //         targetedCreature = hit.collider.GetComponentInParent<ICapturable>();
-    //     }
-    // }
 
     private void TrySwingStick()
     {
@@ -70,12 +54,5 @@ public class PlayerCapture : MonoBehaviour
                 SoundFXManager.instance.PlaySoundFX(hitSound, transform, 0.5f);
             }
         }
-    }
-
-    private void TryCaptureTargeted()
-    {
-        // print("Trying Capture");
-        if (targetedCreature == null || !targetedCreature.IsStunned) return;
-        CaptureMinigameController.Instance.BeginCapture(targetedCreature);
     }
 }

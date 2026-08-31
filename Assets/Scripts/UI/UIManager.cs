@@ -21,17 +21,22 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private TMP_Text interactionText;
 
+    public bool extraOpened;
+
     private void Start()
     {
         if (tabletUI != null) tabletUI.SetActive(false);
         playerMovement = FindFirstObjectByType<FirstPersonController>();
         playerCapture = FindFirstObjectByType<PlayerCapture>();
         toolEquip = FindFirstObjectByType<ToolEquipController>();
+        extraOpened = false;
     }
 
     // Update is called once per frame
     private void Update()
     {
+        if (extraOpened)
+            return;
         if (Input.GetKeyDown(KeyCode.I))
         {
             ToggleTabletUI();
@@ -39,8 +44,18 @@ public class UIManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            HideTabletUI();
-            CreatureTransformStationUI.Instance.Close();
+            if (tabletUI.activeSelf)
+            {
+                HideTabletUI();
+                return;
+            }
+            if (CreatureTransformStationUI.Instance.IsOpen())
+            {
+                CreatureTransformStationUI.Instance.Close();
+                return;
+            }
+            ToggleTabletUI();
+            ShowSettingsPage();
         }
     }
 
@@ -61,12 +76,34 @@ public class UIManager : MonoBehaviour
         if (creatureInventoryUI != null)
             creatureInventoryUI.SetActive(tabletUI.activeSelf);
         if (playerCapture != null)
-            playerCapture.enabled = !tabletUI.activeSelf;
-        Time.timeScale = tabletUI.activeSelf ? 0 : 1;
-        playerMovement.enabled = !tabletUI.activeSelf;
-        if (toolEquip != null) toolEquip.CanUse = !tabletUI.activeSelf;
-        Cursor.lockState = tabletUI.activeSelf ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = tabletUI.activeSelf;
+            playerCapture.isActive = !tabletUI.activeSelf;
+        if (tabletUI.activeSelf)
+            LockPlayer();
+        else
+            UnlockPlayer();
+        // Time.timeScale = tabletUI.activeSelf ? 0 : 1;
+        // playerMovement.enabled = !tabletUI.activeSelf;
+        // if (toolEquip != null) toolEquip.CanUse = !tabletUI.activeSelf;
+        // Cursor.lockState = tabletUI.activeSelf ? CursorLockMode.None : CursorLockMode.Locked;
+        // Cursor.visible = tabletUI.activeSelf;
+    }
+
+    public void LockPlayer()
+    {
+        Time.timeScale = 0;
+        playerMovement.enabled = false;
+        if (toolEquip != null) toolEquip.CanUse = false;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    public void UnlockPlayer()
+    {
+        Time.timeScale = 1;
+        playerMovement.enabled = true;
+        if (toolEquip != null) toolEquip.CanUse = true;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     public void HideTabletUI()
@@ -78,11 +115,7 @@ public class UIManager : MonoBehaviour
                 creatureInventoryUI.SetActive(false);
             if (playerCapture != null)
                 playerCapture.enabled = true;
-            Time.timeScale = 1;
-            playerMovement.enabled = true;
-            if (toolEquip != null) toolEquip.CanUse = true;
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            UnlockPlayer();
         }
     }
 

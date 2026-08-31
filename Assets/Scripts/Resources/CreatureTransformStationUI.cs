@@ -81,6 +81,11 @@ public class CreatureTransformStationUI : MonoBehaviour
             InventoryManager.Instance.OnInventoryChanged -= RefreshGrids;
     }
 
+    public bool IsOpen()
+    {
+        return gameObject.activeSelf;
+    }
+
     // ---------------- Queries ----------------
 
     public int GetAvailableCount(CreatureData species, CreatureData.Rarity rarity)

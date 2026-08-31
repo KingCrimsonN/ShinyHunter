@@ -24,6 +24,8 @@ public class ResourceInventoryManager : MonoBehaviour
 
     public event Action OnInventoryChanged;
 
+    [SerializeField] private TMPro.TMP_Text descriptionText;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

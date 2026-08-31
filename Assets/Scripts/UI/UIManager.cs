@@ -9,6 +9,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject inventoryPage;
     [SerializeField] private GameObject mapPage;
     [SerializeField] private GameObject settingsPage;
+    [SerializeField] private GameObject dialogPanel;
 
 
 
@@ -41,6 +42,16 @@ public class UIManager : MonoBehaviour
             HideTabletUI();
             CreatureTransformStationUI.Instance.Close();
         }
+    }
+
+    public void ShowDialogue()
+    {
+        dialogPanel.SetActive(true);
+    }
+
+    public void HideDialogue()
+    {
+        dialogPanel.SetActive(false);
     }
 
     public void ToggleTabletUI()

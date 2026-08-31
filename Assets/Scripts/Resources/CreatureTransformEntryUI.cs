@@ -46,6 +46,8 @@ public class CreatureTransformEntryUI : MonoBehaviour,
     /// <summary>Moves up to `amount` from this entry's side to the other side. Station clamps to what's actually available.</summary>
     public void MoveAmount(int amount)
     {
+        if (DragIcon != null)
+            DragIcon.gameObject.SetActive(false);
         if (station == null) return;
 
         if (Side == TransformEntrySide.Inventory)
@@ -83,11 +85,14 @@ public class CreatureTransformEntryUI : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (DragIcon != null) DragIcon.gameObject.SetActive(false);
+        if (DragIcon != null)
+            DragIcon.gameObject.SetActive(false);
     }
 
     public void OnDrop(PointerEventData eventData)
     {
+        if (DragIcon != null)
+            DragIcon.gameObject.SetActive(false);
         if (eventData.pointerDrag == null) return;
 
         var draggedEntry = eventData.pointerDrag.GetComponent<CreatureTransformEntryUI>();

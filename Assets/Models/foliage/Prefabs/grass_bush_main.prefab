@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6597889852367685771}
   - component: {fileID: 6295209255104893887}
   - component: {fileID: 1531528761200690424}
+  - component: {fileID: 1165729213698605402}
   m_Layer: 0
   m_Name: grass_bush_main
   m_TagString: Untagged
@@ -26,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4868427533262490344}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.11954565, y: -0.47897464, z: 0.018859733, w: 0.86944604}
+  m_LocalRotation: {x: -0.11954634, y: -0.47897124, z: 0.018856557, w: 0.86944795}
   m_LocalPosition: {x: -6.974, y: -0.08, z: 2.568}
   m_LocalScale: {x: 1.1237, y: 1.1237, z: 1.1236999}
   m_ConstrainProportionsScale: 0
@@ -38,7 +39,7 @@ Transform:
   - {fileID: 4596236411411957568}
   - {fileID: 4339059639144288176}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -10.942, y: -58.528, z: 8.629}
 --- !u!33 &6295209255104893887
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -46,7 +47,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4868427533262490344}
-  m_Mesh: {fileID: -2432090755550338912, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 4ecc2daa8e3029d4985d4e1175e1f01f, type: 2}
 --- !u!23 &1531528761200690424
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -96,6 +97,26 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1165729213698605402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4868427533262490344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24fb3eb29eeebd04d87475bbfb984a31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeshCombiner
+  createMultiMaterialMesh: 0
+  combineInactiveChildren: 0
+  deactivateCombinedChildren: 1
+  deactivateCombinedChildrenMeshRenderers: 0
+  generateUVMap: 0
+  destroyCombinedChildren: 0
+  folderPath: Prefabs/CombinedMeshes
+  meshFiltersToSkip: []
 --- !u!1001 &2056620974090496049
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -163,6 +184,18 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
       propertyPath: m_Name
       value: grass (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.024
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -242,6 +275,50 @@ PrefabInstance:
       propertyPath: m_Name
       value: grass_bush1 1 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.057
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.181
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.98022914
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.06646089
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.012607277
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.18594329
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -7.216
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 2.856
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -21.662
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -319,6 +396,42 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
       propertyPath: m_Name
       value: grass (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.022
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.243
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9989612
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -9.3132246e-10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.000000029802319
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.04556846
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -5.224
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -398,6 +511,42 @@ PrefabInstance:
       propertyPath: m_Name
       value: grass (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.0298
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.1426
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.99389
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.00000001117587
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.000000029802319
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.11037594
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 12.674
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -476,6 +625,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: grass (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.32
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: 0de0e5760f6befb40a7c9a00aa3dda9e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -553,6 +714,46 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
       propertyPath: m_Name
       value: grass_bush1 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.014
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.172
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.024
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9968824
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.0688441
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.0026557744
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.03845675
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -7.901
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151388028547126963, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 4.418
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: 83253cce3f32e1d43b6e0c14ad74b58e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -146,5 +146,38 @@ public class ToolInventoryManager : MonoBehaviour
         return slots[index].data.description;
     }
 
+    /// <summary>
+    /// The "Sort" button's action for a fixed-slot inventory: gather the
+    /// filled slots, sort them (here: alphabetically by name), and rewrite
+    /// the array so sorted items sit at the front and empties collapse to
+    /// the end. Equip index is NOT touched, so whatever ends up in the
+    /// currently-selected slot number becomes what's equipped (same rule as
+    /// SwapSlots - see its comment).
+    /// </summary>
+    public void SortSlots()
+    {
+        var filled = new List<ToolSlot>();
+        foreach (var slot in slots)
+            if (slot.data != null) filled.Add(slot);
+
+        filled.Sort((a, b) => string.Compare(a.data.toolName, b.data.toolName, StringComparison.OrdinalIgnoreCase));
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (i < filled.Count)
+            {
+                slots[i].data = filled[i].data;
+                slots[i].count = filled[i].count;
+            }
+            else
+            {
+                slots[i].data = null;
+                slots[i].count = 0;
+            }
+        }
+
+        OnInventoryChanged?.Invoke();
+    }
+
     private bool IsValidIndex(int index) => slots != null && index >= 0 && index < slots.Length;
 }

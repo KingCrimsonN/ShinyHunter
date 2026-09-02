@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8877221585314159816}
   - component: {fileID: 8738606116236178406}
   - component: {fileID: 2942401906674857423}
+  - component: {fileID: 31219270434561423}
   m_Layer: 0
   m_Name: GameManagers
   m_TagString: Untagged
@@ -47,7 +48,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b68f9fd418bd10f4db2d302f78903fdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ToolInventoryManager
-  capacity: 10
+  capacity: 20
   equipCapacity: 3
   startingTools:
   - {fileID: 11400000, guid: 300653a05cf68d5419ad6c2eae65472d, type: 2}
@@ -92,3 +93,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoneyManager
   startingMoney: 100
   moneySound: {fileID: 8300000, guid: 9a61b5d7390db2b4885b8f2273261551, type: 3}
+--- !u!114 &31219270434561423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4849510073749518910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c25e914c14a4d744ea75d9b223b51aa5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResourceInventoryManager

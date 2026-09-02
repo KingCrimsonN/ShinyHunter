@@ -49,11 +49,12 @@ public class UIManager : MonoBehaviour
                 HideTabletUI();
                 return;
             }
-            if (CreatureTransformStationUI.Instance.IsOpen())
-            {
-                CreatureTransformStationUI.Instance.Close();
-                return;
-            }
+            if (CreatureTransformStationUI.Instance != null)
+                if (CreatureTransformStationUI.Instance.IsOpen())
+                {
+                    CreatureTransformStationUI.Instance.Close();
+                    return;
+                }
             ToggleTabletUI();
             ShowSettingsPage();
         }
@@ -81,6 +82,7 @@ public class UIManager : MonoBehaviour
             LockPlayer();
         else
             UnlockPlayer();
+
         // Time.timeScale = tabletUI.activeSelf ? 0 : 1;
         // playerMovement.enabled = !tabletUI.activeSelf;
         // if (toolEquip != null) toolEquip.CanUse = !tabletUI.activeSelf;
@@ -115,6 +117,17 @@ public class UIManager : MonoBehaviour
                 creatureInventoryUI.SetActive(false);
             if (playerCapture != null)
                 playerCapture.enabled = true;
+            if (playerCapture != null)
+            {
+
+                if (UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name == "Hub")
+                {
+                    playerCapture.isActive = false;
+                }
+                else
+                    playerCapture.isActive = true;
+            }
+
             UnlockPlayer();
         }
     }

@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 5556990371114729365}
   - component: {fileID: 697574736594841097}
   - component: {fileID: 3206963109186164866}
-  - component: {fileID: 8391984615509240277}
+  - component: {fileID: 3387519007150125610}
   m_Layer: 0
-  m_Name: hammer (1) 1
+  m_Name: Doll
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -84,7 +84,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 621670952350461408197b57b60ee8a3, type: 3}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -115,7 +115,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &8391984615509240277
+--- !u!114 &3387519007150125610
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -128,10 +128,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StickTool
   handAnimator: {fileID: 3206963109186164866}
-  hitSound: {fileID: 8300000, guid: 06958b48c43be7541ad7a0e27b88f2ff, type: 3}
-  swingSound: {fileID: 8300000, guid: fbc478e090e2a554b97a2ccbc342a531, type: 3}
+  hitSound: {fileID: 8300000, guid: f9ccdb916ca1dea4ea6ecbdd7dc4d9f9, type: 3}
+  swingSound: {fileID: 8300000, guid: 08ef3735b9527d54ab97d0e9fc9d505d, type: 3}
   hitRange: 2.5
   hitRadius: 0.5
   creatureLayer:
     serializedVersion: 2
     m_Bits: 4294967295
+  captureRange: 3
+  captureKey: 324

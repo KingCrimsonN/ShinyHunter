@@ -27,6 +27,7 @@ public class StickTool : ToolBehaviour
 
     private ICapturable targetedCreature;
 
+
     public override void OnEquip()
     {
         Debug.Log("Stick equipped.");
@@ -52,7 +53,8 @@ public class StickTool : ToolBehaviour
     private void TryCaptureTargeted()
     {
         // print("Trying Capture");
-        handAnimator.SetTrigger("Hit");
+        if (handAnimator != null)
+            handAnimator.SetTrigger("Hit");
         SoundFXManager.instance.PlaySoundFX(swingSound, transform, 0.5f);
         if (targetedCreature == null || !targetedCreature.IsStunned) return;
         CaptureMinigameController.Instance.BeginCapture(targetedCreature);

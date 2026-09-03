@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 5556990371114729365}
   - component: {fileID: 697574736594841097}
   - component: {fileID: 3206963109186164866}
-  - component: {fileID: 3387519007150125610}
+  - component: {fileID: 8391984615509240277}
   m_Layer: 0
-  m_Name: hammer (1)
+  m_Name: Doll1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28,8 +28,8 @@ Transform:
   m_GameObject: {fileID: 3856478939559060188}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.737, y: -0.0039999485, z: 0.819}
-  m_LocalScale: {x: 0.22, y: 0.22, z: 0.22}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.1136982, y: 0.1136982, z: 0.1136982}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 621670952350461408197b57b60ee8a3, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a8f614514a965034aab2ccf620324986, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -101,7 +101,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3856478939559060188}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 59733751be3a2c549bf7a50a45ee643a, type: 2}
   m_CullingMode: 0
@@ -115,7 +115,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &3387519007150125610
+--- !u!114 &8391984615509240277
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,11 +127,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef61cdcc1f0244346be0de637b46067d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StickTool
+  offset: {x: -0.13, y: -0.22, z: 0}
   handAnimator: {fileID: 3206963109186164866}
-  hitSound: {fileID: 8300000, guid: f9ccdb916ca1dea4ea6ecbdd7dc4d9f9, type: 3}
-  swingSound: {fileID: 8300000, guid: 08ef3735b9527d54ab97d0e9fc9d505d, type: 3}
+  hitSound: {fileID: 8300000, guid: 32f565ba94f200f49adb407cce64e873, type: 3}
+  swingSound: {fileID: 8300000, guid: 14b16ff40093aba47bc467e148746cab, type: 3}
   hitRange: 2.5
   hitRadius: 0.5
   creatureLayer:
     serializedVersion: 2
     m_Bits: 4294967295
+  captureRange: 3
+  captureKey: 324

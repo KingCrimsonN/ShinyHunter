@@ -22,4 +22,6 @@ public class ToolBehaviour : MonoBehaviour
     public virtual void UseTool() { }
 
     public virtual void Update() { }
+
+    public Vector3 offset;
 }

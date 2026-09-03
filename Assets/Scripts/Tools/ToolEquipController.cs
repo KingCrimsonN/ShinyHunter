@@ -116,7 +116,7 @@ public class ToolEquipController : MonoBehaviour
         if (currentToolData != null && currentToolData.toolPrefab != null)
         {
             currentToolInstance = Instantiate(currentToolData.toolPrefab, handSocket);
-            currentToolInstance.transform.localPosition = Vector3.zero;
+            currentToolInstance.transform.localPosition = Vector3.zero + currentToolInstance.offset;
             currentToolInstance.transform.localRotation = Quaternion.identity;
             currentToolInstance.OnEquip();
         }

@@ -17,6 +17,18 @@ public class CaptureHitAreaUI : MonoBehaviour
     [SerializeField] private Color unhitColor = new Color(1f, 0.3f, 0.3f, 0.9f);
     [SerializeField] private Color hitColor = new Color(0.3f, 1f, 0.4f, 0.9f);
 
+    [Header("Edge Decorations")]
+    [Tooltip("Optional cap sprites marking each boundary of the arc - the radial fill alone can't draw these, so they're separate child Images positioned/rotated to sit at the arc's start and end angles.")]
+    [SerializeField] private RectTransform startEdge;
+    [SerializeField] private RectTransform endEdge;
+    [Tooltip("Distance from the wheel center to place edge sprites - should match this arc's own ring radius so they sit flush against it.")]
+    [SerializeField] private float edgeRadius = 100f;
+
+    [SerializeField] private Sprite brokenEdgeSprite;
+
+    private Image startEdgeImage;
+    private Image endEdgeImage;
+
     private Image image;
     private RectTransform rect;
 
@@ -33,6 +45,9 @@ public class CaptureHitAreaUI : MonoBehaviour
         image.fillMethod = Image.FillMethod.Radial360;
         image.fillOrigin = (int)Image.Origin360.Top;
         image.fillClockwise = true;
+
+        if (startEdge != null) startEdgeImage = startEdge.GetComponent<Image>();
+        if (endEdge != null) endEdgeImage = endEdge.GetComponent<Image>();
     }
 
     /// <summary>Places and sizes this arc on the wheel. Resets hit state.</summary>
@@ -48,6 +63,22 @@ public class CaptureHitAreaUI : MonoBehaviour
         rect.localRotation = Quaternion.Euler(0f, 0f, -startAngle);
         image.fillAmount = Mathf.Clamp01(widthDegrees / 360f);
         image.color = unhitColor;
+
+        PositionEdge(startEdge, 0);
+        PositionEdge(endEdge, widthDegrees);
+
+        if (startEdgeImage != null) startEdgeImage.color = unhitColor;
+        if (endEdgeImage != null) endEdgeImage.color = unhitColor;
+    }
+
+    /// <summary>Places an edge sprite at a given boundary angle, same clockwise-from-top convention as the arc/needle.</summary>
+    private void PositionEdge(RectTransform edge, float angle)
+    {
+        if (edge == null) return;
+
+        Quaternion rotation = Quaternion.Euler(0f, 0f, -angle);
+        // edge.anchoredPosition = (Vector2)(rotation * Vector3.up * edgeRadius);
+        edge.localRotation = rotation;
     }
 
     /// <summary>Is the needle angle (same clockwise-from-top convention) currently inside this arc?</summary>
@@ -61,5 +92,8 @@ public class CaptureHitAreaUI : MonoBehaviour
     {
         IsHit = true;
         image.color = hitColor;
+
+        if (startEdgeImage != null) startEdgeImage.GetComponent<Image>().sprite = brokenEdgeSprite;
+        if (endEdgeImage != null) endEdgeImage.GetComponent<Image>().sprite = brokenEdgeSprite;
     }
 }

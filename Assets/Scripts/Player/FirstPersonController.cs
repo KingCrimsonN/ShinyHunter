@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Basic first-person movement: WASD move, mouse look, gravity, and a
-/// sine-wave camera bob while walking/sprinting.
+/// Basic first-person movement: WASD move, mouse look, gravity, and
+/// independent sine-wave bob for the camera and the hands.
 /// GDD explicitly rules out jumping/dashing, so those are omitted
 /// (jumpHeight left as a hook if you change your mind later).
 /// </summary>
@@ -23,7 +23,7 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float minPitch = -80f;
     [SerializeField] private float maxPitch = 80f;
 
-    [Header("Head Bob")]
+    [Header("Camera Bob")]
     [SerializeField] private bool enableHeadBob = true;
     [Tooltip("Bob cycles per second at walk speed. Scales up automatically when sprinting.")]
     [SerializeField] private float bobFrequency = 8f;
@@ -32,12 +32,23 @@ public class FirstPersonController : MonoBehaviour
     [Tooltip("How quickly the camera eases toward/away from the bob offset. Higher = snappier.")]
     [SerializeField] private float bobSmoothSpeed = 10f;
 
+    [Header("Hand Bob")]
+    [Tooltip("Independent from Camera Bob above - tune separately so hands can feel punchier/looser than the camera instead of always being a fixed fraction of it.")]
+    [SerializeField] private bool enableHandBob = true;
+    [SerializeField] private Transform hands;
+    [SerializeField] private float handBobFrequency = 8f;
+    [SerializeField] private float handBobVerticalAmount = 0.02f;
+    [SerializeField] private float handBobHorizontalAmount = 0.015f;
+    [SerializeField] private float handBobSmoothSpeed = 10f;
+
     private CharacterController controller;
     private float pitch;
     private Vector3 velocity;
 
     private Vector3 cameraBasePosition;
+    private Vector3 handsBasePosition;
     private float bobTimer;
+    private float handBobTimer;
     private bool isMoving;
     private float speedRatio = 1f;
 
@@ -49,13 +60,16 @@ public class FirstPersonController : MonoBehaviour
 
         if (cameraPivot != null)
             cameraBasePosition = cameraPivot.localPosition;
+
+        if (hands != null)
+            handsBasePosition = hands.localPosition;
     }
 
     private void Update()
     {
         HandleLook();
         HandleMove();
-        HandleHeadBob();
+        HandleBob();
     }
 
     private void HandleLook()
@@ -92,29 +106,42 @@ public class FirstPersonController : MonoBehaviour
         controller.Move(finalMove * Time.deltaTime);
     }
 
-    private void HandleHeadBob()
+    private void HandleBob()
     {
-        if (!enableHeadBob || cameraPivot == null) return;
+        if (enableHeadBob && cameraPivot != null)
+        {
+            Vector3 offset = ComputeBobOffset(ref bobTimer, bobFrequency, bobVerticalAmount, bobHorizontalAmount);
+            Vector3 targetPosition = cameraBasePosition + offset;
+            cameraPivot.localPosition = Vector3.Lerp(cameraPivot.localPosition, targetPosition, Time.deltaTime * bobSmoothSpeed);
+        }
 
-        Vector3 targetOffset;
+        if (enableHandBob && hands != null)
+        {
+            Vector3 offset = ComputeBobOffset(ref handBobTimer, handBobFrequency, handBobVerticalAmount, handBobHorizontalAmount);
+            Vector3 targetPosition = handsBasePosition + offset;
+            hands.localPosition = Vector3.Lerp(hands.localPosition, targetPosition, Time.deltaTime * handBobSmoothSpeed);
+        }
+    }
 
+    /// <summary>
+    /// Shared sine/cosine bob math, parameterized so camera and hands can
+    /// run fully independent cycles (different frequency/amplitude, and
+    /// their own timer so they aren't forced to stay in phase with each other).
+    /// </summary>
+    private Vector3 ComputeBobOffset(ref float timer, float frequency, float verticalAmount, float horizontalAmount)
+    {
         if (isMoving)
         {
-            bobTimer += Time.deltaTime * bobFrequency * speedRatio;
+            timer += Time.deltaTime * frequency * speedRatio;
 
-            float verticalOffset = Mathf.Sin(bobTimer) * bobVerticalAmount;
-            float horizontalOffset = Mathf.Cos(bobTimer * 0.5f) * bobHorizontalAmount;
-            targetOffset = new Vector3(horizontalOffset, verticalOffset, 0f);
-        }
-        else
-        {
-            // Reset the cycle so the next step starts from a neutral position
-            // instead of wherever it happened to leave off.
-            bobTimer = 0f;
-            targetOffset = Vector3.zero;
+            float verticalOffset = Mathf.Sin(timer) * verticalAmount;
+            float horizontalOffset = Mathf.Cos(timer * 0.5f) * horizontalAmount;
+            return new Vector3(horizontalOffset, verticalOffset, 0f);
         }
 
-        Vector3 targetPosition = cameraBasePosition + targetOffset;
-        cameraPivot.localPosition = Vector3.Lerp(cameraPivot.localPosition, targetPosition, Time.deltaTime * bobSmoothSpeed);
+        // Reset the cycle so the next step starts from a neutral position
+        // instead of wherever it happened to leave off.
+        timer = 0f;
+        return Vector3.zero;
     }
 }

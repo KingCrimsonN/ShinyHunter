@@ -6,6 +6,12 @@ using UnityEngine;
 /// tool slot, and spawns/despawns the matching ToolBehaviour prefab in the
 /// player's hand socket. Left click (configurable) calls UseTool() on
 /// whatever's currently held.
+///
+/// Tool swapping is a coroutine-driven sequence (Unequip -> destroy old ->
+/// instantiate new -> Equip -> Idle) rather than firing both Animator states
+/// in the same frame, and each new swap request cancels any swap already in
+/// progress. This is what prevents the animator getting stuck mid-blend when
+/// the player switches tools quickly - see SwapToolRoutine's comments.
 /// </summary>
 public class ToolEquipController : MonoBehaviour
 {
@@ -19,13 +25,14 @@ public class ToolEquipController : MonoBehaviour
 
     private ToolBehaviour currentToolInstance;
     private ToolData currentToolData;
+    private Coroutine swapRoutine;
 
     private void OnEnable()
     {
         CanUse = true;
         ToolInventoryManager.Instance.OnEquippedChanged += HandleEquippedChanged;
         ToolInventoryManager.Instance.OnInventoryChanged += RefreshHeldToolIfChanged;
-        SpawnEquippedTool();
+        RequestSwap();
     }
 
     private void OnDisable()
@@ -91,7 +98,7 @@ public class ToolEquipController : MonoBehaviour
 
     private void HandleEquippedChanged(int index)
     {
-        SpawnEquippedTool();
+        RequestSwap();
     }
 
     private void RefreshHeldToolIfChanged()
@@ -100,29 +107,69 @@ public class ToolEquipController : MonoBehaviour
         // slot changed (e.g. it was dragged elsewhere, or a stack emptied out).
         var slot = ToolInventoryManager.Instance.EquippedSlot;
         if (slot?.data != currentToolData)
-            SpawnEquippedTool();
+            RequestSwap();
     }
 
-    private void SpawnEquippedTool()
+    /// <summary>
+    /// Entry point for any tool change. Cancels whatever swap sequence is
+    /// currently running (if any) and starts a fresh one - this is what
+    /// makes rapid switching converge cleanly onto the last-selected tool
+    /// instead of stacking overlapping Play() calls.
+    /// </summary>
+    private void RequestSwap()
     {
+        if (swapRoutine != null) StopCoroutine(swapRoutine);
+        swapRoutine = StartCoroutine(SwapToolRoutine());
+    }
+
+    private IEnumerator SwapToolRoutine()
+    {
+        // --- Unequip whatever's currently held, and WAIT for that animation
+        // to actually finish before touching the tool GameObject. Explicit
+        // (0, 0f) forces a clean restart from frame 0 even if "Unequip" was
+        // already playing (e.g. this routine was cancelled and restarted
+        // mid-unequip) - a bare Play("Unequip") can silently no-op if the
+        // Animator thinks that state is already active.
         if (currentToolInstance != null)
         {
-            currentToolInstance.OnUnequip();
+            currentToolInstance.OnUnequip(); // note: if the player switches again before this finishes, RequestSwap cancels and restarts this routine, so OnUnequip can fire more than once on the same instance - keep it idempotent in your ToolBehaviour subclasses
+            if (handAnimator != null)
+            {
+                handAnimator.Play("Unequip", 0, 0f);
+                yield return null; // let the Animator register the new current state before we read its length
+                yield return new WaitForSeconds(handAnimator.GetCurrentAnimatorStateInfo(0).length);
+            }
+
             Destroy(currentToolInstance.gameObject);
             currentToolInstance = null;
-            handAnimator.Play("Unequip");
         }
 
+        // Re-fetch here rather than at the top of the routine, so if the
+        // player scrolled past several tools while we were mid-unequip we
+        // end up on whichever one is ACTUALLY selected now, not a stale one.
         var slot = ToolInventoryManager.Instance.EquippedSlot;
         currentToolData = slot?.data;
 
         if (currentToolData != null && currentToolData.toolPrefab != null)
         {
-            handAnimator.Play("Equip");
             currentToolInstance = Instantiate(currentToolData.toolPrefab, handSocket);
             currentToolInstance.transform.localPosition = Vector3.zero + currentToolInstance.offset;
             currentToolInstance.transform.localRotation = Quaternion.identity;
             currentToolInstance.OnEquip();
+
+            if (handAnimator != null)
+            {
+                handAnimator.Play("Equip", 0, 0f);
+                yield return null;
+                yield return new WaitForSeconds(handAnimator.GetCurrentAnimatorStateInfo(0).length);
+                handAnimator.Play("Idle", 0, 0f);
+            }
         }
+        else if (handAnimator != null)
+        {
+            handAnimator.Play("Empty", 0, 0f);
+        }
+
+        swapRoutine = null;
     }
 }

@@ -11,6 +11,8 @@ public class ToolEquipController : MonoBehaviour
 {
     [Tooltip("Empty transform (child of camera, positioned where held items should appear) that spawned tool prefabs are parented to.")]
     [SerializeField] private Transform handSocket;
+    [SerializeField] private GameObject handSocketVisual;
+    [SerializeField] private Animator handAnimator;
     [SerializeField] private KeyCode useKey = KeyCode.Mouse0;
 
     public bool CanUse;
@@ -108,6 +110,7 @@ public class ToolEquipController : MonoBehaviour
             currentToolInstance.OnUnequip();
             Destroy(currentToolInstance.gameObject);
             currentToolInstance = null;
+            handAnimator.Play("Unequip");
         }
 
         var slot = ToolInventoryManager.Instance.EquippedSlot;
@@ -115,6 +118,7 @@ public class ToolEquipController : MonoBehaviour
 
         if (currentToolData != null && currentToolData.toolPrefab != null)
         {
+            handAnimator.Play("Equip");
             currentToolInstance = Instantiate(currentToolData.toolPrefab, handSocket);
             currentToolInstance.transform.localPosition = Vector3.zero + currentToolInstance.offset;
             currentToolInstance.transform.localRotation = Quaternion.identity;

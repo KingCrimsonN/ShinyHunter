@@ -34,7 +34,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -127,9 +127,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1050
-        width: 600
-        height: 525
+        y: 2004
+        width: 1340
+        height: 1002
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -148,10 +148,10 @@ TextureImporter:
       name: bonk_anim_1
       rect:
         serializedVersion: 2
-        x: 600
-        y: 1050
-        width: 600
-        height: 525
+        x: 1340
+        y: 2004
+        width: 1340
+        height: 1002
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -170,10 +170,10 @@ TextureImporter:
       name: bonk_anim_2
       rect:
         serializedVersion: 2
-        x: 1200
-        y: 1050
-        width: 600
-        height: 525
+        x: 2680
+        y: 2004
+        width: 1340
+        height: 1002
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -193,9 +193,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 525
-        width: 600
-        height: 525
+        y: 1002
+        width: 1340
+        height: 1000
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -214,10 +214,10 @@ TextureImporter:
       name: bonk_anim_4
       rect:
         serializedVersion: 2
-        x: 600
-        y: 525
-        width: 600
-        height: 525
+        x: 1340
+        y: 1002
+        width: 1340
+        height: 997
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -236,10 +236,10 @@ TextureImporter:
       name: bonk_anim_5
       rect:
         serializedVersion: 2
-        x: 1200
-        y: 525
-        width: 600
-        height: 525
+        x: 2680
+        y: 1002
+        width: 1340
+        height: 991
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -260,8 +260,8 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 600
-        height: 525
+        width: 1340
+        height: 995
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -272,6 +272,50 @@ TextureImporter:
       bones: []
       spriteID: 64200cac38aae464889ecb6a8f60cec1
       internalID: 592500821
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bonk_anim_7
+      rect:
+        serializedVersion: 2
+        x: 1340
+        y: 0
+        width: 1340
+        height: 1001
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e009d19eebaf01a41a07106ecb9f7646
+      internalID: 1927357193
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bonk_anim_8
+      rect:
+        serializedVersion: 2
+        x: 2680
+        y: 0
+        width: 1340
+        height: 1002
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9e85579697e1d32498f8f3ad65876b53
+      internalID: -290813721
       vertices: []
       indices: 
       edges: []
@@ -290,7 +334,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":600.0,"y":525.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":1340.0,"y":1002.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       bonk_anim_0: -1201858097
       bonk_anim_1: 27865224
@@ -299,6 +343,8 @@ TextureImporter:
       bonk_anim_4: -673611881
       bonk_anim_5: -2024993298
       bonk_anim_6: 592500821
+      bonk_anim_7: 1927357193
+      bonk_anim_8: -290813721
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

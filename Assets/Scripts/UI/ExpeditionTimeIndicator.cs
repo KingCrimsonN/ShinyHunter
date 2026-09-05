@@ -39,7 +39,7 @@ public class ExpeditionTimeIndicator : MonoBehaviour
     [SerializeField] private float blackoutFadeDuration = 1f;
     [Tooltip("How long to hold on full black before fading back in, so the teleport itself is never visible.")]
     [SerializeField] private float blackoutHoldDuration = 0.25f;
-    [SerializeField] private Transform hubSpawnPoint;
+    [SerializeField] private string hubSpawnPoint;
     [Tooltip("Player's CharacterController - disabled briefly during teleport so setting transform.position directly actually takes effect.")]
     [SerializeField] private CharacterController playerController;
 
@@ -145,13 +145,15 @@ public class ExpeditionTimeIndicator : MonoBehaviour
     {
         if (hubSpawnPoint == null) return;
 
+        UnityEngine.SceneManagement.SceneManager.LoadScene(hubSpawnPoint);
+
         // Swap this block for a SceneManager.LoadScene(...) call instead if
         // the hub is actually a separate Scene rather than a position in this one.
         if (playerController != null)
         {
-            playerController.enabled = false; // CharacterController fights direct position sets unless disabled first
-            playerController.transform.SetPositionAndRotation(hubSpawnPoint.position, hubSpawnPoint.rotation);
-            playerController.enabled = true;
+            // playerController.enabled = false; // CharacterController fights direct position sets unless disabled first
+            // playerController.transform.SetPositionAndRotation(hubSpawnPoint.position, hubSpawnPoint.rotation);
+            // playerController.enabled = true;
         }
 
         // TODO: once PlayerHealth exposes a way to replenish/reset the time

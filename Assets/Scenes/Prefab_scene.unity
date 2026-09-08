@@ -1252,6 +1252,9 @@ MonoBehaviour:
   playerMovement: {fileID: 8655087021521060419}
   playerCapture: {fileID: 8655087021521060418}
   toolEquip: {fileID: 8655087021521060421}
+  attemptPrefab: {fileID: 0}
+  attemptIcons: []
+  attemptsParent: {fileID: 0}
   popupRoot: {fileID: 1712837858}
   centerIcon: {fileID: 1171904437}
   defaultCenterIcon: {fileID: 21300000, guid: 4d2a28fd64289274183f7868fe54da3c, type: 3}
@@ -1261,6 +1264,9 @@ MonoBehaviour:
   needleAnimator: {fileID: 1685054124}
   hitAreaParent: {fileID: 730465070}
   hitAreaPrefab: {fileID: 7170442554943914445, guid: 3176637f823d4824ba576383d494dacd, type: 3}
+  needleHitMark: {fileID: 0}
+  needleMarkRadius: 100
+  markOnMissToo: 1
   defaultHitAreaCount: 3
   defaultHitAreaWidthDegrees: 30
   defaultNeedleSpeed: 180
@@ -1415,6 +1421,10 @@ PrefabInstance:
     - target: {fileID: 1328572491543319487, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 314.13702
+      objectReference: {fileID: 0}
+    - target: {fileID: 1777655853308195416, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1900291497973065813, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_AnchorMax.y
@@ -11926,6 +11936,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 347999745830383166, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 557997c5c9aaaf54bb217ddc9eb185d8, type: 2}
+    - target: {fileID: 347999745830383166, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 7621470812954134647, guid: 557997c5c9aaaf54bb217ddc9eb185d8, type: 2}
+    - target: {fileID: 347999745830383166, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1812649766070916139, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
       propertyPath: m_Name
       value: Player

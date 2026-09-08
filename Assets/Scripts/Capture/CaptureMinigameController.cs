@@ -26,6 +26,11 @@ public class CaptureMinigameController : MonoBehaviour
     [SerializeField] private PlayerCapture playerCapture;
     [SerializeField] private ToolEquipController toolEquip;
 
+    [Header("UI - Attempts")]
+    [SerializeField] private GameObject attemptPrefab;
+    [SerializeField] private GameObject[] attemptIcons;
+    [SerializeField] private GameObject attemptsParent;
+
     [Header("UI - Popup")]
     [SerializeField] private GameObject popupRoot;
     [SerializeField] private Image centerIcon;
@@ -41,6 +46,13 @@ public class CaptureMinigameController : MonoBehaviour
     [Tooltip("Parent for spawned hit-area arcs, positioned at the wheel's center (pivot 0.5, 0.5).")]
     [SerializeField] private RectTransform hitAreaParent;
     [SerializeField] private CaptureHitAreaUI hitAreaPrefab;
+
+    [Header("Needle Marks")]
+    [SerializeField] private GameObject needleHitMark;
+    [Tooltip("Distance from the wheel's center to place needle marks - should roughly match the doll sprite's edge radius, in this canvas's local UI units (pixels under the Canvas). Tune this by eye once the doll art is in.")]
+    [SerializeField] private float needleMarkRadius = 100f;
+    [Tooltip("If true, a mark is left for every attempt (hit or miss). If false, only successful hits leave one.")]
+    [SerializeField] private bool markOnMissToo = true;
 
     [Header("Default Settings")]
     [Tooltip("Also equals the number of hit attempts the player gets.")]
@@ -72,6 +84,7 @@ public class CaptureMinigameController : MonoBehaviour
     private ICapturable targetCreature;
     private CreatureData creatureData;
     private readonly List<CaptureHitAreaUI> activeHitAreas = new List<CaptureHitAreaUI>();
+    private readonly List<GameObject> activeNeedleMarks = new List<GameObject>();
 
     private int hitAreaCount;
     private float hitAreaWidthDegrees;
@@ -142,12 +155,36 @@ public class CaptureMinigameController : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        SetupAttemptsUI();
         SetupCenterIcon();
         SpawnHitAreas();
+        ClearNeedleMarks(); // defensive - a previous session should have already cleared these in EndMinigame
         UpdateTimerUI();
         UpdateAttemptsUI();
+    }
 
+    private void SetupAttemptsUI()
+    {
+        if (attemptsParent != null)
+        {
+            attemptIcons = new GameObject[defaultHitAreaCount];
+            for (int i = 0; i < defaultHitAreaCount; i++)
+            {
+                var icon = Instantiate(attemptPrefab, attemptsParent.transform);
+                attemptIcons[i] = icon;
+            }
+        }
+    }
 
+    private void ClearAttemptsUI()
+    {
+        if (attemptsParent != null)
+        {
+            foreach (Transform child in attemptsParent.transform)
+            {
+                Destroy(child.gameObject);
+            }
+        }
     }
 
     private void TickNeedle()
@@ -192,6 +229,9 @@ public class CaptureMinigameController : MonoBehaviour
             OnMiss?.Invoke();
         }
 
+        if (hitSomething || markOnMissToo)
+            SpawnNeedleMark();
+
         UpdateAttemptsUI();
         StartCoroutine(CoolDown());
     }
@@ -213,6 +253,8 @@ public class CaptureMinigameController : MonoBehaviour
         Cursor.visible = false;
 
         ClearHitAreas();
+        ClearNeedleMarks();
+        ClearAttemptsUI();
         targetCreature = null;
         creatureData = null;
 
@@ -248,6 +290,48 @@ public class CaptureMinigameController : MonoBehaviour
 
         centerIcon.sprite = equippedData != null ? equippedData.icon : defaultCenterIcon;
         centerIcon.enabled = centerIcon.sprite != null;
+    }
+
+    /// <summary>
+    /// Places a needle-mark instance at the doll's edge, at the current
+    /// needle angle - same clockwise-from-top convention as the needle
+    /// and hit areas, so it visually lines up with wherever the needle
+    /// currently points. Parented under needleTransform.parent (the
+    /// wheel's center pivot), NOT under hitAreaParent, since marks should
+    /// persist independently of hit-area lifetime.
+    /// </summary>
+    private void SpawnNeedleMark()
+    {
+        if (needleHitMark == null || needleTransform == null) return;
+
+        Quaternion markRotation = Quaternion.Euler(0f, 0f, -needleAngle);
+        Vector2 localOffset = markRotation * Vector3.up * needleMarkRadius;
+
+        var mark = Instantiate(needleHitMark, needleTransform.parent);
+        var markRect = mark.transform as RectTransform;
+
+        if (markRect != null)
+        {
+            markRect.anchoredPosition = localOffset;
+            markRect.localRotation = markRotation;
+        }
+        else
+        {
+            // Fallback in case needleHitMark isn't a UI element - shouldn't
+            // happen given this whole minigame is Screen Space Overlay UI.
+            mark.transform.localPosition = localOffset;
+            mark.transform.localRotation = markRotation;
+        }
+
+        activeNeedleMarks.Add(mark);
+    }
+
+    private void ClearNeedleMarks()
+    {
+        foreach (var mark in activeNeedleMarks)
+            if (mark != null) Destroy(mark);
+
+        activeNeedleMarks.Clear();
     }
 
     private void SpawnHitAreas()
@@ -313,6 +397,10 @@ public class CaptureMinigameController : MonoBehaviour
 
     private void UpdateAttemptsUI()
     {
-        if (attemptsText != null) attemptsText.text = $"{Mathf.Max(0, attemptsRemaining)} attempts left";
+        if (attemptsRemaining == defaultHitAreaCount)
+        {
+            return;
+        }
+        if (attemptsText != null) attemptIcons[Mathf.Max(0, attemptsRemaining)]?.SetActive(false);
     }
 }

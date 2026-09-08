@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 9896791bf9d879744896b9737915f3ae, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -994,6 +994,9 @@ MonoBehaviour:
   playerMovement: {fileID: 8655087021521060419}
   playerCapture: {fileID: 8655087021521060418}
   toolEquip: {fileID: 8655087021521060421}
+  attemptPrefab: {fileID: 0}
+  attemptIcons: []
+  attemptsParent: {fileID: 0}
   popupRoot: {fileID: 1712837858}
   centerIcon: {fileID: 1171904437}
   defaultCenterIcon: {fileID: 21300000, guid: 4d2a28fd64289274183f7868fe54da3c, type: 3}
@@ -1003,6 +1006,9 @@ MonoBehaviour:
   needleAnimator: {fileID: 1685054124}
   hitAreaParent: {fileID: 730465070}
   hitAreaPrefab: {fileID: 7170442554943914445, guid: 3176637f823d4824ba576383d494dacd, type: 3}
+  needleHitMark: {fileID: 0}
+  needleMarkRadius: 100
+  markOnMissToo: 1
   defaultHitAreaCount: 3
   defaultHitAreaWidthDegrees: 30
   defaultNeedleSpeed: 180
@@ -8395,9 +8401,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 347999745830383166, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 557997c5c9aaaf54bb217ddc9eb185d8, type: 2}
+    - target: {fileID: 347999745830383166, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 7621470812954134647, guid: 557997c5c9aaaf54bb217ddc9eb185d8, type: 2}
+    - target: {fileID: 347999745830383166, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1812649766070916139, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 3014754310240752836, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5767163482013408683, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -8438,6 +8460,30 @@ PrefabInstance:
     - target: {fileID: 5767163482013408683, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508941327524661382, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_ClearFlags
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508941327524661382, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0.40251565
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508941327524661382, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0.2795247
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508941327524661382, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0.20125778
+      objectReference: {fileID: 0}
+    - target: {fileID: 6973228886200743966, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8880608249810638675, guid: 7793e8cfe69d2994e9b40ab0fa3d947b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

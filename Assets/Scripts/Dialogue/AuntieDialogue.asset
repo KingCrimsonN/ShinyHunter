@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7580879a6c3ad34dac19f29f1c235e0, type: 3}
+  m_Name: AuntieDialogue
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueNodeData
+  lines:
+  - Hello fuckface
+  - Love your shirt
+  - What do you want from me?
+  choices:
+  - label: Get Money
+    actionId: ClaimMoney
+    nextNode: {fileID: 0}
+  - label: Transform Creatures
+    actionId: OpenTransformStation
+    nextNode: {fileID: 0}
+  - label: Nothing, thanks
+    actionId: Nothing
+    nextNode: {fileID: 0}
+  defaultNextNode: {fileID: 0}

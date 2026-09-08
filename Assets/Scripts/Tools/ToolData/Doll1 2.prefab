@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3206963109186164866}
   - component: {fileID: 8391984615509240277}
   m_Layer: 0
-  m_Name: hammer (1) 1
+  m_Name: Doll1 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28,8 +28,8 @@ Transform:
   m_GameObject: {fileID: 3856478939559060188}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.737, y: -0.0039999485, z: 0.819}
-  m_LocalScale: {x: 0.22, y: 0.22, z: 0.22}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.47, y: 0.47, z: 0.47}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -83,8 +83,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 621670952350461408197b57b60ee8a3, type: 3}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: 21300000, guid: e2cfa1d511a0e1646a482906370c49aa, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -101,7 +101,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3856478939559060188}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 59733751be3a2c549bf7a50a45ee643a, type: 2}
   m_CullingMode: 0
@@ -127,11 +127,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef61cdcc1f0244346be0de637b46067d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StickTool
+  offset: {x: -2.66, y: -1.55, z: 0}
   handAnimator: {fileID: 3206963109186164866}
-  hitSound: {fileID: 8300000, guid: 06958b48c43be7541ad7a0e27b88f2ff, type: 3}
-  swingSound: {fileID: 8300000, guid: fbc478e090e2a554b97a2ccbc342a531, type: 3}
+  hitSound: {fileID: 8300000, guid: 32f565ba94f200f49adb407cce64e873, type: 3}
+  swingSound: {fileID: 8300000, guid: 14b16ff40093aba47bc467e148746cab, type: 3}
   hitRange: 2.5
   hitRadius: 0.5
   creatureLayer:
     serializedVersion: 2
     m_Bits: 4294967295
+  captureRange: 3
+  captureKey: 324

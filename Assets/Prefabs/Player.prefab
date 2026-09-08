@@ -206,14 +206,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1812649766070916139}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ee217e70234d8904396d6aa75ff1384d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   poisonRate: 1
-  maxHealth: 25
-  currentHealth: 0
+  maxHealth: 100
+  currentHealth: 100
 --- !u!114 &6783043108836218301
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -465,8 +465,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Press E to Interact
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 557997c5c9aaaf54bb217ddc9eb185d8, type: 2}
+  m_sharedMaterial: {fileID: 7621470812954134647, guid: 557997c5c9aaaf54bb217ddc9eb185d8, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

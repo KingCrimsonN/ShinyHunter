@@ -30,8 +30,32 @@ MonoBehaviour:
       loop: 1
     - state: 1
       frames:
-      - {fileID: 1391137689, guid: a73ea960c227f984aaa19686ce06621e, type: 3}
+      - {fileID: -2128269291, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 1089613099, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 2122883169, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: -1203361996, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 2122883169, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: -637916582, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 1933204995, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: -1859323180, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 1557466404, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: -1859323180, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
       frameRate: 10
+      loop: 1
+    - state: 2
+      frames:
+      - {fileID: -2128269291, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 1089613099, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 2122883169, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: -1203361996, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 2122883169, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: -637916582, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 1933204995, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: -1859323180, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 1557466404, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: -1859323180, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      - {fileID: 1933204995, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
+      frameRate: 20
       loop: 1
   - animations:
     - state: 0
@@ -100,14 +124,14 @@ MonoBehaviour:
   size: {x: 0.15, y: 0.15, z: 0.15}
   movementMode: 0
   wanderSpeed: 2
-  fleeSpeed: 5
+  fleeSpeed: 7
   wanderRadius: 8
   idleTimeRange: {x: 2, y: 5}
   wanderIntervalRange: {x: 3, y: 8}
   flightHeightMin: 2
   flightHeightMax: 5
   detectionRadius: 4
-  fleeDistance: 5
+  fleeDistance: 10
   baseCaptureChance: 1
   stunDuration: 3
   resources:

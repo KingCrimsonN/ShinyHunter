@@ -36,7 +36,7 @@ public class CaptureMinigameController : MonoBehaviour
     [SerializeField] private Image centerIcon;
     [Tooltip("Shown if no tool is currently equipped.")]
     [SerializeField] private Sprite defaultCenterIcon;
-    [SerializeField] private TMP_Text timerText;
+    [SerializeField] private Slider timerSlider;
     [SerializeField] private TMP_Text attemptsText;
 
     [Header("UI - Wheel")]
@@ -392,7 +392,7 @@ public class CaptureMinigameController : MonoBehaviour
 
     private void UpdateTimerUI()
     {
-        if (timerText != null) timerText.text = Mathf.Max(0f, timeRemaining).ToString("0.0") + "s";
+        if (timerSlider != null) timerSlider.value = Mathf.Clamp01(timeRemaining / defaultTimeLimit);
     }
 
     private void UpdateAttemptsUI()

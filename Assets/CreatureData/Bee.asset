@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
+  m_Name: Bee
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureData
+  creatureName: Bee
+  description: Bee Bitch
+  variants:
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 1823124212, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
+      - {fileID: 2070080577, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
+      - {fileID: 1577759823, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
+      - {fileID: 116954967, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
+      - {fileID: 845085618, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
+      - {fileID: 1392709366, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
+      - {fileID: -282644427, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
+      - {fileID: -1858309244, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
+      frameRate: 10
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: -1874584343, guid: d5eb24ce23da81847a475a9bf9fd79a4, type: 3}
+      - {fileID: -1519607913, guid: d5eb24ce23da81847a475a9bf9fd79a4, type: 3}
+      - {fileID: 1738060452, guid: d5eb24ce23da81847a475a9bf9fd79a4, type: 3}
+      - {fileID: -118106136, guid: d5eb24ce23da81847a475a9bf9fd79a4, type: 3}
+      - {fileID: -1588485824, guid: d5eb24ce23da81847a475a9bf9fd79a4, type: 3}
+      - {fileID: -789228392, guid: d5eb24ce23da81847a475a9bf9fd79a4, type: 3}
+      - {fileID: -1523688282, guid: d5eb24ce23da81847a475a9bf9fd79a4, type: 3}
+      - {fileID: 13686163, guid: d5eb24ce23da81847a475a9bf9fd79a4, type: 3}
+      frameRate: 10
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: -271803272, guid: 4bf63df4a4f4ef6459745759fdbb2b98, type: 3}
+      - {fileID: 1613853578, guid: 4bf63df4a4f4ef6459745759fdbb2b98, type: 3}
+      - {fileID: -2088822400, guid: 4bf63df4a4f4ef6459745759fdbb2b98, type: 3}
+      - {fileID: -1591298099, guid: 4bf63df4a4f4ef6459745759fdbb2b98, type: 3}
+      - {fileID: 1659170943, guid: 4bf63df4a4f4ef6459745759fdbb2b98, type: 3}
+      - {fileID: 124929205, guid: 4bf63df4a4f4ef6459745759fdbb2b98, type: 3}
+      - {fileID: -1346073774, guid: 4bf63df4a4f4ef6459745759fdbb2b98, type: 3}
+      - {fileID: -2021192525, guid: 4bf63df4a4f4ef6459745759fdbb2b98, type: 3}
+      frameRate: 10
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 1053856473, guid: 0b45411e0c1359740946ad8212c2083a, type: 3}
+      - {fileID: 2108278037, guid: 0b45411e0c1359740946ad8212c2083a, type: 3}
+      - {fileID: -1059451429, guid: 0b45411e0c1359740946ad8212c2083a, type: 3}
+      - {fileID: 430795572, guid: 0b45411e0c1359740946ad8212c2083a, type: 3}
+      - {fileID: 2132372907, guid: 0b45411e0c1359740946ad8212c2083a, type: 3}
+      - {fileID: -1533346131, guid: 0b45411e0c1359740946ad8212c2083a, type: 3}
+      - {fileID: 1279249128, guid: 0b45411e0c1359740946ad8212c2083a, type: 3}
+      - {fileID: -835775280, guid: 0b45411e0c1359740946ad8212c2083a, type: 3}
+      frameRate: 10
+      loop: 1
+  icons:
+  - {fileID: 1811531943, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+  - {fileID: 1234949288, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+  - {fileID: 1431323913, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+  - {fileID: 356486499, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+  size: {x: 0.2, y: 0.2, z: 0.2}
+  movementMode: 1
+  wanderSpeed: 4
+  fleeSpeed: 10
+  wanderRadius: 20
+  idleTimeRange: {x: 2, y: 5}
+  wanderIntervalRange: {x: 3, y: 8}
+  flightHeightMin: 10
+  flightHeightMax: 20
+  detectionRadius: 4
+  fleeDistance: 10
+  baseCaptureChance: 1
+  stunDuration: 3
+  resources:
+  - {fileID: 11400000, guid: fe8f4c75c6dbe4a4493e674d944d433f, type: 2}
+  - {fileID: 11400000, guid: eceba646713e57646a4bfaacd50dbadf, type: 2}
+  - {fileID: 11400000, guid: c8d95a05d2ea3a240a54f5fd167a6d18, type: 2}
+  - {fileID: 11400000, guid: a400ebf2cedd51749a64152487b0e78e, type: 2}
+  valuePerRarity: 01000000020000000300000004000000

@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
+  m_Name: Alien
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureData
+  creatureName: Alien
+  description: Alien cuck
+  variants:
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 345081868, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      - {fileID: 943273806, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      - {fileID: -332892197, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      - {fileID: -625639576, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      - {fileID: -332892197, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      - {fileID: 943273806, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      frameRate: 8
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: -55256678, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      - {fileID: 229652112, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      - {fileID: 1771307063, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      - {fileID: 730224335, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      - {fileID: 1771307063, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      - {fileID: 229652112, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      frameRate: 8
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 480012543, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      - {fileID: -698183761, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      - {fileID: -154016289, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      - {fileID: 356039594, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      - {fileID: -154016289, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      - {fileID: -698183761, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      frameRate: 8
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 565079338, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: 1744540484, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: 564711560, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: -812821696, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: 564711560, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: 564711560, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: 1744540484, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      frameRate: 8
+      loop: 1
+  icons:
+  - {fileID: -1889852877, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
+  - {fileID: -406065291, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
+  - {fileID: 200140615, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
+  - {fileID: 64105864, guid: 0422a7f8d53c5304c9b9702dbc07438e, type: 3}
+  size: {x: 0.15, y: 0.15, z: 0.15}
+  movementMode: 0
+  wanderSpeed: 1.5
+  fleeSpeed: 4
+  wanderRadius: 8
+  idleTimeRange: {x: 2, y: 5}
+  wanderIntervalRange: {x: 3, y: 8}
+  flightHeightMin: 2
+  flightHeightMax: 5
+  detectionRadius: 2
+  fleeDistance: 10
+  baseCaptureChance: 1
+  stunDuration: 3
+  resources:
+  - {fileID: 11400000, guid: 7c710158c463bd844abb7cb9b5d884a0, type: 2}
+  - {fileID: 11400000, guid: 205eb5021a098a54aa63aee99006761e, type: 2}
+  - {fileID: 11400000, guid: 6448b2f318436a94b99441607a92dcea, type: 2}
+  - {fileID: 11400000, guid: 0ef62cfdf6ad1704f9f6ef5e23d244bb, type: 2}
+  valuePerRarity: 01000000020000000300000004000000

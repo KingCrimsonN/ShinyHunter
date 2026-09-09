@@ -13,37 +13,113 @@ MonoBehaviour:
   m_Name: Cuelebre
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: Cuelebre
-  description: 
+  description: Lizard bitch
   variants:
   - animations:
     - state: 0
       frames:
-      - {fileID: 21300000, guid: 1c34ab6aa73203e4784eb30bf1b91beb, type: 3}
-      frameRate: 0
-      loop: 0
+      - {fileID: -266591125, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      - {fileID: 1811531943, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      - {fileID: -769119466, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      - {fileID: -709283946, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      frameRate: 6
+      loop: 1
+    - state: 1
+      frames:
+      - {fileID: -266591125, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      - {fileID: 1811531943, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      - {fileID: -769119466, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      - {fileID: -709283946, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      frameRate: 10
+      loop: 1
+    - state: 2
+      frames:
+      - {fileID: -266591125, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      - {fileID: 1811531943, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      - {fileID: -769119466, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      - {fileID: -709283946, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+      frameRate: 14
+      loop: 1
   - animations:
     - state: 0
       frames:
-      - {fileID: 21300000, guid: 9decfa2a1c4683240a9f9d39deb52c29, type: 3}
-      frameRate: 0
-      loop: 0
+      - {fileID: 408385057, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      - {fileID: 1234949288, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      - {fileID: 1826145941, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      - {fileID: 1917577519, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      frameRate: 6
+      loop: 1
+    - state: 1
+      frames:
+      - {fileID: 408385057, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      - {fileID: 1234949288, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      - {fileID: 1826145941, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      - {fileID: 1917577519, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      frameRate: 10
+      loop: 1
+    - state: 1
+      frames:
+      - {fileID: 408385057, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      - {fileID: 1234949288, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      - {fileID: 1826145941, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      - {fileID: 1917577519, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+      frameRate: 14
+      loop: 1
   - animations:
     - state: 0
       frames:
-      - {fileID: 21300000, guid: c9aeccce69844484f9c675a783d76bfb, type: 3}
-      frameRate: 0
-      loop: 0
+      - {fileID: 294689889, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      - {fileID: 1431323913, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      - {fileID: 1080830567, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      - {fileID: -955910286, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      frameRate: 6
+      loop: 1
+    - state: 1
+      frames:
+      - {fileID: 294689889, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      - {fileID: 1431323913, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      - {fileID: 1080830567, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      - {fileID: -955910286, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      frameRate: 10
+      loop: 1
+    - state: 2
+      frames:
+      - {fileID: 294689889, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      - {fileID: 1431323913, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      - {fileID: 1080830567, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      - {fileID: -955910286, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+      frameRate: 14
+      loop: 1
   - animations:
     - state: 0
       frames:
-      - {fileID: 21300000, guid: 1c34ab6aa73203e4784eb30bf1b91beb, type: 3}
-      frameRate: 0
-      loop: 0
+      - {fileID: 807025940, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      - {fileID: 356486499, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      - {fileID: -1785662333, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      - {fileID: 959483521, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      frameRate: 6
+      loop: 1
+    - state: 1
+      frames:
+      - {fileID: 807025940, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      - {fileID: 356486499, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      - {fileID: -1785662333, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      - {fileID: 959483521, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      frameRate: 10
+      loop: 1
+    - state: 2
+      frames:
+      - {fileID: 807025940, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      - {fileID: 356486499, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      - {fileID: -1785662333, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      - {fileID: 959483521, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
+      frameRate: 14
+      loop: 1
   icons:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1811531943, guid: bfb1faf48f8a4944b9d1722b93e147cb, type: 3}
+  - {fileID: 1234949288, guid: ba660d869ba0d2f49b3fc70cf7a29fb2, type: 3}
+  - {fileID: 1431323913, guid: da0c418391ac61440b8cb7c3e127b691, type: 3}
+  - {fileID: 356486499, guid: 929175c3975a0e645a4a575d3ed5b595, type: 3}
   size: {x: 0.2, y: 0.2, z: 0.2}
   movementMode: 1
   wanderSpeed: 4
@@ -57,3 +133,9 @@ MonoBehaviour:
   fleeDistance: 10
   baseCaptureChance: 1
   stunDuration: 3
+  resources:
+  - {fileID: 11400000, guid: fe8f4c75c6dbe4a4493e674d944d433f, type: 2}
+  - {fileID: 11400000, guid: eceba646713e57646a4bfaacd50dbadf, type: 2}
+  - {fileID: 11400000, guid: c8d95a05d2ea3a240a54f5fd167a6d18, type: 2}
+  - {fileID: 11400000, guid: a400ebf2cedd51749a64152487b0e78e, type: 2}
+  valuePerRarity: 01000000020000000300000004000000

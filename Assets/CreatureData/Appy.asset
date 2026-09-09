@@ -13,13 +13,73 @@ MonoBehaviour:
   m_Name: Appy
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: Appy
-  sprites:
-  - {fileID: 21300000, guid: fa94bbf8ed63edf409ce9f6e068b8252, type: 3}
-  - {fileID: 21300000, guid: f1ee8c21bc3c3b849b0cb249b8d36b73, type: 3}
-  - {fileID: 21300000, guid: dddec0e242bfd1349ba8d63678225b2c, type: 3}
-  - {fileID: 21300000, guid: 3b74b0569fcfc6f4db0c6202be7a704b, type: 3}
+  description: Apple fucker
+  variants:
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: -1889852877, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
+      - {fileID: -1189285553, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
+      - {fileID: -2064168931, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
+      - {fileID: -1735407429, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
+      - {fileID: -428677440, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
+      - {fileID: -714421186, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
+      - {fileID: -939046905, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
+      - {fileID: 1041458556, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
+      frameRate: 8
+      loop: 1
+    - state: 1
+      frames:
+      - {fileID: 851819751, guid: 0cd29d0fef931d548967424cc4ce1d70, type: 3}
+      - {fileID: 253855968, guid: 0cd29d0fef931d548967424cc4ce1d70, type: 3}
+      - {fileID: 1206339720, guid: 0cd29d0fef931d548967424cc4ce1d70, type: 3}
+      - {fileID: 699202049, guid: 0cd29d0fef931d548967424cc4ce1d70, type: 3}
+      frameRate: 8
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: -406065291, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
+      - {fileID: -268933267, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
+      - {fileID: -1405816084, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
+      - {fileID: -864298117, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
+      - {fileID: 2000867895, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
+      - {fileID: 1262414145, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
+      - {fileID: -1247494423, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
+      - {fileID: 1210776982, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
+      frameRate: 8
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 200140615, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
+      - {fileID: -1744619094, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
+      - {fileID: -2111639943, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
+      - {fileID: -2120170076, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
+      - {fileID: -1366529550, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
+      - {fileID: -40221543, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
+      - {fileID: -1603602597, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
+      - {fileID: -1712258189, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
+      frameRate: 8
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 64105864, guid: 0422a7f8d53c5304c9b9702dbc07438e, type: 3}
+      - {fileID: -123096215, guid: 0422a7f8d53c5304c9b9702dbc07438e, type: 3}
+      - {fileID: -2010899091, guid: 0422a7f8d53c5304c9b9702dbc07438e, type: 3}
+      - {fileID: 442674638, guid: 0422a7f8d53c5304c9b9702dbc07438e, type: 3}
+      - {fileID: 1409975709, guid: 0422a7f8d53c5304c9b9702dbc07438e, type: 3}
+      - {fileID: -321364398, guid: 0422a7f8d53c5304c9b9702dbc07438e, type: 3}
+      - {fileID: 817060864, guid: 0422a7f8d53c5304c9b9702dbc07438e, type: 3}
+      frameRate: 8
+      loop: 1
+  icons:
+  - {fileID: -1889852877, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
+  - {fileID: -406065291, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
+  - {fileID: 200140615, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
+  - {fileID: 64105864, guid: 0422a7f8d53c5304c9b9702dbc07438e, type: 3}
   size: {x: 0.15, y: 0.15, z: 0.15}
-  description: 
   movementMode: 0
   wanderSpeed: 1.5
   fleeSpeed: 4
@@ -32,3 +92,9 @@ MonoBehaviour:
   fleeDistance: 10
   baseCaptureChance: 1
   stunDuration: 3
+  resources:
+  - {fileID: 11400000, guid: 7c710158c463bd844abb7cb9b5d884a0, type: 2}
+  - {fileID: 11400000, guid: 205eb5021a098a54aa63aee99006761e, type: 2}
+  - {fileID: 11400000, guid: 6448b2f318436a94b99441607a92dcea, type: 2}
+  - {fileID: 11400000, guid: 0ef62cfdf6ad1704f9f6ef5e23d244bb, type: 2}
+  valuePerRarity: 01000000020000000300000004000000

@@ -54,9 +54,6 @@ public class DialogueManager : MonoBehaviour
 
     private readonly List<GameObject> spawnedChoiceButtons = new List<GameObject>();
 
-    private FirstPersonController cachedPlayerMovement;
-    private Interactor cachedInteractor;
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -66,7 +63,7 @@ public class DialogueManager : MonoBehaviour
         }
 
         Instance = this;
-        // DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(gameObject);
 
         if (popupRoot != null) popupRoot.SetActive(false);
     }
@@ -97,13 +94,9 @@ public class DialogueManager : MonoBehaviour
         }
         if (npcNameText != null) npcNameText.text = data.npcName;
 
-        FreezePlayer();
+        PlayerStateManager.Instance.Freeze();
 
-        if (popupRoot != null)
-        {
-            print("Showing Dialogue");
-            popupRoot.SetActive(true);
-        }
+        if (popupRoot != null) popupRoot.SetActive(true);
 
         OnDialogueStarted?.Invoke();
         SetNode(data.startNode);
@@ -197,7 +190,7 @@ public class DialogueManager : MonoBehaviour
 
         if (popupRoot != null) popupRoot.SetActive(false);
         ClearChoiceButtons();
-        UnfreezePlayer();
+        PlayerStateManager.Instance.Unfreeze();
 
         currentData = null;
         currentNode = null;
@@ -246,26 +239,5 @@ public class DialogueManager : MonoBehaviour
 
         isTyping = false;
         if (continueIndicator != null) continueIndicator.SetActive(true);
-    }
-
-    private void FreezePlayer()
-    {
-        cachedPlayerMovement = FindFirstObjectByType<FirstPersonController>();
-        cachedInteractor = FindFirstObjectByType<Interactor>();
-
-        if (cachedPlayerMovement != null) cachedPlayerMovement.enabled = false;
-        if (cachedInteractor != null) cachedInteractor.enabled = false;
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
-
-    private void UnfreezePlayer()
-    {
-        if (cachedPlayerMovement != null) cachedPlayerMovement.enabled = true;
-        if (cachedInteractor != null) cachedInteractor.enabled = true;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 }

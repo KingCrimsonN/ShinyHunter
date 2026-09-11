@@ -149,11 +149,7 @@ public class CaptureMinigameController : MonoBehaviour
         needleAngle = 0f;
         IsRunning = true;
 
-        if (playerMovement != null) playerMovement.enabled = false;
-        if (playerCapture != null) playerCapture.enabled = false;
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        PlayerStateManager.Instance.Freeze();
 
         SetupAttemptsUI();
         SetupCenterIcon();
@@ -236,7 +232,7 @@ public class CaptureMinigameController : MonoBehaviour
         StartCoroutine(CoolDown());
     }
 
-    private void EndMinigame()
+    private void EndMinigame(bool forceEnd = false)
     {
         IsRunning = false;
 
@@ -245,9 +241,13 @@ public class CaptureMinigameController : MonoBehaviour
 
         if (popupRoot != null) popupRoot.SetActive(false);
 
-        if (playerMovement != null) playerMovement.enabled = true;
-        if (playerCapture != null) playerCapture.enabled = true;
-        if (toolEquip != null) toolEquip.EnableUse();
+        PlayerStateManager.Instance.Unfreeze();
+        // Unfreeze() already set toolEquip.CanUse = true, but this minigame
+        // specifically wants a brief extra cooldown before the tool can be
+        // used again (so closing the wheel doesn't also fire the equipped
+        // tool via the same key) - EnableUse() runs its own short delay and
+        // overrides CanUse back to true afterward, on top of the generic unfreeze.
+        if (toolEquip != null && !forceEnd) toolEquip.EnableUse();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -403,5 +403,23 @@ public class CaptureMinigameController : MonoBehaviour
             return;
         }
         attemptIcons[Mathf.Max(0, attemptsRemaining)]?.SetActive(false);
+    }
+
+    /// <summary>
+    /// Force-ends the minigame immediately, resolving with whatever hits
+    /// were scored so far, rather than leaving the popup open. For cases
+    /// like the expedition's overall time running out while a capture is
+    /// mid-attempt (see RunSummaryUI.ShowSummary) - the wheel's own timer is
+    /// separate from that, so it wouldn't otherwise close on its own. Safe
+    /// to call even if no minigame is running.
+    /// </summary>
+    public void ForceEndMinigame()
+    {
+        if (!IsRunning || ending) return;
+
+        StopAllCoroutines(); // cancel any pending WaitAndEnd/CoolDown
+        ending = true;
+        EndMinigame(forceEnd: true);
+        PlayerStateManager.Instance.Freeze();
     }
 }

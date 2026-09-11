@@ -43,15 +43,10 @@ public class RunSummaryUI : MonoBehaviour
     [SerializeField] private float moneyCountUpDuration = 1.5f;
     [SerializeField] private float holdAfterCountUp = 0.3f;
 
+    [SerializeField] private ExpeditionTimeIndicator expeditionTimeIndicator;
+
     private int currentPage;
     private RunStats cachedStats;
-
-    private FirstPersonController cachedPlayerMovement;
-    private Interactor cachedInteractor;
-    private PlayerCapture cachedPlayerCapture;
-    private ToolEquipController cachedToolEquipController;
-
-    [SerializeField] private ExpeditionTimeIndicator expeditionTimeIndicator;
 
     private void Awake()
     {
@@ -73,12 +68,17 @@ public class RunSummaryUI : MonoBehaviour
     /// <summary>Entry point - call when an expedition's time runs out (see ExpeditionTimeIndicator).</summary>
     public void ShowSummary()
     {
+        // Resolve any in-progress capture BEFORE computing stats, so a
+        // last-second successful capture still counts toward this run's totals.
+        if (CaptureMinigameController.Instance != null)
+            CaptureMinigameController.Instance.ForceEndMinigame();
+
         cachedStats = ComputeStats();
 
         if (popupRoot != null) popupRoot.SetActive(true);
         if (nextButton != null) nextButton.interactable = true;
 
-        FreezePlayer();
+        PlayerStateManager.Instance.Freeze();
         RefreshTotalMoneyText();
         ShowPage(0);
     }
@@ -129,35 +129,10 @@ public class RunSummaryUI : MonoBehaviour
         yield return new WaitForSeconds(holdAfterCountUp);
 
         if (popupRoot != null) popupRoot.SetActive(false);
-        UnfreezePlayer();
+        PlayerStateManager.Instance.Unfreeze();
 
         if (expeditionTimeIndicator != null)
             expeditionTimeIndicator.PlayBlackoutAndTeleport();
-    }
-
-    private void FreezePlayer()
-    {
-        cachedPlayerMovement = FindFirstObjectByType<FirstPersonController>();
-        cachedInteractor = FindFirstObjectByType<Interactor>();
-        cachedPlayerCapture = FindFirstObjectByType<PlayerCapture>();
-        cachedToolEquipController = FindFirstObjectByType<ToolEquipController>();
-
-        if (cachedPlayerMovement != null) cachedPlayerMovement.enabled = false;
-        if (cachedInteractor != null) cachedInteractor.enabled = false;
-        if (cachedPlayerCapture != null) cachedPlayerCapture.enabled = false;
-        if (cachedToolEquipController != null) cachedToolEquipController.enabled = false;
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
-
-    private void UnfreezePlayer()
-    {
-        if (cachedPlayerMovement != null) cachedPlayerMovement.enabled = true;
-        if (cachedInteractor != null) cachedInteractor.enabled = true;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
     private RunStats ComputeStats()

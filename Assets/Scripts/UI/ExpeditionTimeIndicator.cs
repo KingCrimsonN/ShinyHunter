@@ -43,6 +43,8 @@ public class ExpeditionTimeIndicator : MonoBehaviour
     [Tooltip("Player's CharacterController - disabled briefly during teleport so setting transform.position directly actually takes effect.")]
     [SerializeField] private CharacterController playerController;
 
+    [SerializeField] private GameObject summaryUI;
+
 
     private PlayerHealth playerHealth;
     private float currentValue;
@@ -83,8 +85,18 @@ public class ExpeditionTimeIndicator : MonoBehaviour
         else if (!depleted)
         {
             depleted = true;
-            StartCoroutine(BlackoutAndTeleport());
+            if (RunSummaryUI.Instance != null)
+                RunSummaryUI.Instance.ShowSummary();
+            else
+                StartCoroutine(BlackoutAndTeleport());
+            // StartCoroutine(BlackoutAndTeleport());
         }
+    }
+
+    /// <summary>Call once the run summary is done - fades to black, teleports to hub, fades back in.</summary>
+    public void PlayBlackoutAndTeleport()
+    {
+        StartCoroutine(BlackoutAndTeleport());
     }
 
     private void UpdateNeedleRotation()
@@ -115,6 +127,7 @@ public class ExpeditionTimeIndicator : MonoBehaviour
 
         yield return new WaitForSeconds(blackoutHoldDuration);
         yield return FadeBlackout(1f, 0f, blackoutFadeDuration);
+        // yield return null;
     }
 
     private IEnumerator FadeBlackout(float from, float to, float duration)
@@ -146,6 +159,8 @@ public class ExpeditionTimeIndicator : MonoBehaviour
         if (hubSpawnPoint == null) return;
 
         UnityEngine.SceneManagement.SceneManager.LoadScene(hubSpawnPoint);
+
+        // summaryUI.SetActive(true);
 
         // Swap this block for a SceneManager.LoadScene(...) call instead if
         // the hub is actually a separate Scene rather than a position in this one.

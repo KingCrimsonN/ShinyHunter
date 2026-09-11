@@ -15,6 +15,16 @@ public class InventoryManager : MonoBehaviour
     private readonly Dictionary<(CreatureData species, CreatureData.Rarity rarity), int> counts =
         new Dictionary<(CreatureData, CreatureData.Rarity), int>();
 
+    /// <summary>Same shape as counts, but scoped to the current run only - cleared by ResetRunTracking().</summary>
+    private readonly Dictionary<(CreatureData species, CreatureData.Rarity rarity), int> runCounts =
+        new Dictionary<(CreatureData, CreatureData.Rarity), int>();
+
+    /// <summary>Every species ever captured, any rarity, persists for the whole play session (never cleared).</summary>
+    private readonly HashSet<CreatureData> everCapturedSpecies = new HashSet<CreatureData>();
+
+    /// <summary>Species that became "ever captured" for the first time during the CURRENT run - cleared by ResetRunTracking().</summary>
+    private readonly HashSet<CreatureData> newSpeciesThisRun = new HashSet<CreatureData>();
+
     public event Action OnInventoryChanged;
 
     private void Awake()
@@ -29,18 +39,45 @@ public class InventoryManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-
     public void AddCreature(CreatureData species, CreatureData.Rarity rarity, int amount = 1)
     {
         if (species == null) return;
 
         var key = (species, rarity);
-        if (!counts.ContainsKey(key))
-            counts[key] = 0;
 
+        if (!counts.ContainsKey(key)) counts[key] = 0;
         counts[key] += amount;
+
+        if (!runCounts.ContainsKey(key)) runCounts[key] = 0;
+        runCounts[key] += amount;
+
+        if (!everCapturedSpecies.Contains(species))
+        {
+            everCapturedSpecies.Add(species);
+            newSpeciesThisRun.Add(species);
+        }
+
         OnInventoryChanged?.Invoke();
     }
+
+    /// <summary>Call when a new expedition/run begins, so this-run stats (grid, "new species", etc.) start fresh.</summary>
+    public void ResetRunTracking()
+    {
+        runCounts.Clear();
+        newSpeciesThisRun.Clear();
+    }
+
+    /// <summary>How many of a species+rarity were captured THIS run.</summary>
+    public int GetRunCount(CreatureData species, CreatureData.Rarity rarity)
+    {
+        return runCounts.TryGetValue((species, rarity), out int c) ? c : 0;
+    }
+
+    /// <summary>All species+rarity combos captured THIS run - what the run-end grid/stats read from.</summary>
+    public IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int> GetRunCaptures() => runCounts;
+
+    /// <summary>How many species were captured for the first time ever, during THIS run.</summary>
+    public int GetNewSpeciesThisRunCount() => newSpeciesThisRun.Count;
 
     /// <summary>Removes captured creatures of a species+rarity (e.g. consumed by transforming them into resources).</summary>
     public void RemoveCreatures(CreatureData species, CreatureData.Rarity rarity, int amount)
@@ -70,28 +107,6 @@ public class InventoryManager : MonoBehaviour
                 total += kvp.Value;
         }
         return total;
-    }
-
-    public int CalculateCaptureValue()
-    {
-        int totalValue = 0;
-        foreach (var kvp in counts)
-        {
-            var species = kvp.Key.species;
-            var rarity = kvp.Key.rarity;
-            int count = kvp.Value;
-
-            if (species != null && species.valuePerRarity != null)
-            {
-                int rarityIndex = (int)rarity;
-                if (rarityIndex >= 0 && rarityIndex < species.valuePerRarity.Length)
-                {
-                    int valuePerCreature = species.valuePerRarity[rarityIndex];
-                    totalValue += valuePerCreature * count;
-                }
-            }
-        }
-        return totalValue;
     }
 
     public IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int> GetAll() => counts;

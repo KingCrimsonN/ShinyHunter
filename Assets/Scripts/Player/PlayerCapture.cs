@@ -27,6 +27,15 @@ public class PlayerCapture : MonoBehaviour
 
     public bool isActive;
 
+    private void Start()
+    {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Hub")
+        {
+            InventoryManager.Instance.ResetRunTracking();
+        }
+
+    }
+
     private void Update()
     {
         if (!isActive)

@@ -397,10 +397,11 @@ public class CaptureMinigameController : MonoBehaviour
 
     private void UpdateAttemptsUI()
     {
+        print(attemptsRemaining);
         if (attemptsRemaining == defaultHitAreaCount)
         {
             return;
         }
-        if (attemptsText != null) attemptIcons[Mathf.Max(0, attemptsRemaining)]?.SetActive(false);
+        attemptIcons[Mathf.Max(0, attemptsRemaining)]?.SetActive(false);
     }
 }

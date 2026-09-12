@@ -19,7 +19,7 @@ public class Shop : MonoBehaviour, IInteractable
         {
             shopUI.SetActive(!shopUI.activeSelf);
             if (shopUI.activeSelf)
-                uiManager.LockPlayer();
+                PlayerStateManager.Instance.Freeze();
         }
     }
 
@@ -30,7 +30,7 @@ public class Shop : MonoBehaviour, IInteractable
         {
             uiManager.extraOpened = false;
             shopUI.SetActive(false);
-            uiManager.UnlockPlayer();
+            PlayerStateManager.Instance.Unfreeze();
         }
     }
 

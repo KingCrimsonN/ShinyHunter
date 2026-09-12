@@ -18,7 +18,7 @@ public class PotionMaker : MonoBehaviour, IInteractable
         {
             potionUI.SetActive(!potionUI.activeSelf);
             if (potionUI.activeSelf)
-                uiManager.LockPlayer();
+                PlayerStateManager.Instance.Freeze();
         }
     }
 
@@ -28,7 +28,7 @@ public class PotionMaker : MonoBehaviour, IInteractable
         if (potionUI != null)
         {
             potionUI.SetActive(false);
-            uiManager.UnlockPlayer();
+            PlayerStateManager.Instance.Unfreeze();
         }
     }
 

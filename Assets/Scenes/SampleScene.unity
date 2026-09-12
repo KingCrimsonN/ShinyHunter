@@ -468,10 +468,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4849510073749518910, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1826625909}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
 --- !u!1001 &135490130
 PrefabInstance:
@@ -5707,23 +5704,6 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0.050000012, y: 1.9388642, z: 0.029999971}
   m_TimeToStationary: 0.5
---- !u!1 &1826625901 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4849510073749518910, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-  m_PrefabInstance: {fileID: 117358963}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1826625909
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1826625901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c4963c15d8ceca4459bcfc15163e4398, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerStateManager
 --- !u!1 &1846515191
 GameObject:
   m_ObjectHideFlags: 0

@@ -13,6 +13,11 @@ public class ToolHotbarUI : MonoBehaviour
 
     private void Start()
     {
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Hub")
+        {
+            gameObject.SetActive(false);
+            return;
+        }
         int capacity = ToolInventoryManager.Instance.Capacity;
         int equipCapacity = ToolInventoryManager.Instance.EquipCapacity;
         slotUIs = new ToolSlotUI[equipCapacity];

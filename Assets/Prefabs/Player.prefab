@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 8297633462958617013}
   - component: {fileID: 5451578842744822950}
   - component: {fileID: 3014754310240752836}
-  - component: {fileID: 8546044283301508518}
   - component: {fileID: 6783043108836218301}
   - component: {fileID: 6973228886200743966}
   m_Layer: 0
@@ -199,21 +198,6 @@ MonoBehaviour:
     m_Bits: 4294967295
   hitKey: 323
   isActive: 1
---- !u!114 &8546044283301508518
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1812649766070916139}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee217e70234d8904396d6aa75ff1384d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
-  poisonRate: 1
-  maxHealth: 100
-  currentHealth: 100
 --- !u!114 &6783043108836218301
 MonoBehaviour:
   m_ObjectHideFlags: 0

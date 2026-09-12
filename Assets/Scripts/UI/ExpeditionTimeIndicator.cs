@@ -53,12 +53,13 @@ public class ExpeditionTimeIndicator : MonoBehaviour
 
     private void Start()
     {
+        playerHealth = PlayerHealth.Instance;
         if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Hub")
         {
             gameObject.SetActive(false);
             return;
         }
-        playerHealth = FindFirstObjectByType<PlayerHealth>();
+
         if (playerHealth != null)
         {
             playerHealth.OnHealthChanged += UpdateTimeUI;

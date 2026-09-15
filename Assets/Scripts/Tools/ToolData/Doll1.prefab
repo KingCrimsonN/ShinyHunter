@@ -131,10 +131,12 @@ MonoBehaviour:
   handAnimator: {fileID: 3206963109186164866}
   hitSound: {fileID: 8300000, guid: 32f565ba94f200f49adb407cce64e873, type: 3}
   swingSound: {fileID: 8300000, guid: 14b16ff40093aba47bc467e148746cab, type: 3}
-  hitRange: 2.5
-  hitRadius: 0.5
+  captureRange: 4
   creatureLayer:
     serializedVersion: 2
     m_Bits: 4294967295
-  captureRange: 3
-  captureKey: 324
+  dollProjectilePrefab: {fileID: 7507899826975959131, guid: 311e734a9d1dd9740a40f57d6e939cd8, type: 3}
+  captureParticlesPrefab: {fileID: 1873985756121678, guid: 5f6d6d77f4d0d074a8033eac55e37e4b, type: 3}
+  throwDuration: 0.4
+  throwOrigin: {fileID: 0}
+  missThrowDistance: 5

@@ -64,7 +64,25 @@ public class ToolEquipController : MonoBehaviour
         HandleNumberKeyInput();
 
         if (Input.GetKeyDown(useKey))
-            currentToolInstance?.UseTool();
+            TryUseCurrentTool();
+    }
+
+    private void TryUseCurrentTool()
+    {
+        currentToolInstance?.UseTool();
+        // No consumption logic here anymore - HandleToolConsumed (subscribed
+        // whenever a tool is spawned, see SwapToolRoutine) handles it
+        // whenever the TOOL says it's actually ready, not the instant
+        // UseTool() returns.
+    }
+
+    private void HandleToolConsumed()
+    {
+        if (currentToolData != null && currentToolData.consumable)
+            ToolInventoryManager.Instance.RemoveFromSlot(ToolInventoryManager.Instance.EquippedIndex, 1);
+        // RemoveFromSlot fires OnInventoryChanged, which RefreshHeldToolIfChanged
+        // is already subscribed to - if that was the last one, the tool
+        // automatically re-swaps to Empty on its own, no extra code needed here.
     }
 
     private void UpdateTool()
@@ -132,6 +150,7 @@ public class ToolEquipController : MonoBehaviour
         // Animator thinks that state is already active.
         if (currentToolInstance != null)
         {
+            currentToolInstance.OnConsumed -= HandleToolConsumed;
             currentToolInstance.OnUnequip(); // note: if the player switches again before this finishes, RequestSwap cancels and restarts this routine, so OnUnequip can fire more than once on the same instance - keep it idempotent in your ToolBehaviour subclasses
             if (handAnimator != null)
             {
@@ -155,6 +174,7 @@ public class ToolEquipController : MonoBehaviour
             currentToolInstance = Instantiate(currentToolData.toolPrefab, handSocket);
             currentToolInstance.transform.localPosition = Vector3.zero + currentToolInstance.offset;
             currentToolInstance.transform.localRotation = Quaternion.identity;
+            currentToolInstance.OnConsumed += HandleToolConsumed;
             currentToolInstance.OnEquip();
 
             if (handAnimator != null)

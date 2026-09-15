@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -151,8 +152,26 @@ public class CreatureAI : MonoBehaviour, ICapturable
                 stunTimer = data.stunDuration;
                 if (agent != null) agent.isStopped = true;
                 animator?.Play(CreatureAnimState.Hit);
+                StartCoroutine(WaitAnChangeAnimation(State.Captured, 0.5f));
                 break;
+
+                // case State.Captured:
+                //     if (agent != null) agent.isStopped = true;
+                //     animator?.Play(CreatureAnimState.Captured);
+                //     break;
         }
+    }
+
+    private IEnumerator WaitAnChangeAnimation(State newState, float delay)
+    {
+        if (newState == State.Captured)
+        {
+            yield return new WaitForSeconds(delay);
+            animator?.Play(CreatureAnimState.Captured);
+        }
+        else
+            yield return null;
+
     }
 
     private void CheckPlayerProximity()
@@ -273,7 +292,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
         if (success)
         {
-            currentState = State.Captured;
+            // currentState = State.Captured;
             InventoryManager.Instance.AddCreature(data, rolledRarity, 1);
 
             if (stunParticles != null) stunParticles.SetActive(false);
@@ -282,11 +301,11 @@ public class CreatureAI : MonoBehaviour, ICapturable
             // Play the capture reaction if this variant has one, and only
             // destroy once it finishes. Falls back to destroying immediately
             // if no Captured clip is authored for this rarity yet.
-            bool playingCaptureAnim = animator != null &&
-                animator.Play(CreatureAnimState.Captured, () => Destroy(gameObject));
+            // bool playingCaptureAnim = animator != null &&
+            //     animator.Play(CreatureAnimState.Captured, () => Destroy(gameObject));
 
-            if (!playingCaptureAnim)
-                Destroy(gameObject); // swap for a pool-return call if using pooling
+            // if (!playingCaptureAnim)
+            Destroy(gameObject); // swap for a pool-return call if using pooling
         }
         else
         {
@@ -315,11 +334,11 @@ public class CreatureAI : MonoBehaviour, ICapturable
             // Play the capture reaction if this variant has one, and only
             // destroy once it finishes. Falls back to destroying immediately
             // if no Captured clip is authored for this rarity yet.
-            bool playingCaptureAnim = animator != null &&
-                animator.Play(CreatureAnimState.Captured, () => Destroy(gameObject));
+            // bool playingCaptureAnim = animator != null &&
+            //     animator.Play(CreatureAnimState.Captured, () => Destroy(gameObject));
 
-            if (!playingCaptureAnim)
-                Destroy(gameObject); // swap for a pool-return call if using pooling
+            // if (!playingCaptureAnim)
+            Destroy(gameObject); // swap for a pool-return call if using pooling
         }
         else
         {

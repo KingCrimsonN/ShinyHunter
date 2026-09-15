@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: db4b3e7be1159ce4499c8c524063b246
+guid: 275623610874486418f13a7a05a08738
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -123,13 +123,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: spritesheetradiantalienidle_0
+      name: IdleBaseCandySpritesheet_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
+        y: 1086
         width: 1024
-        height: 1084
+        height: 1082
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -138,20 +138,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 85ef2ce20b4353d42b1c8d4b8fe8561f
-      internalID: 565079338
+      spriteID: e06e0bd441bc39c4b8e4c340ad02f87b
+      internalID: 323353511
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: spritesheetradiantalienidle_1
+      name: IdleBaseCandySpritesheet_1
       rect:
         serializedVersion: 2
         x: 1024
-        y: 0
+        y: 1086
         width: 1024
-        height: 1084
+        height: 1082
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -160,20 +160,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f120f34785be95b4f976c56e4d341494
-      internalID: 1744540484
+      spriteID: 6d820d9fc101d13418bec028bedf274d
+      internalID: 1038538996
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: spritesheetradiantalienidle_2
+      name: IdleBaseCandySpritesheet_2
       rect:
         serializedVersion: 2
         x: 2048
-        y: 0
+        y: 1086
         width: 1024
-        height: 1084
+        height: 1082
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -182,20 +182,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1efe590488df7434782efb3c66eab71b
-      internalID: 564711560
+      spriteID: 7fee40f97faa7254bb4dbf3d80035105
+      internalID: -789941885
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: spritesheetradiantalienidle_3
+      name: IdleBaseCandySpritesheet_3
       rect:
         serializedVersion: 2
         x: 3072
-        y: 0
+        y: 1086
         width: 1024
-        height: 1084
+        height: 1082
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -204,8 +204,96 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6211c9aa4c8a8704ebfa97b5ca349bc9
-      internalID: -812821696
+      spriteID: d602c41f57ca25d43a46e92cd2b06913
+      internalID: -1271220082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IdleBaseCandySpritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 4
+        width: 1024
+        height: 1082
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b227fb5d5d6c057459f24fd97fce06b2
+      internalID: -449282548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IdleBaseCandySpritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 4
+        width: 1024
+        height: 1082
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5c4815f575b8f4049b3afa611a5848e4
+      internalID: -995525606
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IdleBaseCandySpritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 2048
+        y: 4
+        width: 1024
+        height: 1082
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e25bfec1ec1ddf049bf0051d0f8a19f6
+      internalID: 611478653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IdleBaseCandySpritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 4
+        width: 1024
+        height: 1082
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c99738eea8247cf449f93deecbcce339
+      internalID: -1094601266
       vertices: []
       indices: 
       edges: []
@@ -214,7 +302,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 96f738bb886040445bcc1f64662d9562
+    spriteID: 532c384e8306f854fb996afc0a3bb3bb
     internalID: 0
     vertices: []
     indices: 
@@ -224,12 +312,16 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":1024.0,"y":1084.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":1024.0,"y":1082.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      spritesheetradiantalienidle_0: 565079338
-      spritesheetradiantalienidle_1: 1744540484
-      spritesheetradiantalienidle_2: 564711560
-      spritesheetradiantalienidle_3: -812821696
+      IdleBaseCandySpritesheet_0: 323353511
+      IdleBaseCandySpritesheet_1: 1038538996
+      IdleBaseCandySpritesheet_2: -789941885
+      IdleBaseCandySpritesheet_3: -1271220082
+      IdleBaseCandySpritesheet_4: -449282548
+      IdleBaseCandySpritesheet_5: -995525606
+      IdleBaseCandySpritesheet_6: 611478653
+      IdleBaseCandySpritesheet_7: -1094601266
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

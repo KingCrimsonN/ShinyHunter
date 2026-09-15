@@ -16,7 +16,7 @@ public class ToolInventoryPopupUI : MonoBehaviour
     [SerializeField] private Image dragIconTemplate;
     [SerializeField] private KeyCode toggleKey = KeyCode.Tab;
 
-    private DraggableToolSlot[] slotUIs;
+    [SerializeField] private DraggableToolSlot[] slotUIs;
     [SerializeField] private DraggableToolSlot[] equipSlots;
 
     private void Awake()
@@ -106,7 +106,8 @@ public class ToolInventoryPopupUI : MonoBehaviour
         {
             var slot = slots[i];
             var ui = slotUIs[i].SlotUI;
-            if (slot == null || slot.data == null) ui.SetEmpty();
+            print("Refreshing slot " + i + ": " + (ui == null ? "null" : slot));
+            if (slot == null || slot.count <= 0) ui.SetEmpty();
             else ui.SetItem(slot.data, slot.count);
         }
     }

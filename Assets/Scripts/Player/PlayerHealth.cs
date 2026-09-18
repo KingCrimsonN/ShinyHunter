@@ -34,6 +34,9 @@ public class PlayerHealth : MonoBehaviour
     /// <summary>Additive bonus/penalty for the CURRENT run only - cleared when returning to the hub. "For one run" potions use this.</summary>
     private float temporaryMaxHealthModifier;
 
+    /// <summary>Chrono Power's banked bonus for whichever stew is picked NEXT - deliberately NOT cleared on hub arrival, unlike temporaryMaxHealthModifier. Consumed once via ConsumeBankedChronoBonus.</summary>
+    private float bankedChronoBonus;
+
     /// <summary>Permanent base + this run's temporary modifier.</summary>
     public float MaxHealth => baseMaxHealth + temporaryMaxHealthModifier;
 
@@ -124,6 +127,20 @@ public class PlayerHealth : MonoBehaviour
     public void AddPermanentMaxHealth(float amount)
     {
         baseMaxHealth += amount;
+    }
+
+    /// <summary>Chrono Power banks a bonus for whichever stew gets picked NEXT, not this run.</summary>
+    public void AddBankedChronoBonus(float amount)
+    {
+        bankedChronoBonus += amount;
+    }
+
+    /// <summary>Consumes and returns the banked bonus - call once, when applying a newly selected stew (see ExpeditionStewManager.SetActiveStew).</summary>
+    public float ConsumeBankedChronoBonus()
+    {
+        float amount = bankedChronoBonus;
+        bankedChronoBonus = 0f;
+        return amount;
     }
 
     /// <summary>Refills currentHealth to the current MaxHealth (permanent + this run's temporary bonus) - e.g. an instant-refill potion drunk mid-run.</summary>

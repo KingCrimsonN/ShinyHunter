@@ -13,6 +13,8 @@ public class ResourceInventoryGridUI : MonoBehaviour
 
     private readonly List<ResourceInventoryEntryUI> spawnedEntries = new List<ResourceInventoryEntryUI>();
 
+    [SerializeField] private TMPro.TMP_Text descriptionText;
+
     private void OnEnable()
     {
         ResourceInventoryManager.Instance.OnInventoryChanged += Refresh;
@@ -35,6 +37,7 @@ public class ResourceInventoryGridUI : MonoBehaviour
         {
             var entry = Instantiate(entryPrefab, transform);
             entry.Set(resource, ResourceInventoryManager.Instance.GetCount(resource));
+            entry.descriptionText = descriptionText;
             spawnedEntries.Add(entry);
         }
     }

@@ -32,8 +32,6 @@ public class Spawner : MonoBehaviour
     [Tooltip("Max creatures alive from this spawner at once.")]
     [SerializeField] private int populationCap = 5;
     [Tooltip("Seconds to wait before refilling a slot that's freed up (e.g. after a capture).")]
-
-    [SerializeField] private int startPopulation = 5;
     [SerializeField] private float respawnDelay = 60f;
     [Tooltip("How often the spawner checks for freed-up slots.")]
     [SerializeField] private float checkInterval = 2f;
@@ -43,7 +41,7 @@ public class Spawner : MonoBehaviour
 
     private void Start()
     {
-        for (int i = 0; i < startPopulation; i++)
+        for (int i = 0; i < populationCap; i++)
             SpawnOne();
 
         StartCoroutine(RespawnLoop());
@@ -92,7 +90,7 @@ public class Spawner : MonoBehaviour
 
         float totalWeight = 0f;
         foreach (var entry in spawnableCreatures)
-            totalWeight += entry.weight;
+            totalWeight += GetEffectiveWeight(entry);
 
         if (totalWeight <= 0f) return null;
 
@@ -101,12 +99,45 @@ public class Spawner : MonoBehaviour
 
         foreach (var entry in spawnableCreatures)
         {
-            cumulative += entry.weight;
+            cumulative += GetEffectiveWeight(entry);
             if (roll <= cumulative)
                 return entry.prefab;
         }
 
         return spawnableCreatures[spawnableCreatures.Count - 1].prefab;
+    }
+
+    /// <summary>
+    /// Base weight, scaled by how well this species' scent preference
+    /// matches the player's current stew scent profile, and by Encounter
+    /// Power's spawn-weight boost if this species' family is the boosted one.
+    /// </summary>
+    private float GetEffectiveWeight(SpawnableCreature entry)
+    {
+        float weight = entry.weight;
+        if (weight <= 0f) return 0f;
+        if (entry.prefab == null) return weight;
+
+        var creatureAI = entry.prefab.GetComponent<CreatureAI>();
+        var data = creatureAI != null ? creatureAI.Data : null;
+        if (data == null || ExpeditionStewManager.Instance == null) return weight;
+
+        float[] scents = ExpeditionStewManager.Instance.GetScents();
+        if (data.scentPreference != null && data.scentPreference.Length == 5)
+        {
+            float scentScore = 0f;
+            for (int i = 0; i < 5; i++)
+                scentScore += data.scentPreference[i] * (scents[i] / 5f); // scent 1-5 -> 0-1
+            weight *= 1f + scentScore;
+        }
+
+        if (ExpeditionStewManager.Instance.TryGetEncounterBoostFamily(out var boostedFamily, out float boostMultiplier)
+            && data.family == boostedFamily)
+        {
+            weight *= boostMultiplier;
+        }
+
+        return weight;
     }
 
     private Vector3 GetRandomPositionInArea()

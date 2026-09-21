@@ -21,6 +21,13 @@ public class CreatureData : ScriptableObject
 
     [TextArea] public string description;
 
+    [Tooltip("Biological family - drives which stew modifier this species' ingredient contributes toward, and Encounter Power's spawn-weight boost target.")]
+    public IngredientFamily family;
+
+    [Header("Scent Preference (spawn bias)")]
+    [Tooltip("0-1 per axis (Sweet, Fresh, Putrid, Metallic, Marine): how strongly this species is attracted to each scent. Used by Spawner to bias weighted selection toward the player's current stew scent profile.")]
+    public float[] scentPreference = new float[5];
+
     [Header("Visuals per rarity")]
     [Tooltip("Index 0=Normal, 1=Uncommon, 2=Rare, 3=Legendary. Each entry holds that variant's full set of named animations (Idle, Move, Flee, etc). Fine to leave states unauthored while art is still coming in - they simply won't play.")]
     public CreatureVariantVisuals[] variants = new CreatureVariantVisuals[4];
@@ -62,9 +69,6 @@ public class CreatureData : ScriptableObject
     [Header("Resources")]
     [Tooltip("Index 0=Normal, 1=Uncommon, 2=Rare, 3=Legendary. The resource obtained when a creature of this species+rarity is turned into resources.")]
     public ResourceData[] resources = new ResourceData[4];
-
-    [Header("Money")]
-    public int[] valuePerRarity = new int[4] { 1, 2, 3, 4 };
 
     /// <summary>Animation set for a given rolled rarity. Falls back to index 0 if the array is short.</summary>
     public CreatureVariantVisuals GetVariant(Rarity rarity)

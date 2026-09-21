@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 743c54c438b4b1b428983b30d2be1e69, type: 3}
+  m_Name: StewCalculationConfig
+  m_EditorClassIdentifier: Assembly-CSharp::StewCalculationConfig
+  timePerRarity:
+  - 25
+  - 45
+  - 60
+  - 100
+  maxTimeSeconds: 600
+  scentPerPoint: 3
+  modifierActivationThreshold: 0.3
+  shinyRarityMultiplierScale: 1.5
+  ingredientDoubleChanceScale: 0.5
+  encounterFamilyWeightScale: 1
+  chronoMaxBonusSeconds: 60
+  captureChanceBonusScale: 0.3
+  captureMaxAutoBreakAreas: 2
+  soothingMaxSlowdown: 0.5

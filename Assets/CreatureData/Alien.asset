@@ -14,6 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: Alien
   description: Alien cuck
+  family: 2
+  scentPreference:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 4
   variants:
   - animations:
     - state: 0
@@ -83,4 +90,3 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 205eb5021a098a54aa63aee99006761e, type: 2}
   - {fileID: 11400000, guid: 6448b2f318436a94b99441607a92dcea, type: 2}
   - {fileID: 11400000, guid: 0ef62cfdf6ad1704f9f6ef5e23d244bb, type: 2}
-  valuePerRarity: 01000000020000000300000004000000

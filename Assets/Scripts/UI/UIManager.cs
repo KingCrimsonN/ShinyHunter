@@ -23,6 +23,20 @@ public class UIManager : MonoBehaviour
 
     public bool extraOpened;
 
+    public static UIManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
     private void Start()
     {
         if (tabletUI != null) tabletUI.SetActive(false);
@@ -30,6 +44,7 @@ public class UIManager : MonoBehaviour
         playerCapture = FindFirstObjectByType<PlayerCapture>();
         toolEquip = FindFirstObjectByType<ToolEquipController>();
         extraOpened = false;
+
     }
 
     // Update is called once per frame
@@ -50,12 +65,12 @@ public class UIManager : MonoBehaviour
                 return;
             }
             if (CreatureTransformStationUI.Instance != null)
-                if (CreatureTransformStationUI.Instance.IsOpen())
-                {
-                    CreatureTransformStationUI.Instance.Close();
-                    return;
-                }
-            ToggleTabletUI();
+                // if (CreatureTransformStationUI.Instance.IsOpen())
+                // {
+                //     CreatureTransformStationUI.Instance.Close();
+                //     return;
+                // }
+                ToggleTabletUI();
             ShowSettingsPage();
         }
     }

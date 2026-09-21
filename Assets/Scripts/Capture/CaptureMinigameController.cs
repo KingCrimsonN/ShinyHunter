@@ -8,7 +8,9 @@ using System.Collections;
 /// <summary>
 /// Drives the capture minigame: spins a needle around a wheel with randomly
 /// placed, non-overlapping hit arcs. Player has one attempt per arc and a
-/// time limit to hit as many as possible; final capture chance = hits/total.
+/// time limit to hit as many as possible; final capture chance = hits/total
+/// (plus Capture Power's stew bonus, if active - see ApplyCapturePowerAutoBreak
+/// and EndMinigame).
 ///
 /// Freezes player movement/capture input for the duration (camera stays
 /// static - see class docs on the project's rendering approach for why this
@@ -154,9 +156,23 @@ public class CaptureMinigameController : MonoBehaviour
         SetupAttemptsUI();
         SetupCenterIcon();
         SpawnHitAreas();
+        ApplyCapturePowerAutoBreak();
         ClearNeedleMarks(); // defensive - a previous session should have already cleared these in EndMinigame
         UpdateTimerUI();
         UpdateAttemptsUI();
+    }
+
+    /// <summary>Capture Power head-start: marks some hit areas as already hit, without spending attempts.</summary>
+    private void ApplyCapturePowerAutoBreak()
+    {
+        if (ExpeditionStewManager.Instance == null) return;
+
+        int autoBreakCount = ExpeditionStewManager.Instance.GetCaptureAutoBreakCount();
+        for (int i = 0; i < autoBreakCount && i < activeHitAreas.Count; i++)
+        {
+            activeHitAreas[i].MarkHit();
+            hitsScored++;
+        }
     }
 
     private void SetupAttemptsUI()
@@ -237,6 +253,9 @@ public class CaptureMinigameController : MonoBehaviour
         IsRunning = false;
 
         float ratio = hitAreaCount > 0 ? (float)hitsScored / hitAreaCount : 0f;
+        if (ExpeditionStewManager.Instance != null)
+            ratio = Mathf.Clamp01(ratio + ExpeditionStewManager.Instance.GetCaptureChanceBonus());
+
         bool success = targetCreature != null && targetCreature.TryCapture(ratio);
 
         if (popupRoot != null) popupRoot.SetActive(false);

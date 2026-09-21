@@ -40,7 +40,7 @@ public class CreatureTransformStationUI : MonoBehaviour
 
     public event Action OnSelectionChanged;
     /// <summary>Fired when Transform is pressed, with a snapshot of what was staged. Start your animation here.</summary>
-    // public event Action<IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int>> OnTransformInitiated;
+    public event Action<IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int>> OnTransformInitiated;
     /// <summary>Fired once CompleteTransform() has actually granted resources.</summary>
     public event Action OnTransformCompleted;
 
@@ -79,11 +79,6 @@ public class CreatureTransformStationUI : MonoBehaviour
 
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.OnInventoryChanged -= RefreshGrids;
-    }
-
-    public bool IsOpen()
-    {
-        return gameObject.activeSelf;
     }
 
     // ---------------- Queries ----------------
@@ -178,10 +173,11 @@ public class CreatureTransformStationUI : MonoBehaviour
 
         // Snapshot so the animation hook has stable data even though the
         // popup (and therefore this selection) may change before CompleteTransform runs.
-        // var snapshot = new Dictionary<(CreatureData, CreatureData.Rarity), int>(selection);
+        var snapshot = new Dictionary<(CreatureData, CreatureData.Rarity), int>(selection);
+
+        CompleteTransform();
 
         // Close(); // hide the popup so a world-space animation is visible - drop this line if you want the popup to stay open
-        CompleteTransform();
         // OnTransformInitiated?.Invoke(snapshot);
     }
 
@@ -197,12 +193,24 @@ public class CreatureTransformStationUI : MonoBehaviour
             InventoryManager.Instance.RemoveCreatures(species, rarity, amount);
 
             var resource = species.GetResource(rarity);
-            if (resource != null)
-                ResourceInventoryManager.Instance.AddResource(resource, amount);
+            if (resource == null) continue;
+
+            // Ingredient Power is rolled per unit here rather than tagged at
+            // capture time - the creature inventory only tracks counts, not
+            // individual instances, so this is where "a percentage chance of
+            // double ingredients from a creature" actually resolves.
+            int totalGranted = 0;
+            for (int i = 0; i < amount; i++)
+            {
+                bool doubled = ExpeditionStewManager.Instance != null
+                    && ExpeditionStewManager.Instance.TryRollDoubleIngredients(species.family);
+                totalGranted += doubled ? 2 : 1;
+            }
+
+            ResourceInventoryManager.Instance.AddResource(resource, totalGranted);
         }
 
         selection.Clear();
-        Close();
         OnTransformCompleted?.Invoke();
     }
 

@@ -8,7 +8,8 @@ public class Doors : MonoBehaviour, IInteractable
 
     public void UseDoor()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+        // UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+        ExpeditionStewSelectionUI.Instance.Open();
     }
 
     public void Interact()

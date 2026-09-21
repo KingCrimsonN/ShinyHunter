@@ -14,6 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: Bee
   description: Bee Bitch
+  family: 0
+  scentPreference:
+  - 3
+  - 0
+  - 0
+  - 0
+  - 0
   variants:
   - animations:
     - state: 0
@@ -90,4 +97,3 @@ MonoBehaviour:
   - {fileID: 11400000, guid: eceba646713e57646a4bfaacd50dbadf, type: 2}
   - {fileID: 11400000, guid: c8d95a05d2ea3a240a54f5fd167a6d18, type: 2}
   - {fileID: 11400000, guid: a400ebf2cedd51749a64152487b0e78e, type: 2}
-  valuePerRarity: 01000000020000000300000004000000

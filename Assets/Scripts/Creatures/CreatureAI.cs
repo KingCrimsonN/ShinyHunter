@@ -53,6 +53,14 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     public bool IsStunned => currentState == State.Stunned;
 
+    /// <summary>data.detectionRadius scaled by Soothing Power (less than 1 = notices the player from closer).</summary>
+    private float EffectiveDetectionRadius =>
+        data.detectionRadius * (ExpeditionStewManager.Instance != null ? ExpeditionStewManager.Instance.GetSoothingMultiplier() : 1f);
+
+    /// <summary>data.fleeSpeed scaled by Soothing Power (less than 1 = flees slower).</summary>
+    private float EffectiveFleeSpeed =>
+        data.fleeSpeed * (ExpeditionStewManager.Instance != null ? ExpeditionStewManager.Instance.GetSoothingMultiplier() : 1f);
+
     private void Awake()
     {
         animator = GetComponent<CreatureSpriteAnimator>();
@@ -87,10 +95,18 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     private CreatureData.Rarity RollRarity()
     {
+        float multiplier = ExpeditionStewManager.Instance != null
+            ? ExpeditionStewManager.Instance.GetRarityChanceMultiplier()
+            : 1f;
+
+        float legendary = Mathf.Clamp01(legendaryChance * multiplier);
+        float rare = Mathf.Clamp01(rareChance * multiplier);
+        float uncommon = Mathf.Clamp01(uncommonChance * multiplier);
+
         float roll = Random.value;
-        if (roll < legendaryChance) return CreatureData.Rarity.Legendary;
-        if (roll < legendaryChance + rareChance) return CreatureData.Rarity.Rare;
-        if (roll < legendaryChance + rareChance + uncommonChance) return CreatureData.Rarity.Uncommon;
+        if (roll < legendary) return CreatureData.Rarity.Legendary;
+        if (roll < legendary + rare) return CreatureData.Rarity.Rare;
+        if (roll < legendary + rare + uncommon) return CreatureData.Rarity.Uncommon;
         return CreatureData.Rarity.Normal;
     }
 
@@ -144,7 +160,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
                 break;
 
             case State.Flee:
-                if (agent != null) { agent.isStopped = false; agent.speed = data.fleeSpeed; }
+                if (agent != null) { agent.isStopped = false; agent.speed = EffectiveFleeSpeed; }
                 animator?.Play(CreatureAnimState.Flee);
                 break;
 
@@ -180,7 +196,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
         float dist = Vector3.Distance(transform.position, player.position);
 
-        if (dist <= data.detectionRadius && currentState != State.Flee)
+        if (dist <= EffectiveDetectionRadius && currentState != State.Flee)
         {
             EnterState(State.Flee);
         }
@@ -217,7 +233,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
         if (data.movementMode == CreatureMovementMode.Flying)
         {
             currentFlyTarget = fleeTarget + Vector3.up * Random.Range(data.flightHeightMin, data.flightHeightMax);
-            MoveTowardsFlyTarget(data.fleeSpeed);
+            MoveTowardsFlyTarget(EffectiveFleeSpeed);
         }
         else if (agent != null)
         {

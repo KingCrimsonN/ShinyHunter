@@ -14,6 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: Shroom
   description: Fuckoff Shroom
+  family: 1
+  scentPreference:
+  - 0
+  - 0
+  - 3
+  - 0
+  - 0
   variants:
   - animations:
     - state: 0
@@ -90,4 +97,3 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6a1f5710ddcb74d47b2db93a3a0b1856, type: 2}
   - {fileID: 11400000, guid: bf4da25f880c70f44af9b55e0f71e54e, type: 2}
   - {fileID: 11400000, guid: a4b64982aa357fc47a47aaaa9ca583da, type: 2}
-  valuePerRarity: 01000000020000000300000004000000

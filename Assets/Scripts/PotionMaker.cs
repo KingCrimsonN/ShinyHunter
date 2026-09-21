@@ -24,7 +24,7 @@ public class PotionMaker : MonoBehaviour, IInteractable
 
     public void ClosePotions()
     {
-        uiManager.extraOpened = true;
+        uiManager.extraOpened = false;
         if (potionUI != null)
         {
             potionUI.SetActive(false);

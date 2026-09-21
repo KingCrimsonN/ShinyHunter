@@ -17,6 +17,9 @@ public class ResourceData : ScriptableObject
     [Tooltip("Which creature rarity this resource is extracted from. Should match the CreatureData.resources slot it's assigned to.")]
     public CreatureData.Rarity rarity = CreatureData.Rarity.Normal;
 
+    [Tooltip("Which creature family this resource came from - drives which stew modifier this ingredient contributes toward.")]
+    public IngredientFamily family;
+
     [Header("Scents (stew ingredient values)")]
     [Tooltip("Resources have their own scent values, independent of the creature they came from.")]
     public float sweetScent;

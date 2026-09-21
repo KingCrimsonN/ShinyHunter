@@ -37,6 +37,11 @@ public class ToolBehaviour : MonoBehaviour
     /// <summary>Primary use input while this tool is equipped and held.</summary>
     public virtual void UseTool() { }
 
-    /// <summary>Called every frame by ToolEquipController while this tool is equipped.</summary>
-    public virtual void Update() { }
+    /// <summary>
+    /// Called every frame by ToolEquipController while this tool is equipped
+    /// and usable. Deliberately NOT named Update: a method with that name on a
+    /// MonoBehaviour is also called by Unity itself, so it would run twice per
+    /// frame (and keep running while the player is frozen).
+    /// </summary>
+    public virtual void OnHeldUpdate() { }
 }

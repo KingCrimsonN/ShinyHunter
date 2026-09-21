@@ -131,9 +131,10 @@ public class CaptureMinigameController : MonoBehaviour
     }
 
     /// <summary>Entry point - call this instead of ICapturable.TryCapture directly.</summary>
-    public void BeginCapture(ICapturable creature)
+    /// <returns>True if the minigame started. False if it didn't (already running, or the creature is gone / no longer stunned) - callers must not consume anything for a capture that never began.</returns>
+    public bool BeginCapture(ICapturable creature)
     {
-        if (IsRunning || creature == null || !creature.IsStunned) return;
+        if (IsRunning || creature == null || !creature.IsStunned) return false;
         if (popupRoot != null) popupRoot.SetActive(true);
 
 
@@ -164,6 +165,7 @@ public class CaptureMinigameController : MonoBehaviour
         ClearNeedleMarks(); // defensive - a previous session should have already cleared these in EndMinigame
         UpdateTimerUI();
         UpdateAttemptsUI();
+        return true;
     }
 
     /// <summary>Capture Power head-start: marks some hit areas as already hit, without spending attempts.</summary>

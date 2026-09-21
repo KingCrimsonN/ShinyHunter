@@ -174,3 +174,51 @@ previously reintroduced the destroyed-coroutine bug the persistent fade fixed.
 `ToolSlot` is a class and the sort's rewrite loop overwrote the same slot
 objects it was still reading from, duplicating/deleting items whenever a
 sorted item moved to a lower index. It now copies `(data, count)` out first.
+
+## Per-run tracking resets when an expedition scene loads (InventoryManager)
+
+`InventoryManager.ResetRunTracking()` used to be called from
+`PlayerCapture.Start()`, only when the scene was `"Hub"`. But `PlayerCapture`
+is disabled on the hub's player (`m_Enabled: 0`), so `Start` never ran there,
+and expedition scenes skipped it because of the `"Hub"` check - the tracking
+was never reset and every run summary included all earlier runs' creatures
+(and their reward). It now lives in `InventoryManager` itself, on
+`sceneLoaded` for any non-hub scene, so it can't be skipped by a disabled or
+missing player component.
+
+## Creature targeting is aim-cone based and shared (CreatureTargeting)
+
+The doll used a thin `Physics.Raycast` and the stick a `SphereCast`, both
+against a `creatureLayer` mask that is set to Everything (creatures are on
+Default). Physics returns the FIRST collider of any kind - terrain, trees,
+grass, props - and "not a creature" was treated as a miss, so looking straight
+at a creature could fail. The doll (range 3-4) and stick (2.5) also disagreed
+about range, and one click fires BOTH (a click swings the stick, which stuns,
+and throws the doll, which captures ~0.4 s later if the creature is stunned).
+`CreatureTargeting.TryFind` now works from the creatures themselves
+(`CreatureAI.Active`) and an aim cone: closest to the crosshair wins, range is
+measured to the nearest point of the creature's bounds, and other colliders
+can't interfere. Both tools use it with the same aim forgiveness. It has no
+line-of-sight check on purpose (a check against an Everything mask would bring
+the original false blocking back) - add one with a dedicated occluder mask if
+needed. `CaptureTargetIndicator` (a code-built ring, created by the doll while
+held) shows the result: red = too far, yellow = in reach but not stunned (the
+click's stick swing will stun it - only valid within the stick's reach too),
+green = ready. `ToolBehaviour.Update` was renamed `OnHeldUpdate` (a virtual
+named `Update` ran twice per frame). `CaptureMinigameController.BeginCapture`
+returns whether it started, and the doll is only consumed if it did.
+
+## Stew carousel slides a track, it doesn't rebuild the layout
+
+The carousel panel (`Horizontal Carousel`) has a visible background image and
+its own `HorizontalLayoutGroup`, so moving the panel or its entries directly
+would either move the background or fight the layout group. Bowls are
+spawned into a runtime-created `CarouselTrack` child (which copies the
+panel's spacing / top+bottom padding / alignment so the look still follows
+the panel's inspector settings, and is ignored by the panel's own layout
+group). The selected bowl's measured centre is what the track eases toward
+(`SmoothDamp`), so the selected bowl is always in the middle and Next/Previous
+slide the whole row. Not looped: the buttons disable at either end. Entries
+scale/highlight by their continuous distance from the centre (`SetFocus`).
+A `StewCarouselEntryUI` placed under the panel at design time is treated as
+a layout preview and hidden at runtime (it used to sit beside the real ones).

@@ -99,7 +99,7 @@ public class ToolInventoryManager : MonoBehaviour
             }
         }
 
-        OnInventoryChanged?.Invoke();
+        RaiseInventoryChanged();
         return amount;
     }
 
@@ -114,7 +114,7 @@ public class ToolInventoryManager : MonoBehaviour
             slots[index].count = 0;
         }
 
-        OnInventoryChanged?.Invoke();
+        RaiseInventoryChanged();
     }
 
     /// <summary>Swaps the contents of two slots (used by popup drag-and-drop reordering).</summary>
@@ -123,7 +123,7 @@ public class ToolInventoryManager : MonoBehaviour
         if (!IsValidIndex(a) || !IsValidIndex(b) || a == b) return;
 
         (slots[a], slots[b]) = (slots[b], slots[a]);
-        OnInventoryChanged?.Invoke();
+        RaiseInventoryChanged();
     }
 
     public void SetEquippedIndex(int index)
@@ -184,7 +184,31 @@ public class ToolInventoryManager : MonoBehaviour
             }
         }
 
-        OnInventoryChanged?.Invoke();
+        RaiseInventoryChanged();
+    }
+
+    /// <summary>
+    /// Notifies each subscriber independently. The inventory has ALREADY
+    /// changed by the time this runs, so one listener throwing (say a UI tile
+    /// that isn't set up) must not stop the remaining listeners or unwind into
+    /// the caller - e.g. a shop purchase would abort after the money was
+    /// spent, skipping its own display update. The exception is still logged.
+    /// </summary>
+    private void RaiseInventoryChanged()
+    {
+        if (OnInventoryChanged == null) return;
+
+        foreach (Delegate handler in OnInventoryChanged.GetInvocationList())
+        {
+            try
+            {
+                ((Action)handler)();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
     }
 
     private bool IsValidIndex(int index) => slots != null && index >= 0 && index < slots.Length;

@@ -22,11 +22,24 @@ public class DraggableToolSlot : MonoBehaviour, IBeginDragHandler, IDragHandler,
     public TMPro.TMP_Text descriptionText;
 
     [SerializeField] public int SlotIndex;
-    public ToolSlotUI SlotUI { get; private set; }
 
-    private void Awake()
+    [SerializeField] private GameObject highlight;
+
+    private ToolSlotUI slotUI;
+
+    /// <summary>
+    /// Resolved on first use rather than in Awake: a slot that starts INACTIVE
+    /// in the hierarchy (e.g. equip slots under a hidden panel) never gets an
+    /// Awake, but the popup still needs to write its contents into it on every
+    /// inventory change.
+    /// </summary>
+    public ToolSlotUI SlotUI
     {
-        SlotUI = GetComponent<ToolSlotUI>();
+        get
+        {
+            if (slotUI == null) slotUI = GetComponent<ToolSlotUI>();
+            return slotUI;
+        }
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -67,6 +80,7 @@ public class DraggableToolSlot : MonoBehaviour, IBeginDragHandler, IDragHandler,
         if (descriptionText != null && SlotUI.HasItem)
         {
             descriptionText.text = ToolInventoryManager.Instance.GetToolDescription(SlotIndex);
+            highlight.SetActive(true);
         }
     }
 
@@ -75,6 +89,7 @@ public class DraggableToolSlot : MonoBehaviour, IBeginDragHandler, IDragHandler,
         if (descriptionText != null)
         {
             descriptionText.text = string.Empty;
+            highlight.SetActive(false);
         }
     }
 }

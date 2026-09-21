@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Central store of how many of each (species, rarity) combo the player has
@@ -37,6 +38,28 @@ public class InventoryManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance != this) return;
+
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        Instance = null;
+    }
+
+    /// <summary>
+    /// Every expedition starts with fresh per-run tracking. This lives HERE
+    /// (rather than in some player component's Start) so it can't be skipped:
+    /// it used to be tied to PlayerCapture.Start in the hub, but that component
+    /// is disabled in the hub scene, so the reset never ran and each run
+    /// summary showed the previous runs' creatures too.
+    /// </summary>
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (!SceneNames.IsHub(scene.name))
+            ResetRunTracking();
     }
 
     public void AddCreature(CreatureData species, CreatureData.Rarity rarity, int amount = 1)

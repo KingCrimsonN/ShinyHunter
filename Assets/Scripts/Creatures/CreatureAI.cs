@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -56,6 +57,31 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     public bool IsStunned => currentState == State.Stunned;
 
+    // ---------------- Targeting support (see CreatureTargeting) ----------------
+
+    private static readonly List<CreatureAI> active = new List<CreatureAI>();
+
+    /// <summary>Every enabled creature in the scene - lets CreatureTargeting find candidates without physics queries (whose layer mask / first-hit rules made "looking straight at it" miss).</summary>
+    public static IReadOnlyList<CreatureAI> Active => active;
+
+    private Collider bodyCollider;
+
+    /// <summary>The creature's own collider - its bounds are what aiming is measured against.</summary>
+    public Collider BodyCollider => bodyCollider;
+
+    /// <summary>False once captured (it's about to be destroyed) - no longer a valid target.</summary>
+    public bool IsTargetable => currentState != State.Captured;
+
+    private void OnEnable()
+    {
+        active.Add(this);
+    }
+
+    private void OnDisable()
+    {
+        active.Remove(this);
+    }
+
     /// <summary>data.detectionRadius scaled by Soothing Power (less than 1 = notices the player from closer).</summary>
     private float EffectiveDetectionRadius =>
         data.detectionRadius * (ExpeditionStewManager.Instance != null ? ExpeditionStewManager.Instance.GetSoothingMultiplier() : 1f);
@@ -66,6 +92,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     private void Awake()
     {
+        bodyCollider = GetComponent<Collider>();
         animator = GetComponent<CreatureSpriteAnimator>();
         spawnPoint = transform.position;
         transform.localScale = data.size;

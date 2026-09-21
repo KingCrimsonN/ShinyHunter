@@ -51,7 +51,7 @@ public class ToolInventoryPopupUI : MonoBehaviour
         }
 
         ToolInventoryManager.Instance.OnInventoryChanged += Refresh;
-        RefreshStart();
+        Refresh();
     }
 
     private void OnDestroy()
@@ -89,29 +89,25 @@ public class ToolInventoryPopupUI : MonoBehaviour
         Cursor.visible = opening;
     }
 
-    private void RefreshStart()
-    {
-        var slots = ToolInventoryManager.Instance.Slots;
-        var equipCapacity = ToolInventoryManager.Instance.EquipCapacity;
-        for (int i = 0; i < equipCapacity; i++)
-        {
-            var slot = slots[i];
-            var ui = slotUIs[i].SlotUI;
-            // print("Refreshing slot " + i + ": " + (ui == null ? "null" : slot.data.name));
-            if (slot == null || slot.data == null) ui.SetEmpty();
-            else ui.SetItem(slot.data, slot.count);
-        }
-    }
-
+    /// <summary>
+    /// Writes every slot's contents into its tile. Runs on every inventory
+    /// change, so it must never throw: a missing/unassigned tile is skipped
+    /// (with a warning) instead of taking the whole inventory event down.
+    /// </summary>
     private void Refresh()
     {
         var slots = ToolInventoryManager.Instance.Slots;
-        for (int i = 0; i < slotUIs.Length; i++)
+        for (int i = 0; i < slotUIs.Length && i < slots.Count; i++)
         {
+            var ui = slotUIs[i] != null ? slotUIs[i].SlotUI : null;
+            if (ui == null)
+            {
+                Debug.LogWarning($"ToolInventoryPopupUI: slot tile {i} is missing (unassigned in equipSlots, or has no ToolSlotUI) - skipping it.", this);
+                continue;
+            }
+
             var slot = slots[i];
-            var ui = slotUIs[i].SlotUI;
-            print("Refreshing slot " + i + ": " + (ui == null ? "null" : slot));
-            if (slot == null || slot.count <= 0) ui.SetEmpty();
+            if (slot == null || slot.data == null || slot.count <= 0) ui.SetEmpty();
             else ui.SetItem(slot.data, slot.count);
         }
     }

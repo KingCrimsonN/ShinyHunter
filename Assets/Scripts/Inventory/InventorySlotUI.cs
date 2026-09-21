@@ -7,10 +7,13 @@ using UnityEngine.EventSystems;
 public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Image icon;
+    [SerializeField] private Image frame;
     [SerializeField] private TMP_Text nameText;
     // [SerializeField] private TMP_Text rarityText;
     [SerializeField] private TMP_Text countText;
     [SerializeField] public TMP_Text descriptionText;
+
+    [SerializeField] private Sprite[] rarityFrames; // normal, uncommon, rare, legendary
 
     private string description;
 
@@ -31,6 +34,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         // {
         //     rarityText.text = rarity.ToString();
         nameText.color = GetRarityColor(rarity);
+        if (frame != null) frame.sprite = rarityFrames[(int)rarity];
         // }
     }
 

@@ -87,7 +87,7 @@ public class ToolEquipController : MonoBehaviour
 
     private void UpdateTool()
     {
-        currentToolInstance?.Update();
+        currentToolInstance?.OnHeldUpdate();
     }
 
     private void HandleScrollInput()

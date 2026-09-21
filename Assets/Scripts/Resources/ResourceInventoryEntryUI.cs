@@ -10,6 +10,7 @@ public class ResourceInventoryEntryUI : MonoBehaviour, IPointerEnterHandler, IPo
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text countText;
     public TMP_Text descriptionText;
+    [SerializeField] private GameObject selectedHighlight;
 
     private string description;
 
@@ -26,6 +27,7 @@ public class ResourceInventoryEntryUI : MonoBehaviour, IPointerEnterHandler, IPo
         if (descriptionText != null)
         {
             descriptionText.text = description;
+            selectedHighlight.SetActive(true);
         }
     }
 
@@ -34,6 +36,7 @@ public class ResourceInventoryEntryUI : MonoBehaviour, IPointerEnterHandler, IPo
         if (descriptionText != null)
         {
             descriptionText.text = "";
+            selectedHighlight.SetActive(false);
         }
     }
 }

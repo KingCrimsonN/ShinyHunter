@@ -1,9 +1,25 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Lives on the Overlay prefab's root and is persistent (DontDestroyOnLoad),
+/// which makes the WHOLE Overlay persistent - every scene contains its own
+/// Overlay instance, but only the first one survives (see Awake); later ones
+/// destroy themselves. Anything under the Overlay must therefore not assume
+/// it is re-created per scene: subscribe in OnEnable/OnDisable rather than
+/// Start, and don't overwrite statics/singletons from a duplicate's Awake.
+///
+/// Because the Overlay is shared, it shows/hides its scene-dependent parts
+/// itself on every scene load: expedition-only elements (the time/health
+/// dial and the tool hotbar) are hidden in the hub, hub-only elements the
+/// other way round. Add extra roots to the two arrays in the inspector.
+///
+/// Player freezing goes through PlayerStateManager like every other popup,
+/// so no player references are held here (the player object isn't persistent).
+/// </summary>
 public class UIManager : MonoBehaviour
 {
-
     [SerializeField] private GameObject tabletUI;
     [SerializeField] private GameObject creatureInventoryUI;
     [SerializeField] private GameObject inventoryPage;
@@ -11,15 +27,13 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject settingsPage;
     [SerializeField] private GameObject dialogPanel;
 
-
-
-
-
-    [SerializeField] private FirstPersonController playerMovement;
-    [SerializeField] private PlayerCapture playerCapture;
-    [SerializeField] private ToolEquipController toolEquip;
-
     [SerializeField] private TMP_Text interactionText;
+
+    [Header("Scene-dependent visibility")]
+    [Tooltip("Extra HUD roots visible ONLY on expeditions. The expedition time/health dial and the tool hotbar are found automatically - no need to list them.")]
+    [SerializeField] private GameObject[] expeditionOnlyElements;
+    [Tooltip("HUD roots visible ONLY in the hub.")]
+    [SerializeField] private GameObject[] hubOnlyElements;
 
     public bool extraOpened;
 
@@ -35,16 +49,53 @@ public class UIManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance != this) return;
+
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        Instance = null;
     }
 
     private void Start()
     {
         if (tabletUI != null) tabletUI.SetActive(false);
-        playerMovement = FindFirstObjectByType<FirstPersonController>();
-        playerCapture = FindFirstObjectByType<PlayerCapture>();
-        toolEquip = FindFirstObjectByType<ToolEquipController>();
         extraOpened = false;
 
+        // Start only runs once for this persistent object, i.e. for whichever
+        // scene loaded first - every later scene goes through OnSceneLoaded.
+        ApplySceneVisibility(SceneManager.GetActiveScene().name);
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        extraOpened = false;
+        ApplySceneVisibility(scene.name);
+    }
+
+    private void ApplySceneVisibility(string sceneName)
+    {
+        bool inHub = SceneNames.IsHub(sceneName);
+
+        var timeIndicator = GetComponentInChildren<ExpeditionTimeIndicator>(true);
+        if (timeIndicator != null) timeIndicator.gameObject.SetActive(!inHub);
+
+        var hotbar = GetComponentInChildren<ToolHotbarUI>(true);
+        if (hotbar != null) hotbar.gameObject.SetActive(!inHub);
+
+        SetAllActive(expeditionOnlyElements, !inHub);
+        SetAllActive(hubOnlyElements, inHub);
+    }
+
+    private static void SetAllActive(GameObject[] elements, bool active)
+    {
+        if (elements == null) return;
+
+        foreach (var element in elements)
+            if (element != null) element.SetActive(active);
     }
 
     // Update is called once per frame
@@ -59,17 +110,12 @@ public class UIManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (tabletUI.activeSelf)
+            if (tabletUI != null && tabletUI.activeSelf)
             {
                 HideTabletUI();
                 return;
             }
             if (CreatureTransformStationUI.Instance != null)
-                // if (CreatureTransformStationUI.Instance.IsOpen())
-                // {
-                //     CreatureTransformStationUI.Instance.Close();
-                //     return;
-                // }
                 ToggleTabletUI();
             ShowSettingsPage();
         }
@@ -87,64 +133,49 @@ public class UIManager : MonoBehaviour
 
     public void ToggleTabletUI()
     {
-        if (tabletUI != null)
-            tabletUI.SetActive(!tabletUI.activeSelf);
-        if (creatureInventoryUI != null)
-            creatureInventoryUI.SetActive(tabletUI.activeSelf);
-        if (playerCapture != null)
-            playerCapture.isActive = !tabletUI.activeSelf;
-        if (tabletUI.activeSelf)
-            LockPlayer();
-        else
-            UnlockPlayer();
+        if (tabletUI == null) return;
 
-        // Time.timeScale = tabletUI.activeSelf ? 0 : 1;
-        // playerMovement.enabled = !tabletUI.activeSelf;
-        // if (toolEquip != null) toolEquip.CanUse = !tabletUI.activeSelf;
-        // Cursor.lockState = tabletUI.activeSelf ? CursorLockMode.None : CursorLockMode.Locked;
-        // Cursor.visible = tabletUI.activeSelf;
-    }
+        bool opening = !tabletUI.activeSelf;
 
-    public void LockPlayer()
-    {
-        Time.timeScale = 0;
-        playerMovement.enabled = false;
-        if (toolEquip != null) toolEquip.CanUse = false;
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
+        // Another popup (dialogue, brewing, run summary...) already owns the
+        // player - opening the tablet on top of it would unfreeze/relock the
+        // cursor underneath that popup when the tablet closes again.
+        if (opening && PlayerStateManager.Instance != null && PlayerStateManager.Instance.IsFrozen)
+            return;
 
-    public void UnlockPlayer()
-    {
-        Time.timeScale = 1;
-        playerMovement.enabled = true;
-        if (toolEquip != null) toolEquip.CanUse = true;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        SetTabletOpen(opening);
     }
 
     public void HideTabletUI()
     {
         if (tabletUI != null && tabletUI.activeSelf)
-        {
-            tabletUI.SetActive(false);
-            if (creatureInventoryUI != null)
-                creatureInventoryUI.SetActive(false);
-            if (playerCapture != null)
-                playerCapture.enabled = true;
-            if (playerCapture != null)
-            {
+            SetTabletOpen(false);
+    }
 
-                if (UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name == "Hub")
-                {
-                    playerCapture.isActive = false;
-                }
-                else
-                    playerCapture.isActive = true;
-            }
+    private void SetTabletOpen(bool open)
+    {
+        tabletUI.SetActive(open);
+        if (creatureInventoryUI != null)
+            creatureInventoryUI.SetActive(open);
 
+        if (open)
+            LockPlayer();
+        else
             UnlockPlayer();
-        }
+    }
+
+    public void LockPlayer()
+    {
+        Time.timeScale = 0;
+        if (PlayerStateManager.Instance != null)
+            PlayerStateManager.Instance.Freeze();
+    }
+
+    public void UnlockPlayer()
+    {
+        Time.timeScale = 1;
+        if (PlayerStateManager.Instance != null)
+            PlayerStateManager.Instance.Unfreeze();
     }
 
     public void ShowCreatures()

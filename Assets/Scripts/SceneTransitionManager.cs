@@ -38,20 +38,49 @@ public class SceneTransitionManager : MonoBehaviour
         }
     }
 
-    /// <summary>Fades to black, loads the given scene, holds, fades back in.</summary>
-    public void TransitionToScene(string sceneName)
+    /// <summary>True from the moment a transition starts until its fade-in has finished.</summary>
+    public bool IsTransitioning { get; private set; }
+
+    /// <summary>
+    /// Fades to black, loads the given scene, holds, fades back in. Returns
+    /// false (and does nothing) if a transition is already running or the
+    /// scene can't be loaded - so callers can avoid consuming anything
+    /// (e.g. a stew) for a transition that never happens.
+    ///
+    /// The player is frozen for the whole transition and released once the
+    /// new scene has loaded. PlayerStateManager re-applies its frozen state
+    /// to the new scene's player on load, so there's no window where the
+    /// player can move (or re-trigger the door) mid-transition.
+    /// </summary>
+    public bool TransitionToScene(string sceneName)
     {
+        if (IsTransitioning) return false;
+
+        if (!Application.CanStreamedLevelBeLoaded(sceneName))
+        {
+            Debug.LogError($"SceneTransitionManager: scene '{sceneName}' can't be loaded - is it added to the Build Settings?");
+            return false;
+        }
+
         StartCoroutine(TransitionRoutine(sceneName));
+        return true;
     }
 
     private IEnumerator TransitionRoutine(string sceneName)
     {
+        IsTransitioning = true;
+        if (PlayerStateManager.Instance != null) PlayerStateManager.Instance.Freeze();
+
         yield return Fade(0f, 1f, fadeOutDuration);
 
         SceneManager.LoadScene(sceneName);
 
         yield return new WaitForSeconds(holdDuration);
+
+        if (PlayerStateManager.Instance != null) PlayerStateManager.Instance.Unfreeze();
         yield return Fade(1f, 0f, fadeInDuration);
+
+        IsTransitioning = false;
     }
 
     private IEnumerator Fade(float from, float to, float duration)

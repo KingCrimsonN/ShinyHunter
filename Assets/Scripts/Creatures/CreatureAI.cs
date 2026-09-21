@@ -49,6 +49,9 @@ public class CreatureAI : MonoBehaviour, ICapturable
     private float stateTimer;
     private float stunTimer;
 
+    /// <summary>True while a capture minigame is running against this creature - the stun timer is suspended so the creature can't recover before the attempt resolves.</summary>
+    private bool captureInProgress;
+
     private CreatureSpriteAnimator animator;
 
     public bool IsStunned => currentState == State.Stunned;
@@ -135,6 +138,10 @@ public class CreatureAI : MonoBehaviour, ICapturable
     private void EnterState(State newState)
     {
         currentState = newState;
+
+        // Only the Stunned state can be mid-capture; any other transition
+        // (fleeing after a failed attempt, etc.) ends it.
+        if (newState != State.Stunned) captureInProgress = false;
 
         // Stun particles only ever belong to the Stunned state - set this
         // generically here rather than per-case, so any transition OUT of
@@ -244,6 +251,8 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     private void TickStunned()
     {
+        if (captureInProgress) return; // stays stunned until TryCapture resolves the attempt
+
         stunTimer -= Time.deltaTime;
         if (stunTimer <= 0f) EnterState(State.Idle);
     }
@@ -294,10 +303,10 @@ public class CreatureAI : MonoBehaviour, ICapturable
         EnterState(State.Stunned);
     }
 
-    public void StartCapture(float captureTime)
+    public void StartCapture()
     {
         if (currentState != State.Stunned) return;
-        stunTimer = captureTime;
+        captureInProgress = true;
     }
 
     public bool TryCapture()

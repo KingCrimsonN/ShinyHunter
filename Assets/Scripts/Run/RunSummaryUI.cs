@@ -7,13 +7,11 @@ using TMPro;
 /// <summary>
 /// End-of-run summary popup: page 1 (grid of creatures caught this run,
 /// rarest first), page 2 (stats + final reward), then a money count-up
-/// animation before handing off to ExpeditionTimeIndicator's existing
-/// blackout+teleport.
+/// animation before handing off to SceneTransitionManager for the fade back
+/// to the hub. Part of the persistent Overlay (see UIManager).
 ///
-/// ASSUMPTION: expects a MoneyManager singleton exposing `int CurrentMoney`
-/// and `void AddMoney(int amount)`. Every call into it is isolated to the
-/// two one-line methods at the bottom of this file - adjust those if your
-/// actual API differs, I don't have visibility into that script.
+/// MoneyManager is used through GetCurrentMoney()/AddMoney(int); every call
+/// into it is isolated to the two one-line methods at the bottom of this file.
 /// </summary>
 public class RunSummaryUI : MonoBehaviour
 {
@@ -43,16 +41,18 @@ public class RunSummaryUI : MonoBehaviour
     [SerializeField] private float moneyCountUpDuration = 1.5f;
     [SerializeField] private float holdAfterCountUp = 0.3f;
 
-    [SerializeField] private ExpeditionTimeIndicator expeditionTimeIndicator;
-
     private int currentPage;
     private RunStats cachedStats;
 
     private void Awake()
     {
+        // Part of the persistent Overlay: every scene has its own Overlay
+        // instance, and the duplicates (destroyed by UIManager) still run
+        // Awake. Don't let one overwrite the surviving instance.
+        if (Instance != null && Instance != this) return;
+
         Instance = this;
         if (popupRoot != null) popupRoot.SetActive(false);
-        expeditionTimeIndicator = FindFirstObjectByType<ExpeditionTimeIndicator>();
     }
 
     private void OnEnable()
@@ -129,10 +129,14 @@ public class RunSummaryUI : MonoBehaviour
         yield return new WaitForSeconds(holdAfterCountUp);
 
         if (popupRoot != null) popupRoot.SetActive(false);
-        PlayerStateManager.Instance.Unfreeze();
 
-        if (expeditionTimeIndicator != null)
-            expeditionTimeIndicator.PlayBlackoutAndTeleport();
+        // Stay frozen: SceneTransitionManager holds the freeze through the
+        // fade and releases it once the hub has loaded.
+        if (SceneTransitionManager.Instance != null && SceneTransitionManager.Instance.TransitionToScene(SceneNames.Hub))
+            yield break;
+
+        Debug.LogError("RunSummaryUI: couldn't start the transition back to the hub - unfreezing the player instead.");
+        PlayerStateManager.Instance.Unfreeze();
     }
 
     private RunStats ComputeStats()

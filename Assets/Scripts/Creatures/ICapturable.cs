@@ -22,5 +22,12 @@ public interface ICapturable
     /// Returns whether the capture succeeded.
     /// </summary>
     bool TryCapture(float captureChance);
-    void StartCapture(float captureTime);
+
+    /// <summary>
+    /// A capture attempt (the wheel minigame) has begun. The creature must
+    /// stay stunned until TryCapture(float) resolves the attempt, however
+    /// long the minigame takes - it must NOT recover on its own timer, or a
+    /// result that arrives after the stun would have expired gets discarded.
+    /// </summary>
+    void StartCapture();
 }

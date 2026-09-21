@@ -4,16 +4,17 @@ public class PotionMaker : MonoBehaviour, IInteractable
 {
     [SerializeField] private GameObject potionUI;
 
-    private UIManager uiManager;
-
-    private void Awake()
+    // UIManager is persistent and lives on the shared Overlay - always go
+    // through Instance rather than caching a FindFirstObjectByType result,
+    // which can grab a duplicate Overlay that's about to be destroyed.
+    private static void SetExtraOpened(bool value)
     {
-        uiManager = FindFirstObjectByType<UIManager>();
+        if (UIManager.Instance != null) UIManager.Instance.extraOpened = value;
     }
 
     public void Interact()
     {
-        uiManager.extraOpened = true;
+        SetExtraOpened(true);
         if (potionUI != null)
         {
             potionUI.SetActive(!potionUI.activeSelf);
@@ -24,7 +25,7 @@ public class PotionMaker : MonoBehaviour, IInteractable
 
     public void ClosePotions()
     {
-        uiManager.extraOpened = false;
+        SetExtraOpened(false);
         if (potionUI != null)
         {
             potionUI.SetActive(false);

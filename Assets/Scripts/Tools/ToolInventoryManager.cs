@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -156,11 +157,18 @@ public class ToolInventoryManager : MonoBehaviour
     /// </summary>
     public void SortSlots()
     {
-        var filled = new List<ToolSlot>();
+        // Copy the (data, count) VALUES out first. ToolSlot is a class, and the
+        // rewrite loop below overwrites the very slot objects being read from -
+        // holding references to them would duplicate/lose items as soon as a
+        // sorted item moves to a lower index than the slot it came from.
+        // OrderBy is stable, so same-named tools keep their relative order.
+        var filled = new List<(ToolData data, int count)>();
         foreach (var slot in slots)
-            if (slot.data != null) filled.Add(slot);
+            if (slot.data != null) filled.Add((slot.data, slot.count));
 
-        filled.Sort((a, b) => string.Compare(a.data.toolName, b.data.toolName, StringComparison.OrdinalIgnoreCase));
+        filled = filled
+            .OrderBy(entry => entry.data.toolName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         for (int i = 0; i < slots.Length; i++)
         {

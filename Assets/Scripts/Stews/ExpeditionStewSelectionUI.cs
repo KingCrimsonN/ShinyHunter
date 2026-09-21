@@ -107,11 +107,21 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
     {
         if (spawned.Count == 0) return;
 
+        // Start the transition FIRST: if it can't happen (scene missing, a
+        // transition already running) the stew must not be consumed.
+        if (SceneTransitionManager.Instance == null || !SceneTransitionManager.Instance.TransitionToScene(expeditionSceneName))
+        {
+            Debug.LogError($"ExpeditionStewSelectionUI: couldn't start the transition to '{expeditionSceneName}' - stew not consumed.");
+            return;
+        }
+
         var stew = StewInventoryManager.Instance.Bowls[selectedIndex];
         StewInventoryManager.Instance.RemoveStew(stew);
         ExpeditionStewManager.Instance.SetActiveStew(stew);
 
-        Close();
-        SceneTransitionManager.Instance.TransitionToScene(expeditionSceneName);
+        // Hide the popup but do NOT unfreeze: SceneTransitionManager keeps
+        // the player frozen through the fade (so the door can't be used a
+        // second time) and releases it once the expedition scene has loaded.
+        if (popupRoot != null) popupRoot.SetActive(false);
     }
 }

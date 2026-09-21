@@ -133,15 +133,19 @@ public class CaptureMinigameController : MonoBehaviour
     /// <summary>Entry point - call this instead of ICapturable.TryCapture directly.</summary>
     public void BeginCapture(ICapturable creature)
     {
-        if (toolEquip != null) toolEquip.CanUse = false;
         if (IsRunning || creature == null || !creature.IsStunned) return;
         if (popupRoot != null) popupRoot.SetActive(true);
 
 
         targetCreature = creature;
         creatureData = creature.Data;
-        targetCreature?.StartCapture(defaultTimeLimit);
+        // Keeps the creature stunned until EndMinigame resolves the attempt -
+        // the wheel's own timer plus the end-of-minigame delay can outlast the
+        // creature's normal stun, which used to discard the result.
+        targetCreature.StartCapture();
 
+        ending = false;
+        cooldown = false;
         hitAreaCount = defaultHitAreaCount;
         hitAreaWidthDegrees = defaultHitAreaWidthDegrees;
         needleSpeed = defaultNeedleSpeed;
@@ -248,9 +252,16 @@ public class CaptureMinigameController : MonoBehaviour
         StartCoroutine(CoolDown());
     }
 
+    /// <param name="forceEnd">
+    /// True when ending because something else took over the player (see
+    /// ForceEndMinigame): the player is deliberately left FROZEN for that
+    /// caller instead of being released here.
+    /// </param>
     private void EndMinigame(bool forceEnd = false)
     {
         IsRunning = false;
+        ending = false;
+        cooldown = false; // a CoolDown() coroutine cancelled by ForceEndMinigame would otherwise leave this stuck true forever
 
         float ratio = hitAreaCount > 0 ? (float)hitsScored / hitAreaCount : 0f;
         if (ExpeditionStewManager.Instance != null)
@@ -260,16 +271,16 @@ public class CaptureMinigameController : MonoBehaviour
 
         if (popupRoot != null) popupRoot.SetActive(false);
 
-        PlayerStateManager.Instance.Unfreeze();
-        // Unfreeze() already set toolEquip.CanUse = true, but this minigame
-        // specifically wants a brief extra cooldown before the tool can be
-        // used again (so closing the wheel doesn't also fire the equipped
-        // tool via the same key) - EnableUse() runs its own short delay and
-        // overrides CanUse back to true afterward, on top of the generic unfreeze.
-        if (toolEquip != null && !forceEnd) toolEquip.EnableUse();
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (!forceEnd)
+        {
+            PlayerStateManager.Instance.Unfreeze();
+            // Unfreeze() already set toolEquip.CanUse = true, but this minigame
+            // specifically wants a brief extra cooldown before the tool can be
+            // used again (so closing the wheel doesn't also fire the equipped
+            // tool via the same key) - EnableUse() runs its own short delay and
+            // overrides CanUse back to true afterward, on top of the generic unfreeze.
+            if (toolEquip != null) toolEquip.EnableUse();
+        }
 
         ClearHitAreas();
         ClearNeedleMarks();
@@ -283,7 +294,6 @@ public class CaptureMinigameController : MonoBehaviour
             SoundFXManager.instance.PlaySoundFX(failSound, transform, 0.5f);
 
         OnMinigameEnded?.Invoke(success);
-        ending = false;
     }
 
     private IEnumerator WaitAndEnd(float delay)
@@ -431,14 +441,18 @@ public class CaptureMinigameController : MonoBehaviour
     /// mid-attempt (see RunSummaryUI.ShowSummary) - the wheel's own timer is
     /// separate from that, so it wouldn't otherwise close on its own. Safe
     /// to call even if no minigame is running.
+    ///
+    /// Also safe while the normal end is already pending (the short delay
+    /// after the last attempt): that pending end is cancelled and resolved
+    /// here instead - it would otherwise fire later and unfreeze the player
+    /// out from under whatever popup the caller just opened. The player is
+    /// left frozen; the caller decides when to release them.
     /// </summary>
     public void ForceEndMinigame()
     {
-        if (!IsRunning || ending) return;
+        if (!IsRunning) return;
 
         StopAllCoroutines(); // cancel any pending WaitAndEnd/CoolDown
-        ending = true;
         EndMinigame(forceEnd: true);
-        PlayerStateManager.Instance.Freeze();
     }
 }

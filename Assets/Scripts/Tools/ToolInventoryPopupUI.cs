@@ -21,7 +21,11 @@ public class ToolInventoryPopupUI : MonoBehaviour
 
     private void Awake()
     {
-        DraggableToolSlot.DragIcon = dragIconTemplate;
+        // Part of the persistent Overlay: a duplicate Overlay (destroyed by
+        // UIManager) also runs Awake - don't let it replace the surviving
+        // instance's drag icon with one that's about to be destroyed.
+        if (DraggableToolSlot.DragIcon == null)
+            DraggableToolSlot.DragIcon = dragIconTemplate;
         if (popupRoot != null) popupRoot.SetActive(false);
         if (dragIconTemplate != null) dragIconTemplate.gameObject.SetActive(false);
     }

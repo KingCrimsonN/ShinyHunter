@@ -32,9 +32,6 @@ public class CreatureTransformStationUI : MonoBehaviour
     [Tooltip("Shared floating icon shown while dragging. UI Image under this popup's Canvas, Raycast Target OFF, inactive by default.")]
     [SerializeField] private Image dragIconTemplate;
 
-    [Header("Player (frozen while open, same convention as other popups)")]
-    [SerializeField] private FirstPersonController playerMovement;
-
     private readonly Dictionary<(CreatureData species, CreatureData.Rarity rarity), int> selection =
         new Dictionary<(CreatureData, CreatureData.Rarity), int>();
 
@@ -60,11 +57,12 @@ public class CreatureTransformStationUI : MonoBehaviour
         selection.Clear(); // starts fresh each time - remove this line if you'd rather staged items persist between opens
 
         if (popupRoot != null) popupRoot.SetActive(true);
-        if (playerMovement != null) playerMovement.enabled = false;
+        // Freezes movement, Interactor, the stick and tool use together
+        // (and frees the cursor) - see PlayerStateManager.
+        PlayerStateManager.Instance.Freeze();
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
+        // -= first so an Open() without a matching Close() can't double-subscribe
+        InventoryManager.Instance.OnInventoryChanged -= RefreshGrids;
         InventoryManager.Instance.OnInventoryChanged += RefreshGrids;
         RefreshGrids();
     }
@@ -72,10 +70,7 @@ public class CreatureTransformStationUI : MonoBehaviour
     public void Close()
     {
         if (popupRoot != null) popupRoot.SetActive(false);
-        if (playerMovement != null) playerMovement.enabled = true;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        PlayerStateManager.Instance.Unfreeze();
 
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.OnInventoryChanged -= RefreshGrids;

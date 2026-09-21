@@ -5,16 +5,17 @@ public class Shop : MonoBehaviour, IInteractable
 
     public GameObject shopUI;
 
-    private UIManager uiManager;
-
-    private void Awake()
+    // UIManager is persistent and lives on the shared Overlay - always go
+    // through Instance rather than caching a FindFirstObjectByType result,
+    // which can grab a duplicate Overlay that's about to be destroyed.
+    private static void SetExtraOpened(bool value)
     {
-        uiManager = FindFirstObjectByType<UIManager>();
+        if (UIManager.Instance != null) UIManager.Instance.extraOpened = value;
     }
 
     public void Interact()
     {
-        uiManager.extraOpened = true;
+        SetExtraOpened(true);
         if (shopUI != null)
         {
             shopUI.SetActive(!shopUI.activeSelf);
@@ -28,7 +29,7 @@ public class Shop : MonoBehaviour, IInteractable
 
         if (shopUI != null)
         {
-            uiManager.extraOpened = false;
+            SetExtraOpened(false);
             shopUI.SetActive(false);
             PlayerStateManager.Instance.Unfreeze();
         }

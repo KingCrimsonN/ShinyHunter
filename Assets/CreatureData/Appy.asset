@@ -15,12 +15,8 @@ MonoBehaviour:
   creatureName: Appy
   description: Apple fucker
   family: 0
-  scentPreference:
-  - 3
-  - 0
-  - 0
-  - 0
-  - 0
+  favoriteScent: 0
+  hatedScent: 4
   variants:
   - animations:
     - state: 0
@@ -105,6 +101,7 @@ MonoBehaviour:
   flightHeightMax: 5
   detectionRadius: 2
   fleeDistance: 10
+  detectionAversionScale: 1
   baseCaptureChance: 1
   stunDuration: 3
   resources:

@@ -15,12 +15,8 @@ MonoBehaviour:
   creatureName: Alien
   description: Alien cuck
   family: 2
-  scentPreference:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 4
+  favoriteScent: 4
+  hatedScent: 3
   variants:
   - animations:
     - state: 0
@@ -83,6 +79,7 @@ MonoBehaviour:
   flightHeightMax: 5
   detectionRadius: 2
   fleeDistance: 10
+  detectionAversionScale: 1
   baseCaptureChance: 1
   stunDuration: 3
   resources:

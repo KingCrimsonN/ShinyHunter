@@ -82,9 +82,26 @@ public class CreatureAI : MonoBehaviour, ICapturable
         active.Remove(this);
     }
 
-    /// <summary>data.detectionRadius scaled by Soothing Power (less than 1 = notices the player from closer).</summary>
-    private float EffectiveDetectionRadius =>
-        data.detectionRadius * (ExpeditionStewManager.Instance != null ? ExpeditionStewManager.Instance.GetSoothingMultiplier() : 1f);
+    /// <summary>
+    /// data.detectionRadius scaled by Soothing Power (less than 1 = notices
+    /// the player from closer) AND by how strongly this species hates the
+    /// active stew's scent (greater than 1 = notices/flees from farther away
+    /// the more it hates the smell - see CreatureData.GetScentAffinity).
+    /// </summary>
+    private float EffectiveDetectionRadius
+    {
+        get
+        {
+            if (ExpeditionStewManager.Instance == null) return data.detectionRadius;
+
+            float soothing = ExpeditionStewManager.Instance.GetSoothingMultiplier();
+
+            data.GetScentAffinity(ExpeditionStewManager.Instance.GetScents(), out _, out float hatedScore);
+            float aversion = 1f + hatedScore * data.detectionAversionScale;
+
+            return data.detectionRadius * soothing * aversion;
+        }
+    }
 
     /// <summary>data.fleeSpeed scaled by Soothing Power (less than 1 = flees slower).</summary>
     private float EffectiveFleeSpeed =>

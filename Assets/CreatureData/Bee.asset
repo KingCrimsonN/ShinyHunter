@@ -15,12 +15,8 @@ MonoBehaviour:
   creatureName: Bee
   description: Bee Bitch
   family: 0
-  scentPreference:
-  - 3
-  - 0
-  - 0
-  - 0
-  - 0
+  favoriteScent: 0
+  hatedScent: 3
   variants:
   - animations:
     - state: 0
@@ -90,6 +86,7 @@ MonoBehaviour:
   flightHeightMax: 20
   detectionRadius: 4
   fleeDistance: 10
+  detectionAversionScale: 1
   baseCaptureChance: 1
   stunDuration: 3
   resources:

@@ -15,12 +15,8 @@ MonoBehaviour:
   creatureName: Cuelebre
   description: Lizard bitch
   family: 4
-  scentPreference:
-  - 0
-  - 0
-  - 0
-  - 4
-  - 0
+  favoriteScent: 3
+  hatedScent: 2
   variants:
   - animations:
     - state: 0
@@ -138,6 +134,7 @@ MonoBehaviour:
   flightHeightMax: 20
   detectionRadius: 4
   fleeDistance: 10
+  detectionAversionScale: 1
   baseCaptureChance: 1
   stunDuration: 3
   resources:

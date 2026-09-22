@@ -298,3 +298,156 @@ anything), but it breaks the new carousel's math outright: `ToolHotbarUI`
 assumes the equipped index never leaves `[0, EquipCapacity)` so it can always
 name the other two equip slots as "left" and "right." Fixed by binding only
 as many number keys as there are equip slots.
+
+## Creatures have hated scents (scentAversion), not just loved ones
+
+`CreatureData.scentPreference` only ever pulled spawn weight up (creatures had
+no way to be repelled by a scent). Added a parallel `scentAversion` array
+(same 5-axis shape) plus a shared `CreatureData.GetScentAffinity(currentScents,
+out loved, out hated)` helper, so `Spawner` and `CreatureAI` always read the
+exact same match instead of each re-deriving it:
+
+- **Spawn weight** (`Spawner.GetEffectiveWeight`): `weight *= max(0.05, 1 +
+  loved - hated)`. The floor (0.05, not 0) is deliberate - a stew a species
+  maximally hates should make it very rare, not literally unspawnable for the
+  whole run (which could block bestiary completion with no recourse).
+- **Detection radius** (`CreatureAI.EffectiveDetectionRadius`): multiplied by
+  `1 + hatedScore * data.detectionAversionScale` (a new per-species tunable,
+  default 1 = doubles at maximum aversion match). This is INDEPENDENT of
+  Soothing Power's multiplier (a stew-modifier-type effect keyed by ingredient
+  family dominance) - both stack, since they're driven by different things
+  (family dominance vs. the 5-axis scent profile).
+
+Flee speed is NOT affected by aversion (only detection range, per the ask) -
+a natural follow-up if "hated scents make them flee faster too" is wanted
+later. `scentAversion` defaults to all-zero on every existing `CreatureData`
+asset (no aversion authored yet) - same as any newly-added serialized field -
+so this is a no-op until someone fills it in per species. Note:
+`scentPreference`'s values aren't actually clamped to 0-1 despite its old
+tooltip claiming that (e.g. Alien.asset has 4 on one axis) - `scentAversion`
+follows the same unbounded-positive-weight convention, not a hard 0-1 range.
+
+## Stew scents: divided by cauldron capacity, not a fixed constant; 0-100 scale
+
+Two related fixes to `StewCalculator.CalculateScents`:
+
+1. **"1-2 ingredients reach max smell" fix.** The old formula was `1 + rawSum
+   / scentPerPoint` (scentPerPoint a fixed constant, 3) - completely
+   independent of how many total ingredient slots the cauldron has, so a
+   couple of strong ingredients could already sum to a near-max raw value.
+   Fixed by dividing by `scentPerPoint * totalCapacity` instead - using only a
+   few ingredients out of the cauldron's TOTAL slot count (not how many are
+   currently unlocked, and not how many are actually used, but the cauldron's
+   real physical size - see below) can now only ever reach a small fraction of
+   the scale, however strong those ingredients are; reaching a high value on
+   one axis means deliberately filling most/all of the cauldron with
+   ingredients strong on THAT axis (which also means NOT using those slots for
+   other axes/modifiers - a real tradeoff). `StewCalculator.Calculate` now
+   takes an explicit `totalCapacity` parameter rather than a new config field,
+   so it's always the real array size (`BrewingStationUI.cauldronSlots.Length`)
+   with no possibility of drifting out of sync with a separately-tuned config
+   number.
+
+   Deliberately uses the cauldron's TOTAL capacity (8), not
+   `unlockedSlotCount` (starts at 4, grows via `UnlockSlot()`): using the
+   currently-unlocked count would mean the exact same recipe reads as a
+   WEAKER stew after the player unlocks more slots, purely because the
+   denominator grew - a confusing "my old recipe got nerfed" surprise for no
+   in-fiction reason. Using the fixed total means a recipe's scent is always
+   computed the same way, and instead unlocking slots is what makes STRONGER
+   recipes possible (a normal, legible incentive to unlock more slots).
+
+2. **Scale changed from 1-5 to 0-100** (temporary, explicitly for balance
+   visibility while tuning - a later pass will remap this to whatever's shown
+   to the player). Neutral/baseline changed from 1 (the old floor) to 0 (no
+   stew = no scent presence on ANY axis, `ExpeditionStewManager.GetScents()`'s
+   no-stew default is now `[0,0,0,0,0]`) - this also means a stew with no
+   ingredients contributing to a given axis now shows literal 0 there, not a
+   nonzero "ambient" floor. Every scent consumer was updated to match:
+   `Spawner`'s stew-scent normalization (`/100f`, was `/5f`),
+   `ExpeditionStewManager.GetDefaultStew()`'s clamp range, and
+   `StewDisplayUtil.SetScentTexts`'s format (whole numbers, not one decimal).
+
+   `StewCalculationConfig.scentPerPoint`'s serialized value on
+   `Assets/StewCalculationConfig.asset` was changed 3 -> 5 (its OLD value was
+   tuned for the OLD 1-5/fixed-divisor formula and is meaningless under the
+   new one) and `defaultStewScents` 1,1,1,1,1 -> 0,0,0,0,0 (matching the new
+   neutral baseline) - both need real playtesting to retune properly, these
+   are just sane starting points, not balanced values.
+
+   The MODIFIER power calculation (`StewCalculator.CalculateModifier`, which
+   picks ShinyPower/IngredientPower/etc. and its power 0-1) has the exact same
+   "few ingredients reach 100%" characteristic (it divides by the USED
+   ingredient count, so e.g. one Animal-family ingredient alone hits
+   IngredientPower at full power) but was deliberately left untouched here -
+   the ask was specifically about scent/"smell". Flagged as a likely-wanted
+   follow-up, not done speculatively.
+
+## Scent preference simplified to one favorite + one hated axis (dropdowns)
+
+`CreatureData.scentPreference[5]`/`scentAversion[5]` (a weighted value per
+axis) was replaced with a single `favoriteScent`/`hatedScent` pair, each a
+plain `ScentType` enum (a dropdown in the Inspector - `Assets/Scripts/
+Resources/ScentType.cs`, order Sweet/Fresh/Putrid/Metallic/Marine, matching
+`StewInstance.scents`'s index order). A species now only ever reacts to
+ONE stew scent axis for love and ONE for hate - the other three are ignored
+entirely, even if the stew maxes them out. `ResourceData`'s five separate
+scent fields are UNCHANGED (an ingredient still contributes to all five axes
+at once - only the CREATURE side simplified).
+
+No separate "strength" field was added - the match score is just the active
+stew's value on that one axis, normalized 0-1 (`CreatureData.
+GetScentAffinity`). This was a deliberate simplification, not an oversight:
+the ask was explicitly "just a dropdown," and `detectionAversionScale`
+(unrelated - controls how much a hated-scent match affects detection
+specifically, independent of which axis is chosen) already gives per-species
+tuning room. Add a per-species multiplier back if per-creature intensity
+turns out to matter later.
+
+`Spawner`/`CreatureAI` needed NO changes - both already went through
+`CreatureData.GetScentAffinity()` (added in the previous "hated scents" pass
+specifically so callers wouldn't need to know the internal representation),
+so this simplification was fully contained to `CreatureData.cs`.
+
+**Migration of the 8 existing CreatureData assets**: each had exactly one
+clearly-dominant nonzero `scentPreference` axis, so `favoriteScent` was set to
+match it losslessly (e.g. Alien's `[0,0,0,0,4]` -> Marine). `scentAversion`
+had no real authored data (it was only just added, still all-zero on every
+asset) - there was nothing to migrate FROM, so `hatedScent` was set to an
+ARBITRARY placeholder (the next axis after favorite) purely so it doesn't
+default to the same axis as favoriteScent (which would be a directly
+contradictory "loves and hates Sweet" state for 4 of the 8 creatures, since
+they all defaulted toward Sweet). Every creature's hatedScent still needs a
+real, intentional choice from the designer.
+
+## Modifier power also divided by cauldron capacity, not used-ingredient count
+
+`StewCalculator.CalculateModifier` had the exact same shape of bug as the
+scent calculation (see the entry above): every family-count and the rarity
+sum were divided by `ingredients.Count` (how many were actually USED), so a
+single matching ingredient reached ratio=1.0 - 100% modifier power - outright
+(e.g. one Animal-family ingredient alone maxed out Ingredient Power; one
+Legendary ingredient alone maxed out Shiny Power). Fixed the same way: divide
+by the cauldron's TOTAL capacity (the same `totalCapacity` parameter
+`Calculate` already threads through for scents) instead. Reaching 100% power
+on any modifier now needs filling the ENTIRE cauldron with ingredients of one
+family (or all at max rarity, for Shiny Power) - a deliberately rare, top-tier
+outcome, matching "modifiers are supposed to be more rare."
+
+`modifierPower`'s numeric range is UNCHANGED (still 0-1, displayed as `*100`
+%) - unlike scents, this wasn't switched to a 0-100 scale, since `modifierPower`
+feeds directly into half a dozen OTHER config-scale constants in
+`ExpeditionStewManager` (`shinyRarityMultiplierScale`,
+`ingredientDoubleChanceScale`, `encounterFamilyWeightScale`,
+`chronoMaxBonusSeconds`, `captureChanceBonusScale`,
+`captureMaxAutoBreakAreas`, `soothingMaxSlowdown`) that all assume a 0-1
+input - rescaling would have meant retuning every one of them too, which
+wasn't asked for. Only the denominator changed.
+
+Practical consequence worth knowing: with the live config's `modifierActivationThreshold`
+(0.3) and the cauldron's real capacity (8), a modifier now needs AT LEAST 3
+ingredients of the same family (`0.3 * 8 = 2.4`, rounds up) in the pot before
+any modifier activates at all - fewer than that and every brew is
+`StewModifierType.None`. This wasn't retuned; it's a direct, intentional
+consequence of the capacity-based fix, called out so it isn't mistaken for a
+new bug.

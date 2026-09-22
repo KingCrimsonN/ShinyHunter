@@ -25,8 +25,10 @@ public class CreatureData : ScriptableObject
     public IngredientFamily family;
 
     [Header("Scent Preference (spawn bias)")]
-    [Tooltip("0-1 per axis (Sweet, Fresh, Putrid, Metallic, Marine): how strongly this species is attracted to each scent. Used by Spawner to bias weighted selection toward the player's current stew scent profile.")]
-    public float[] scentPreference = new float[5];
+    [Tooltip("The one scent this species is drawn to. Boosts spawn weight when the active stew is strong on this axis - the stew's other four scent values are ignored entirely for this species. See GetScentAffinity.")]
+    public ScentType favoriteScent = ScentType.Sweet;
+    [Tooltip("The one scent this species is repelled by (\"hated\"). Reduces spawn weight AND increases detection radius (notices/flees the player from farther away, scaled by Detection Aversion Scale below) when the active stew is strong on THIS axis - again, only this one axis matters, not the other four. See GetScentAffinity.")]
+    public ScentType hatedScent = ScentType.Putrid;
 
     [Header("Visuals per rarity")]
     [Tooltip("Index 0=Normal, 1=Uncommon, 2=Rare, 3=Legendary. Each entry holds that variant's full set of named animations (Idle, Move, Flee, etc). Fine to leave states unauthored while art is still coming in - they simply won't play.")]
@@ -59,6 +61,8 @@ public class CreatureData : ScriptableObject
     public float detectionRadius = 6f;
     [Tooltip("Player distance the creature must reach before it feels safe again.")]
     public float fleeDistance = 10f;
+    [Tooltip("How much a fully-matching hated scent (see hatedScent above) stretches detectionRadius. 1 = doubles it when the stew is maxed out on the hated axis; 0 = hated scents don't affect detection at all.")]
+    public float detectionAversionScale = 1f;
 
     [Header("Capture")]
     [Tooltip("NOT currently used - capture chance now comes from the capture minigame's hit ratio (see CaptureMinigameController). Left in place in case you want to fold it back in as a per-species multiplier later.")]
@@ -92,5 +96,28 @@ public class CreatureData : ScriptableObject
         if (resources == null || resources.Length == 0) return null;
         int index = (int)rarity;
         return index < resources.Length ? resources[index] : resources[0];
+    }
+
+    /// <summary>
+    /// How drawn to (lovedScore) vs. repelled by (hatedScore) this species is
+    /// by the given scent profile - each axis on ExpeditionStewManager
+    /// .GetScents()'s 0-100 scale (0 = that scent isn't present at all),
+    /// normalized here to 0-1. Only favoriteScent/hatedScent's own single axis
+    /// is ever read - a stew that's maxed out on every OTHER axis still scores
+    /// 0 here if none of them is this species' favorite or hated scent. Shared
+    /// by Spawner (spawn-weight bias) and CreatureAI (detection-range bias) so
+    /// both read the EXACT same match, just apply it differently.
+    /// </summary>
+    public void GetScentAffinity(float[] currentScents, out float lovedScore, out float hatedScore)
+    {
+        lovedScore = GetScentValue(currentScents, favoriteScent) / 100f;
+        hatedScore = GetScentValue(currentScents, hatedScent) / 100f;
+    }
+
+    private static float GetScentValue(float[] scents, ScentType scent)
+    {
+        if (scents == null) return 0f;
+        int index = (int)scent;
+        return index >= 0 && index < scents.Length ? scents[index] : 0f;
     }
 }

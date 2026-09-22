@@ -11,7 +11,7 @@ public static class StewDisplayUtil
         if (scentTexts == null || scents == null) return;
 
         for (int i = 0; i < scentTexts.Length && i < scents.Length; i++)
-            if (scentTexts[i] != null) scentTexts[i].text = $"{ScentLabels[i]}: {scents[i]:0.0}";
+            if (scentTexts[i] != null) scentTexts[i].text = $"{ScentLabels[i]}: {scents[i]:0}";
     }
 
     public static string FormatName(StewInstance stew)

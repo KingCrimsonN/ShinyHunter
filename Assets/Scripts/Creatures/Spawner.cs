@@ -11,6 +11,9 @@ using UnityEngine.AI;
 /// </summary>
 public class Spawner : MonoBehaviour
 {
+    /// <summary>Floor for the scent weight multiplier - a stew a species maximally hates only ever makes it rare, never literally unspawnable (avoids permanently blocking bestiary completion for a whole run).</summary>
+    private const float MinScentWeightMultiplier = 0.05f;
+
     [System.Serializable]
     public struct SpawnableCreature
     {
@@ -108,8 +111,9 @@ public class Spawner : MonoBehaviour
     }
 
     /// <summary>
-    /// Base weight, scaled by how well this species' scent preference
-    /// matches the player's current stew scent profile, and by Encounter
+    /// Base weight, scaled by how well this species' scent preference/aversion
+    /// matches the player's current stew scent profile (loved scents boost
+    /// weight, hated scents suppress it - see decision log), and by Encounter
     /// Power's spawn-weight boost if this species' family is the boosted one.
     /// </summary>
     private float GetEffectiveWeight(SpawnableCreature entry)
@@ -123,13 +127,8 @@ public class Spawner : MonoBehaviour
         if (data == null || ExpeditionStewManager.Instance == null) return weight;
 
         float[] scents = ExpeditionStewManager.Instance.GetScents();
-        if (data.scentPreference != null && data.scentPreference.Length == 5)
-        {
-            float scentScore = 0f;
-            for (int i = 0; i < 5; i++)
-                scentScore += data.scentPreference[i] * (scents[i] / 5f); // scent 1-5 -> 0-1
-            weight *= 1f + scentScore;
-        }
+        data.GetScentAffinity(scents, out float lovedScore, out float hatedScore);
+        weight *= Mathf.Max(MinScentWeightMultiplier, 1f + lovedScore - hatedScore);
 
         if (ExpeditionStewManager.Instance.TryGetEncounterBoostFamily(out var boostedFamily, out float boostMultiplier)
             && data.family == boostedFamily)

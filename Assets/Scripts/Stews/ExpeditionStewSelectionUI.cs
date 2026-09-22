@@ -230,7 +230,7 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
             if (nameText != null) nameText.text = string.Empty;
             if (timeText != null) timeText.text = "No stews available";
             if (modifierText != null) modifierText.text = string.Empty;
-            StewDisplayUtil.SetScentTexts(scentTexts, new float[] { 1f, 1f, 1f, 1f, 1f });
+            StewDisplayUtil.SetScentTexts(scentTexts, new float[] { 0f, 0f, 0f, 0f, 0f });
             return;
         }
 

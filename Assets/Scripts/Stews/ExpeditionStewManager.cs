@@ -70,7 +70,7 @@ public class ExpeditionStewManager : MonoBehaviour
             isDefault = true,
             modifierType = StewModifierType.None,
             modifierPower = 0f,
-            scents = new float[] { 1f, 1f, 1f, 1f, 1f },
+            scents = new float[] { 0f, 0f, 0f, 0f, 0f },
         };
 
         if (config == null)
@@ -86,7 +86,7 @@ public class ExpeditionStewManager : MonoBehaviour
         if (config.defaultStewScents != null)
         {
             for (int i = 0; i < stew.scents.Length && i < config.defaultStewScents.Length; i++)
-                stew.scents[i] = Mathf.Clamp(config.defaultStewScents[i], 1f, 5f);
+                stew.scents[i] = Mathf.Clamp(config.defaultStewScents[i], 0f, 100f);
         }
 
         return stew;
@@ -142,9 +142,9 @@ public class ExpeditionStewManager : MonoBehaviour
         return 1f - ActiveStew.modifierPower * config.soothingMaxSlowdown;
     }
 
-    /// <summary>Player's current scent profile (Sweet, Fresh, Putrid, Metallic, Marine, each 1-5) - neutral (all 1) with no active stew.</summary>
+    /// <summary>Player's current scent profile (Sweet, Fresh, Putrid, Metallic, Marine, each 0-100) - neutral (all 0, i.e. "not present") with no active stew.</summary>
     public float[] GetScents()
     {
-        return ActiveStew != null ? ActiveStew.scents : new float[] { 1f, 1f, 1f, 1f, 1f };
+        return ActiveStew != null ? ActiveStew.scents : new float[] { 0f, 0f, 0f, 0f, 0f };
     }
 }

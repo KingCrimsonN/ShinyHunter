@@ -195,7 +195,12 @@ public class BrewingStationUI : MonoBehaviour
         foreach (var r in slotContents) if (r != null) ingredients.Add(r);
         if (ingredients.Count == 0) return;
 
-        var stew = StewCalculator.Calculate(ingredients, calculationConfig);
+        // cauldronSlots.Length (the array's real size, NOT unlockedSlotCount) is
+        // the "total capacity" the scent calculation divides by - filling all
+        // your CURRENTLY unlocked slots always means the same thing regardless
+        // of how many you've unlocked, and unlocking more slots doesn't retroactively
+        // change how strong an already-brewed recipe would have smelled.
+        var stew = StewCalculator.Calculate(ingredients, cauldronSlots.Length, calculationConfig);
         stew.icon = visualConfig != null ? visualConfig.GetFamilyIcon(stew.dominantFamily) : null;
 
         // Ingredients are spent the moment you brew, win or lose - dumping

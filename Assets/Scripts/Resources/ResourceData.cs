@@ -24,9 +24,9 @@ public class ResourceData : ScriptableObject
     [Tooltip("Resources have their own scent values, independent of the creature they came from.")]
     public float sweetScent;
     public float freshScent;
-    public float putridScent;
-    public float metallicScent;
     public float marineScent;
+    public float metallicScent;
+    public float putridScent;
 
     [Header("Stacking")]
     [Min(1)] public int maxStack = 20;

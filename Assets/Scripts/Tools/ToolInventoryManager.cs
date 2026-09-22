@@ -4,8 +4,10 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Fixed 10-slot inventory for tools/active items. Slot index maps directly
-/// to hotbar keybind (0-8 -> keys 1-9, slot 9 -> key 0).
+/// Fixed-slot inventory for tools/active items (capacity below). Only the
+/// first equipCapacity slots are ever equippable - ToolEquipController binds
+/// that many number keys to them (1-9, then 0), and ToolHotbarUI's carousel
+/// displays exactly those slots.
 ///
 /// The "equipped" pointer is a slot INDEX, not an item reference - dragging
 /// items around in the popup reorders slots, and whichever item ends up in

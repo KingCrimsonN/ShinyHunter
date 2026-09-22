@@ -257,3 +257,44 @@ Scrollbars` adds it to project prefabs + open scenes (prefab-instance
 scrollbars are skipped - they take it from their prefab asset). A new scrollbar
 needs the component added by hand (or `Tools > Scrollbars > Add Fixed Handle To
 Selected`).
+
+## The tool hotbar rotates 3 fixed cards instead of sliding a track
+
+`ToolHotbarUI` used to be a plain row of `EquipCapacity` (3) equal tiles with
+a highlight on the equipped one. It's now a carousel: a large centered card
+(the equipped/held tool) flanked by two small cards (the other two equip
+slots), matching `item_slot`/`item_slot_small` art already in
+`Assets/Sprites/UI/gameplay/`.
+
+Unlike `ExpeditionStewSelectionUI`'s carousel (a track that slides
+continuously through an arbitrarily long, growable list of bowls), this one
+has exactly 3 possible contents, ever — the 3 equip slots. So a selection
+change isn't "slide toward the newly centered item," it's a ROTATION of the
+three already-visible icons between three FIXED screen positions: moving to
+the next slot shifts every icon one card to the left, and the vacated right
+card is filled by whatever just fell off the left (wraps around); moving to
+the previous slot is the mirror. `ToolHotbarUI` tracks this with three plain
+ints (which equip-slot index each position is currently showing) and rotates
+them with a tuple assignment — no track, no continuous position, no
+`LayoutGroup` needed. On top of the rotation, the center card's frame flashes
+to an alternate sprite (`item_slot_change`) briefly, as the "now equipped"
+cue.
+
+This only has a defined shape for exactly 3 equip slots (`EquipCapacity`
+changing away from 3 falls back to a plain snap, no rotation animation - see
+`ToolHotbarUI.HandleEquippedChanged`). If equip capacity ever needs to grow,
+this carousel needs a different design (more cards, or a sliding track like
+the stew carousel), not a tweak.
+
+## Number keys are bounded by EquipCapacity, not by the full 20-slot storage
+
+`ToolEquipController.HandleNumberKeyInput` used to loop through all 10
+number keys regardless of `EquipCapacity`, so e.g. key "4" could equip slot 3
+even though only the first `EquipCapacity` (3) slots are ever shown in the
+hotbar or meant to be equippable - the scroll wheel (`CycleEquipped`) was
+already correctly bounded, just not the number keys. This was harmless
+before (equipping an "invisible" slot just meant the hotbar didn't highlight
+anything), but it breaks the new carousel's math outright: `ToolHotbarUI`
+assumes the equipped index never leaves `[0, EquipCapacity)` so it can always
+name the other two equip slots as "left" and "right." Fixed by binding only
+as many number keys as there are equip slots.

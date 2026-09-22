@@ -33,7 +33,8 @@ behind the less obvious choices called out here.
 | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `InventoryManager.cs`                                                                     | Captured creatures, keyed by (species, rarity). Also tracks per-run captures and first-ever-species-seen separately from the persistent totals — needed by `RunSummaryUI`. Run tracking resets itself on `sceneLoaded` for any non-hub scene                       |
 | `ResourceData.cs` / `ResourceInventoryManager.cs`                                         | Crafting ingredients extracted from creatures. Dictionary + a separate ordered-key list backing a "Sort" button (see decision log for why a dictionary needs a side-list to be sortable at all) |
-| `ToolData.cs` / `ToolBehaviour.cs` / `ToolInventoryManager.cs` / `ToolEquipController.cs` | 10-slot equippable hotbar. `ToolBehaviour.OnConsumed` event drives stack depletion — see CLAUDE.md convention #6                                                                                |
+| `ToolData.cs` / `ToolBehaviour.cs` / `ToolInventoryManager.cs` / `ToolEquipController.cs` | Fixed-slot storage (`capacity`, default 20), of which only the first `equipCapacity` (default 3) are equippable — number keys and the hotbar are both bounded by it, see decision log. `ToolBehaviour.OnConsumed` event drives stack depletion — see CLAUDE.md convention #6 |
+| `ToolHotbarUI.cs`                                                                         | 3-card carousel (center = equipped, left/right = the other two equip slots) — a fixed rotation between 3 screen positions, not a sliding track. See decision log                                |
 
 ## Spawning
 

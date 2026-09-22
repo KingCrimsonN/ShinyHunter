@@ -2,8 +2,9 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Reads mouse scroll wheel and number keys (1-9, 0) to change the equipped
-/// tool slot, and spawns/despawns the matching ToolBehaviour prefab in the
+/// Reads mouse scroll wheel and number keys (as many as EquipCapacity, from
+/// 1-9 then 0) to change the equipped tool slot, and spawns/despawns the
+/// matching ToolBehaviour prefab in the
 /// player's hand socket. Left click (configurable) calls UseTool() on
 /// whatever's currently held.
 ///
@@ -99,19 +100,24 @@ public class ToolEquipController : MonoBehaviour
 
     private void HandleNumberKeyInput()
     {
-        // Keys 1-9 map to slots 0-8
-        for (int i = 0; i < 9; i++)
+        // Keys 1-9 map to slots 0-8, key 0 maps to slot 9 (the 10th slot) -
+        // but only as many keys as there are EQUIP slots are ever bound, so a
+        // key press can never equip a slot outside the hotbar itself (it used
+        // to: this looped through all 10 keys regardless of EquipCapacity,
+        // letting e.g. key "4" equip slot 3 even with only 3 equip slots -
+        // ToolHotbarUI's carousel now assumes the equipped index never leaves
+        // [0, EquipCapacity), so this bound is load-bearing, not cosmetic).
+        int equipCapacity = ToolInventoryManager.Instance.EquipCapacity;
+
+        for (int i = 0; i < equipCapacity && i < 10; i++)
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+            KeyCode key = i < 9 ? KeyCode.Alpha1 + i : KeyCode.Alpha0;
+            if (Input.GetKeyDown(key))
             {
                 ToolInventoryManager.Instance.SetEquippedIndex(i);
                 return;
             }
         }
-
-        // Key 0 maps to slot 9 (the 10th slot)
-        if (Input.GetKeyDown(KeyCode.Alpha0))
-            ToolInventoryManager.Instance.SetEquippedIndex(9);
     }
 
     private void HandleEquippedChanged(int index)

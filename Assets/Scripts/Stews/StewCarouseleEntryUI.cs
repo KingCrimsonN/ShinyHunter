@@ -10,7 +10,9 @@ public class StewCarouselEntryUI : MonoBehaviour
 
     public void Set(StewInstance stew)
     {
-        if (icon != null) icon.sprite = stew.icon;
+        // A stew with no icon (e.g. the default stew before one is assigned on
+        // the config) keeps the prefab's own sprite instead of blanking it.
+        if (icon != null && stew.icon != null) icon.sprite = stew.icon;
     }
 
     /// <summary>

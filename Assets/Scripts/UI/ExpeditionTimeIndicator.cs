@@ -104,6 +104,7 @@ public class ExpeditionTimeIndicator : MonoBehaviour
         }
         else if (SceneTransitionManager.Instance != null)
         {
+            if (PlayerHealth.Instance != null) PlayerHealth.Instance.EndRun(); // no summary to stop the clock for us
             SceneTransitionManager.Instance.TransitionToScene(SceneNames.Hub);
         }
         else

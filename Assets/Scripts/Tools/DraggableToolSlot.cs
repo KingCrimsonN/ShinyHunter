@@ -80,7 +80,8 @@ public class DraggableToolSlot : MonoBehaviour, IBeginDragHandler, IDragHandler,
         if (descriptionText != null && SlotUI.HasItem)
         {
             descriptionText.text = ToolInventoryManager.Instance.GetToolDescription(SlotIndex);
-            highlight.SetActive(true);
+            if (highlight != null)
+                highlight.SetActive(true);
         }
     }
 
@@ -89,7 +90,8 @@ public class DraggableToolSlot : MonoBehaviour, IBeginDragHandler, IDragHandler,
         if (descriptionText != null)
         {
             descriptionText.text = string.Empty;
-            highlight.SetActive(false);
+            if (highlight != null)
+                highlight.SetActive(false);
         }
     }
 }

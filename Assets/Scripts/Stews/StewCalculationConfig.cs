@@ -21,6 +21,16 @@ public class StewCalculationConfig : ScriptableObject
     [Tooltip("Minimum dominance ratio (0-1) required for ANY modifier to activate. Below this, the stew gets StewModifierType.None.")]
     public float modifierActivationThreshold = 0.3f;
 
+    [Header("Default Stew (always available at the exit door)")]
+    [Tooltip("Shown as the stew's name. This stew is never stored in a bowl and never used up - it's the fallback when the player has nothing better to take.")]
+    public string defaultStewName = "Auntie's Stew";
+    [Tooltip("Expedition time this stew gives, in seconds. Keep it modest so brewing a real stew is worth it.")]
+    public float defaultStewTimeSeconds = 120f;
+    [Tooltip("Sweet, Fresh, Putrid, Metallic, Marine - each 1-5. All 1 = neutral (same as taking no stew).")]
+    public float[] defaultStewScents = { 1f, 1f, 1f, 1f, 1f };
+    [Tooltip("Icon shown in the carousel. If left empty, the carousel entry keeps whatever sprite its prefab has.")]
+    public Sprite defaultStewIcon;
+
     [Header("Modifier Effect Scales")]
     [Tooltip("Rarity-roll chances are multiplied by (1 + power * this) when Shiny Power is active.")]
     public float shinyRarityMultiplierScale = 1.5f;

@@ -68,6 +68,11 @@ public class RunSummaryUI : MonoBehaviour
     /// <summary>Entry point - call when an expedition's time runs out (see ExpeditionTimeIndicator).</summary>
     public void ShowSummary()
     {
+        // The run is over the moment the summary starts - stop the clock now,
+        // whichever way we got here (time ran out, or the exit door).
+        if (PlayerHealth.Instance != null)
+            PlayerHealth.Instance.EndRun();
+
         // Resolve any in-progress capture BEFORE computing stats, so a
         // last-second successful capture still counts toward this run's totals.
         if (CaptureMinigameController.Instance != null)

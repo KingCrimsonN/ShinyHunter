@@ -109,6 +109,19 @@ public class PlayerHealth : MonoBehaviour
             Die();
     }
 
+    /// <summary>
+    /// Stops the clock because the expedition is over (left through the exit
+    /// door, or the run summary is being shown). Without this the time keeps
+    /// ticking - through the summary popup and the fade back to the hub - until
+    /// the hub scene actually loads, and could even run out mid-summary and
+    /// trigger a second one. The next expedition scene restarts it (see
+    /// HandleSceneChange).
+    /// </summary>
+    public void EndRun()
+    {
+        isRunning = false;
+    }
+
     public void Die()
     {
         // Handle player death logic here

@@ -4,10 +4,11 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Exit-door popup: horizontal carousel of the player's bowls, pick the
-/// centered one, see its stats below, confirm to consume it and begin the
-/// expedition. Opened externally (call Instance.Open()) from the door's
-/// IInteractable.
+/// Exit-door popup: horizontal carousel of the player's bowls plus the
+/// always-available default stew (Auntie's Stew, last in the row), pick the
+/// centered one, see its stats below, confirm to consume it (the default is
+/// never consumed) and begin the expedition. Opened externally (call
+/// Instance.Open()) from the door's IInteractable.
 ///
 /// The selected bowl always sits in the middle of the carousel panel. Next /
 /// Previous slide the whole row of bowls one step (eased, not looped: the
@@ -36,6 +37,8 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
     [SerializeField] private float shiftTime = 0.2f;
 
     [Header("Selected Stew Stats")]
+    [Tooltip("Optional - the selected stew's name (\"Auntie's Stew\" for the default one, \"Stew\" for brewed ones).")]
+    [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text timeText;
     [Tooltip("Exactly 5, in order: Sweet, Fresh, Putrid, Metallic, Marine.")]
     [SerializeField] private TMP_Text[] scentTexts;
@@ -43,6 +46,8 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
 
     [SerializeField] private string expeditionSceneName = "Forest";
 
+    /// <summary>What's on offer, in carousel order: the player's bowls, then the always-available default stew. Parallel to <see cref="spawned"/>.</summary>
+    private readonly List<StewInstance> choices = new List<StewInstance>();
     private readonly List<StewCarouselEntryUI> spawned = new List<StewCarouselEntryUI>();
     private readonly List<float> entryCenters = new List<float>(); // each entry's centre X in track space, measured once per build
     private int selectedIndex;
@@ -164,9 +169,18 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
         spawned.Clear();
         entryCenters.Clear();
 
+        // The player's bowls first, then the default stew LAST - so with any
+        // bowls the first thing selected is a real one, and with none the
+        // default is the only (and so selected) choice. The default isn't a
+        // bowl: it takes no bowl capacity and is never used up.
+        choices.Clear();
+        choices.AddRange(StewInventoryManager.Instance.Bowls);
+        if (ExpeditionStewManager.Instance != null)
+            choices.Add(ExpeditionStewManager.Instance.GetDefaultStew());
+
         RectTransform trackRect = EnsureTrack();
 
-        foreach (var stew in StewInventoryManager.Instance.Bowls)
+        foreach (var stew in choices)
         {
             var entry = Instantiate(entryPrefab, trackRect);
             entry.Set(stew);
@@ -213,6 +227,7 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
 
         if (spawned.Count == 0)
         {
+            if (nameText != null) nameText.text = string.Empty;
             if (timeText != null) timeText.text = "No stews available";
             if (modifierText != null) modifierText.text = string.Empty;
             StewDisplayUtil.SetScentTexts(scentTexts, new float[] { 1f, 1f, 1f, 1f, 1f });
@@ -229,7 +244,8 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
             UpdateFocus();
         }
 
-        var stew = StewInventoryManager.Instance.Bowls[selectedIndex];
+        var stew = choices[selectedIndex];
+        if (nameText != null) nameText.text = StewDisplayUtil.FormatName(stew);
         if (timeText != null) timeText.text = $"{stew.timeSeconds / 60f:0.#} min";
         StewDisplayUtil.SetScentTexts(scentTexts, stew.scents);
         if (modifierText != null) modifierText.text = StewDisplayUtil.FormatModifier(stew);
@@ -262,8 +278,13 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
             return;
         }
 
-        var stew = StewInventoryManager.Instance.Bowls[selectedIndex];
-        StewInventoryManager.Instance.RemoveStew(stew);
+        var stew = choices[selectedIndex];
+
+        // The default stew isn't in a bowl - there's nothing to remove, so it
+        // can be taken every single time.
+        if (!stew.isDefault)
+            StewInventoryManager.Instance.RemoveStew(stew);
+
         ExpeditionStewManager.Instance.SetActiveStew(stew);
 
         // Hide the popup but do NOT unfreeze: SceneTransitionManager keeps

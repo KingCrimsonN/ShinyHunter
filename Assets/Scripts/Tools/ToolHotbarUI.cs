@@ -28,12 +28,24 @@ public class ToolHotbarUI : MonoBehaviour
         int equipCapacity = ToolInventoryManager.Instance.EquipCapacity;
         slotUIs = new ToolSlotUI[equipCapacity];
 
-        for (int i = 0; i < equipCapacity; i++)
+        // Use the tiles already placed under slotParent (in hierarchy order)
+        // first. Spawning a full set on top of them left the placed ones
+        // untouched - stuck on the prefab's default icon/amount - next to a
+        // duplicate set that actually worked.
+        int filled = 0;
+        foreach (Transform child in slotParent)
         {
-            var slotUI = Instantiate(slotPrefab, slotParent);
-            slotUI.SetKeybindLabel(i == capacity - 1 ? "0" : (i + 1).ToString());
-            slotUIs[i] = slotUI;
+            if (filled >= equipCapacity) break;
+
+            var placed = child.GetComponent<ToolSlotUI>();
+            if (placed != null) slotUIs[filled++] = placed;
         }
+
+        for (; filled < equipCapacity; filled++)
+            slotUIs[filled] = Instantiate(slotPrefab, slotParent);
+
+        for (int i = 0; i < equipCapacity; i++)
+            slotUIs[i].SetKeybindLabel(i == capacity - 1 ? "0" : (i + 1).ToString());
 
         Subscribe(); // OnEnable can run before the manager exists in the very first scene
         SyncAll();

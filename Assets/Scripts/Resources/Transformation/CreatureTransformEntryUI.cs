@@ -17,6 +17,7 @@ public class CreatureTransformEntryUI : MonoBehaviour,
     IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
     [SerializeField] private Image icon;
+    [SerializeField] private Image frame;
     [SerializeField] private TMP_Text nameText;
     // [SerializeField] private TMP_Text rarityText;
     [SerializeField] private TMP_Text countText;
@@ -30,6 +31,15 @@ public class CreatureTransformEntryUI : MonoBehaviour,
     private CreatureData.Rarity rarity;
     private CreatureTransformStationUI station;
 
+    [Header("Rarity Colors")]
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color uncommonColor = new Color(0.3f, 0.8f, 0.3f);
+    [SerializeField] private Color rareColor = new Color(0.3f, 0.5f, 1f);
+    [SerializeField] private Color legendaryColor = new Color(1f, 0.65f, 0f);
+
+
+    [SerializeField] private Sprite[] rarityFrames; // normal, uncommon, rare, legendary
+
     public void Setup(CreatureData species, CreatureData.Rarity rarity, int count, TransformEntrySide side, CreatureTransformStationUI station)
     {
         this.species = species;
@@ -41,6 +51,9 @@ public class CreatureTransformEntryUI : MonoBehaviour,
         if (nameText != null) nameText.text = species.creatureName;
         // if (rarityText != null) rarityText.text = rarity.ToString();
         if (countText != null) countText.text = "x" + count;
+
+        // nameText.color = GetRarityColor(rarity);
+        if (frame != null) frame.sprite = rarityFrames[(int)rarity];
     }
 
     /// <summary>Moves up to `amount` from this entry's side to the other side. Station clamps to what's actually available.</summary>

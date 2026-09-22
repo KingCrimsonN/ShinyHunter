@@ -10,6 +10,16 @@ using UnityEngine;
 public class StewInstance
 {
     public string id = Guid.NewGuid().ToString();
+
+    /// <summary>Optional name to show (e.g. "Auntie's Stew"). Brewed stews leave this empty - see StewDisplayUtil.FormatName.</summary>
+    public string displayName;
+
+    /// <summary>
+    /// True only for the built-in default stew (ExpeditionStewManager.GetDefaultStew).
+    /// It is never stored in a bowl and never consumed when taken on an expedition.
+    /// </summary>
+    public bool isDefault;
+
     public List<ResourceData> ingredients = new List<ResourceData>();
 
     public float timeSeconds;

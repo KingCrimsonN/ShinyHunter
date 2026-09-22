@@ -430,7 +430,7 @@ RectTransform:
   m_Father: {fileID: 4131508683274301337}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1671,6 +1671,7 @@ GameObject:
   - component: {fileID: 6151935359605159470}
   - component: {fileID: 3627829647475468491}
   - component: {fileID: 3915572846931638112}
+  - component: {fileID: 3151416403175243267}
   m_Layer: 5
   m_Name: Scrollbar Horizontal
   m_TagString: Untagged
@@ -1780,11 +1781,26 @@ MonoBehaviour:
   m_HandleRect: {fileID: 6957122609290970351}
   m_Direction: 0
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.024680533
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3151416403175243267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3510438617852520838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0821a585eae664d48ac47328c158a457, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FixedSizeScrollbarHandle
+  mode: 0
+  handleLengthPixels: 40
+  handleFraction: 0.1
 --- !u!1 &3631965830929555400
 GameObject:
   m_ObjectHideFlags: 0
@@ -3350,6 +3366,7 @@ GameObject:
   - component: {fileID: 731757075790311407}
   - component: {fileID: 8547637197487910892}
   - component: {fileID: 6843084592698751560}
+  - component: {fileID: 5129438524957053622}
   m_Layer: 5
   m_Name: Scrollbar Vertical
   m_TagString: Untagged
@@ -3459,11 +3476,26 @@ MonoBehaviour:
   m_HandleRect: {fileID: 315007149855091488}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.04764398
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5129438524957053622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5849264427052935831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0821a585eae664d48ac47328c158a457, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FixedSizeScrollbarHandle
+  mode: 0
+  handleLengthPixels: 40
+  handleFraction: 0.1
 --- !u!1 &5904351727194420902
 GameObject:
   m_ObjectHideFlags: 0
@@ -5101,7 +5133,7 @@ RectTransform:
   m_Father: {fileID: 1394795657061734206}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}

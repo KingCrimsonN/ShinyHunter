@@ -38,7 +38,7 @@ public class ToolSlotUI : MonoBehaviour
 
     public void SetSelected(bool selected)
     {
-        if (selectedHighlight != null) selectedHighlight.SetActive(selected);
+        // if (selectedHighlight != null) selectedHighlight.SetActive(selected);
     }
 
 }

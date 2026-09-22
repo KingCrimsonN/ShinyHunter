@@ -26,7 +26,7 @@ public class Billboard : MonoBehaviour
         else
         {
             // Always face camera directly (floating items/effects)
-            transform.rotation = mainCamera.transform.rotation;
+            transform.rotation = Quaternion.Euler(mainCamera.transform.rotation.eulerAngles + new Vector3(0, 10f, 0));
         }
     }
 }

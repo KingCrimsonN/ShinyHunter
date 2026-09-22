@@ -222,3 +222,38 @@ slide the whole row. Not looped: the buttons disable at either end. Entries
 scale/highlight by their continuous distance from the centre (`SetFocus`).
 A `StewCarouselEntryUI` placed under the panel at design time is treated as
 a layout preview and hidden at runtime (it used to sit beside the real ones).
+
+## The default stew (Auntie's Stew) is not a bowl
+
+The exit carousel must never be empty, so a built-in stew is always offered.
+It is deliberately NOT stored in `StewInventoryManager`: it takes no bowl
+capacity (so it can't make "all bowls full" block brewing), it doesn't appear
+in the bowl inventory panel, and it is never consumed. `StewInstance.isDefault`
+marks it; `ExpeditionStewSelectionUI.Confirm` skips `RemoveStew` for it and
+otherwise runs the exact same `SetActiveStew` path (so time and any banked
+Chrono bonus apply normally). It is appended LAST in the carousel, so the first
+selection is a real bowl when the player has any. Its numbers (name, time,
+scents, icon) live on `StewCalculationConfig`, per the balance-in-config
+convention, and `ExpeditionStewManager.GetDefaultStew()` builds a fresh runtime
+`StewInstance` from them on each call - the shared config asset is never written
+to. It has no modifier by design; the point is a safe baseline, not a build.
+
+## Scrollbar handles have a fixed size (FixedSizeScrollbarHandle)
+
+A `ScrollRect` writes `Scrollbar.size` (= viewport / content) whenever content or
+viewport changes, and the `Scrollbar` stretches the handle's anchors to that
+fraction, so the handle length varies with the amount of content (and fills the
+whole track when nothing scrolls). Fixed handle art needs a constant length that
+still travels the full track. `Scrollbar.size` isn't virtual and the anchors are
+driven by Unity, so rather than fight that, `FixedSizeScrollbarHandle` puts
+`size` back to a fixed value AFTER the ScrollRect has written it
+(`DefaultExecutionOrder(1000)`, applied in `LateUpdate`, so the wrong size is
+never rendered). Scroll position (`value`) stays ScrollRect-driven, and Unity's
+own drag handling reads the same fixed size, so dragging stays correct. Length is
+in canvas units (`Pixels` mode, converted to a fraction of the track each frame
+so it survives resizing) or a fraction of the track. Every scrollbar in the
+project needs the component: `Tools > Scrollbars > Add Fixed Handle To All
+Scrollbars` adds it to project prefabs + open scenes (prefab-instance
+scrollbars are skipped - they take it from their prefab asset). A new scrollbar
+needs the component added by hand (or `Tools > Scrollbars > Add Fixed Handle To
+Selected`).

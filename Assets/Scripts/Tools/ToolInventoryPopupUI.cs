@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,8 +17,11 @@ public class ToolInventoryPopupUI : MonoBehaviour
     [SerializeField] private Image dragIconTemplate;
     [SerializeField] private KeyCode toggleKey = KeyCode.Tab;
 
-    [SerializeField] private DraggableToolSlot[] slotUIs;
+    [Tooltip("Optional. Any DraggableToolSlot elsewhere in this UI (outside slotParent) is found automatically and driven by its own SlotIndex - list tiles here only if that discovery ever misses one.")]
     [SerializeField] private DraggableToolSlot[] equipSlots;
+
+    /// <summary>Every tile this popup drives. Each shows the inventory slot given by its own SlotIndex - several tiles may share an index and all show it.</summary>
+    private readonly List<DraggableToolSlot> tiles = new List<DraggableToolSlot>();
 
     private void Awake()
     {
@@ -34,24 +38,60 @@ public class ToolInventoryPopupUI : MonoBehaviour
     {
         int capacity = ToolInventoryManager.Instance.Capacity;
         int equipCapacity = ToolInventoryManager.Instance.EquipCapacity;
-        slotUIs = new DraggableToolSlot[capacity];
+        tiles.Clear();
 
-        for (int i = 0; i < equipCapacity; i++)
+        // Equip tiles. These used to come only from the hand-wired equipSlots
+        // array, so a tile added in the editor but not added to that array
+        // was never refreshed and just kept its prefab's default icon/amount.
+        // Now every DraggableToolSlot in this UI outside the spawn container
+        // is driven by its own SlotIndex, whether or not it's listed.
+        foreach (var tile in equipSlots)
+            AddTile(tile);
+
+        foreach (var tile in GetComponentsInChildren<DraggableToolSlot>(true))
         {
-            slotUIs[i] = equipSlots[i];
+            if (slotParent != null && tile.transform.IsChildOf(slotParent)) continue; // handled below
+            AddTile(tile);
         }
 
-        for (int i = equipCapacity; i < capacity; i++)
+        // Inventory tiles: use the ones already placed under slotParent (in
+        // hierarchy order) before spawning any - same reasoning, a tile placed
+        // by hand shouldn't be ignored.
+        int nextIndex = equipCapacity;
+
+        if (slotParent != null)
+        {
+            foreach (Transform child in slotParent)
+            {
+                if (nextIndex >= capacity) break;
+
+                var placed = child.GetComponent<DraggableToolSlot>();
+                if (placed == null) continue;
+
+                placed.SlotIndex = nextIndex++;
+                placed.descriptionText = descriptionText;
+                AddTile(placed);
+            }
+        }
+
+        for (; nextIndex < capacity; nextIndex++)
         {
             var slot = Instantiate(slotPrefab, slotParent);
-            slot.SlotIndex = i;
+            slot.SlotIndex = nextIndex;
             slot.descriptionText = descriptionText;
-            // slot.SlotUI.SetKeybindLabel(i == capacity - 1 ? "0" : (i + 1).ToString());
-            slotUIs[i] = slot;
+            AddTile(slot);
         }
 
         ToolInventoryManager.Instance.OnInventoryChanged += Refresh;
         Refresh();
+    }
+
+    private void AddTile(DraggableToolSlot tile)
+    {
+        if (tile == null || tiles.Contains(tile)) return;
+
+        if (tile.descriptionText == null) tile.descriptionText = descriptionText;
+        tiles.Add(tile);
     }
 
     private void OnDestroy()
@@ -97,16 +137,16 @@ public class ToolInventoryPopupUI : MonoBehaviour
     private void Refresh()
     {
         var slots = ToolInventoryManager.Instance.Slots;
-        for (int i = 0; i < slotUIs.Length && i < slots.Count; i++)
+        foreach (var tile in tiles)
         {
-            var ui = slotUIs[i] != null ? slotUIs[i].SlotUI : null;
+            var ui = tile != null ? tile.SlotUI : null;
             if (ui == null)
             {
-                Debug.LogWarning($"ToolInventoryPopupUI: slot tile {i} is missing (unassigned in equipSlots, or has no ToolSlotUI) - skipping it.", this);
+                Debug.LogWarning("ToolInventoryPopupUI: a slot tile has no ToolSlotUI (or was destroyed) - skipping it.", this);
                 continue;
             }
 
-            var slot = slots[i];
+            var slot = tile.SlotIndex >= 0 && tile.SlotIndex < slots.Count ? slots[tile.SlotIndex] : null;
             if (slot == null || slot.data == null || slot.count <= 0) ui.SetEmpty();
             else ui.SetItem(slot.data, slot.count);
         }

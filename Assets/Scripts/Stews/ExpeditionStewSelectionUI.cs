@@ -183,6 +183,14 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
         foreach (var stew in choices)
         {
             var entry = Instantiate(entryPrefab, trackRect);
+            // entryPrefab is wired (in the Hub scene) to the StewExit instance
+            // sitting under carouselParent - the very object HideDesignTimeEntries
+            // disables as a design-time preview - so Instantiate() was cloning
+            // that DISABLED state onto every spawned entry, making every stew's
+            // icon (and everything else about it) invisible. Force it active
+            // regardless of whatever state the source happened to be in - a
+            // spawned carousel entry must always be visible. See decision log.
+            entry.gameObject.SetActive(true);
             entry.Set(stew);
             spawned.Add(entry);
         }

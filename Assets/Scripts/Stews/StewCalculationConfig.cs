@@ -16,6 +16,9 @@ public class StewCalculationConfig : ScriptableObject
     [Header("Scents")]
     [Tooltip("Raw scent points needed PER CAULDRON SLOT for an axis to reach its max (100) if every slot were filled with ingredients this strong - e.g. with 8 total cauldron slots and this at 5, hitting 100 on one axis needs 40 raw points there (~8 ingredients averaging 5 each). Using fewer ingredients than the cauldron's total capacity always gives proportionally less, however strong they are. See decision log.")]
     public float scentPerPoint = 5f;
+    [Tooltip("Population-cap fraction (0-1) a Spawner uses when the active stew's scent is at its weakest (every axis at 0, e.g. no stew at all). Scales up to the full populationCap as the loudest single scent axis approaches 100 - a weak-smelling stew draws fewer creatures. 1 = scent strength doesn't affect population at all.")]
+    [Range(0f, 1f)]
+    public float scentPopulationMinFraction = 0.4f;
 
     [Header("Modifier Selection")]
     [Tooltip("Minimum dominance ratio (0-1) required for ANY modifier to activate. Below this, the stew gets StewModifierType.None.")]
@@ -32,7 +35,7 @@ public class StewCalculationConfig : ScriptableObject
     public Sprite defaultStewIcon;
 
     [Header("Modifier Effect Scales")]
-    [Tooltip("Rarity-roll chances are multiplied by (1 + power * this) when Shiny Power is active.")]
+    [Tooltip("Rarity-roll chances are multiplied by (1 + power * this) when Shiny Power is active - and ONLY for creatures whose family matches the active stew's dominant family (ActiveStew.dominantFamily). Every other family rolls at its normal odds.")]
     public float shinyRarityMultiplierScale = 1.5f;
     [Tooltip("Chance (0-1) of double resources on transform, at power = 1.0, when Ingredient Power is active.")]
     public float ingredientDoubleChanceScale = 0.5f;

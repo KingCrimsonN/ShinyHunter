@@ -97,17 +97,17 @@ behind the less obvious choices called out here.
 | `StewCalculator.cs`                                                                                                                                   | Pure functions: ingredients + cauldron total capacity -> time/scents/modifier. No Unity lifecycle involved, easy to reason about or test in isolation. Scents (0-100, temporary) AND modifier power (0-1) are both divided by TOTAL cauldron capacity, not used-ingredient count — reaching a strong value needs filling most/all of the cauldron. See decision log |
 | `StewInstance.cs`                                                                                                                                     | Runtime result of a brew — not a ScriptableObject, since each stew is a unique result, not an authored asset                                                                                                                    |
 | `StewInventoryManager.cs`                                                                                                                             | Persistent. The "bowls."                                                                                                                                                                                                        |
-| `ExpeditionStewManager.cs`                                                                                                                            | Persistent. THE central query point — every other system (`CreatureAI`, `Spawner`, `CaptureMinigameController`, `CreatureTransformStationUI`) asks this "what's my multiplier"; none of them know about `StewInstance` directly |
+| `ExpeditionStewManager.cs`                                                                                                                            | Persistent. THE central query point — every other system (`CreatureAI`, `Spawner`, `CaptureMinigameController`, `CreatureTransformStationUI`) asks this "what's my multiplier"; none of them know about `StewInstance` directly. `GetRarityChanceMultiplier(family)` (Shiny Power) only benefits `ActiveStew.dominantFamily` — see decision log |
 | `BrewingStationUI.cs` + supporting UI (`BrewIngredientEntryUI`, `BrewCauldronSlotUI`, `StewResultPopupUI`, `StewInventoryPanelUI`, `StewBowlEntryUI`) | The cauldron popup: 8 slots (4 unlocked by default), drag ingredients in, Brew -> result popup -> Accept/Dump                                                                                                                   |
 | `ExpeditionStewSelectionUI.cs` + `StewCarouselEntryUI.cs`                                                                                             | Exit-door carousel: the selected bowl sits in the middle, Next/Previous slide a runtime-built track of bowls (not looped); confirm consumes the bowl and starts the scene transition. The always-available default stew (`ExpeditionStewManager.GetDefaultStew()`, flagged `isDefault`) is appended last and is never consumed                                                                                                                             |
 
 ## Cross-cutting dependency notes
 
 - `ExpeditionStewManager` is read by: `CreatureAI` (Shiny/Soothing), `Spawner`
-  (Encounter + scent bias), `CaptureMinigameController` (Capture),
-  `CreatureTransformStationUI` (Ingredient). Chrono Power is the exception —
-  it only ever touches `PlayerHealth`'s banked bonus; nothing reads it from
-  `ExpeditionStewManager` directly.
+  (Encounter + scent bias + population cap), `CaptureMinigameController`
+  (Capture), `CreatureTransformStationUI` (Ingredient). Chrono Power is the
+  exception — it only ever touches `PlayerHealth`'s banked bonus; nothing
+  reads it from `ExpeditionStewManager` directly.
 - `PlayerStateManager` is called by every popup's `Open()`/`Close()`. If you
   add a new popup, use it — don't hand-roll freeze logic again.
 - `SceneTransitionManager` is called by `RunSummaryUI` (end of run, via the

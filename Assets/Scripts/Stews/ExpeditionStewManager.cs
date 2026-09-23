@@ -94,10 +94,20 @@ public class ExpeditionStewManager : MonoBehaviour
 
     // ---------------- Modifier queries ----------------
 
-    /// <summary>Multiplier for CreatureAI's rarity-roll chances.</summary>
-    public float GetRarityChanceMultiplier()
+    /// <summary>
+    /// Multiplier for CreatureAI's rarity-roll chances - ONLY for creatures
+    /// whose family matches the active stew's dominant family
+    /// (ActiveStew.dominantFamily); every other family rolls at its normal
+    /// odds. Unlike the other family-scoped modifiers (Ingredient/Encounter/
+    /// Chrono/Capture/Soothing Power, each permanently tied to one fixed
+    /// family), Shiny Power's TRIGGER stays rarity-based, not family-based -
+    /// only its EFFECT is now scoped to whichever family happened to
+    /// dominate the recipe. See decision log.
+    /// </summary>
+    public float GetRarityChanceMultiplier(IngredientFamily creatureFamily)
     {
         if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.ShinyPower) return 1f;
+        if (creatureFamily != ActiveStew.dominantFamily) return 1f;
         return 1f + ActiveStew.modifierPower * config.shinyRarityMultiplierScale;
     }
 
@@ -146,5 +156,11 @@ public class ExpeditionStewManager : MonoBehaviour
     public float[] GetScents()
     {
         return ActiveStew != null ? ActiveStew.scents : new float[] { 0f, 0f, 0f, 0f, 0f };
+    }
+
+    /// <summary>Population-cap fraction (0-1) Spawner uses when the active stew's scent is at its weakest - see StewCalculationConfig.scentPopulationMinFraction.</summary>
+    public float GetScentPopulationMinFraction()
+    {
+        return config != null ? config.scentPopulationMinFraction : 1f;
     }
 }

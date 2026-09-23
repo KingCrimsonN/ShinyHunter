@@ -142,8 +142,12 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     private CreatureData.Rarity RollRarity()
     {
+        // Shiny Power only benefits creatures of the active stew's dominant
+        // family (see ExpeditionStewManager.GetRarityChanceMultiplier) - data
+        // is guaranteed non-null here, this is only ever called from Awake
+        // inside its own "if (data != null)" guard.
         float multiplier = ExpeditionStewManager.Instance != null
-            ? ExpeditionStewManager.Instance.GetRarityChanceMultiplier()
+            ? ExpeditionStewManager.Instance.GetRarityChanceMultiplier(data.family)
             : 1f;
 
         float legendary = Mathf.Clamp01(legendaryChance * multiplier);

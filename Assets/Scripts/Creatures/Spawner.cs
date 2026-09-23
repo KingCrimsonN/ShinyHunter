@@ -32,7 +32,7 @@ public class Spawner : MonoBehaviour
     [SerializeField] private bool snapToNavMesh = true;
 
     [Header("Population")]
-    [Tooltip("Max creatures alive from this spawner at once.")]
+    [Tooltip("Max creatures alive from this spawner at once, AT FULL scent strength. Scaled down when the active stew smells weak - see EffectivePopulationCap / StewCalculationConfig.scentPopulationMinFraction.")]
     [SerializeField] private int populationCap = 5;
     [Tooltip("Seconds to wait before refilling a slot that's freed up (e.g. after a capture).")]
     [SerializeField] private float respawnDelay = 60f;
@@ -42,9 +42,38 @@ public class Spawner : MonoBehaviour
     private readonly List<GameObject> activeCreatures = new List<GameObject>();
     private float respawnTimer;
 
+    /// <summary>
+    /// populationCap, scaled down by how weak the active stew's scent
+    /// currently is - a weak/neutral smell (or no stew at all) draws fewer
+    /// creatures to the area; a strong one draws up to the full populationCap.
+    /// "Strength" is the loudest single scent axis (0-100), not an average -
+    /// one dominant note is what a stew "smells like". Recomputed on every
+    /// use rather than cached: cheap (a 5-element scan), and the active stew
+    /// never changes mid-expedition anyway, so it's always consistent without
+    /// needing invalidation. See decision log.
+    /// </summary>
+    private int EffectivePopulationCap
+    {
+        get
+        {
+            if (ExpeditionStewManager.Instance == null) return populationCap;
+
+            float[] scents = ExpeditionStewManager.Instance.GetScents();
+            float strength = 0f;
+            if (scents != null)
+                foreach (float s in scents) strength = Mathf.Max(strength, s);
+            strength = Mathf.Clamp01(strength / 100f);
+
+            float minFraction = ExpeditionStewManager.Instance.GetScentPopulationMinFraction();
+            float fraction = Mathf.Lerp(minFraction, 1f, strength);
+
+            return Mathf.Max(1, Mathf.RoundToInt(populationCap * fraction));
+        }
+    }
+
     private void Start()
     {
-        for (int i = 0; i < populationCap; i++)
+        for (int i = 0; i < EffectivePopulationCap; i++)
             SpawnOne();
 
         StartCoroutine(RespawnLoop());
@@ -60,7 +89,7 @@ public class Spawner : MonoBehaviour
 
             activeCreatures.RemoveAll(c => c == null || !c.activeInHierarchy);
 
-            if (activeCreatures.Count < populationCap)
+            if (activeCreatures.Count < EffectivePopulationCap)
             {
                 respawnTimer += checkInterval;
                 if (respawnTimer >= respawnDelay)

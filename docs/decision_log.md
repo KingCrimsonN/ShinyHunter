@@ -451,3 +451,65 @@ any modifier activates at all - fewer than that and every brew is
 `StewModifierType.None`. This wasn't retuned; it's a direct, intentional
 consequence of the capacity-based fix, called out so it isn't mistaken for a
 new bug.
+
+## Exit-door carousel entries were invisible: entryPrefab pointed at a hidden scene object
+
+`ExpeditionStewSelectionUI.entryPrefab` in the Hub scene was wired to the
+`StewExit` object sitting directly under the carousel panel (a placed
+PrefabInstance in the scene), not to the standalone `Assets/Scripts/Stews/
+StewExit.prefab` ASSET - almost certainly a drag-and-drop mistake (dragging
+the scene object into the field instead of the Project-window asset). This
+went unnoticed until the carousel itself was built: `HideDesignTimeEntries()`
+(added when the carousel was built, to hide a leftover design-time preview
+entry sitting in the panel) disables any `StewCarouselEntryUI` under
+`carouselParent` - which includes that very `StewExit` object, since it's
+what `entryPrefab` actually points to. `Instantiate()` copies its source's
+active state onto the clone, so every spawned carousel entry (bowls AND the
+default stew) came out disabled - not just missing an icon, invisible
+entirely, which read as "the stew image doesn't appear."
+
+Fixed in code: `BuildCarousel()` now explicitly force-activates each spawned
+entry right after `Instantiate()`, so it no longer matters what state the
+`entryPrefab` reference's source object happens to be in. This is written to
+be correct regardless of the underlying wiring mistake, but the wiring itself
+is still worth fixing directly in the Editor (rewire `entryPrefab` to the
+actual `StewExit.prefab` asset) - as-is, deleting that specific scene object
+would leave `entryPrefab` null and break the carousel outright.
+
+## Spawner population scales with scent strength
+
+`Spawner.populationCap` is now a MAXIMUM reached only at full scent strength.
+`EffectivePopulationCap` scales it down via `StewCalculationConfig.
+scentPopulationMinFraction` (0.4 by default - i.e. as low as 40% of
+populationCap) when the active stew's scent is weak, up to the full cap when
+it's strong. "Strength" = the loudest single scent axis (max, not average) on
+the usual 0-100 scale - a stew is defined by whichever note is loudest, not a
+blend, matching how `CreatureData.favoriteScent`/`hatedScent` already read
+one axis at a time rather than a full profile. No stew (all axes 0) sits at
+the configured minimum fraction, not zero - an expedition is never
+completely empty even before the player has brewed anything. The result is
+floored at 1 regardless of configuration, so a very low `scentPopulationMinFraction`
+still spawns something. Recomputed live (not cached) since it's a cheap
+5-element scan and the active stew is constant for the whole expedition
+anyway, so there's no separate invalidation to get wrong.
+
+## Shiny Power's rarity bonus is scoped to one family
+
+Previously `ExpeditionStewManager.GetRarityChanceMultiplier()` (no
+parameters) applied Shiny Power's bonus to every creature's rarity roll
+regardless of species. It now takes the rolling creature's `IngredientFamily`
+and only applies the bonus when it matches `ActiveStew.dominantFamily`
+(`CreatureAI.RollRarity` passes `data.family`) - every other family rolls at
+its normal odds. This makes Shiny Power consistent with every OTHER
+family-scoped modifier (Ingredient/Encounter/Chrono/Capture/Soothing Power),
+each of which already benefits exactly one family - except those five are
+each permanently tied to ONE FIXED family (Ingredient Power is always
+Animal, Encounter Power is always Stranger, etc. - both the ratio that
+TRIGGERS them and the family they BENEFIT are the same fixed family). Shiny
+Power stays the odd one out on purpose: it still TRIGGERS on average
+ingredient RARITY (unrelated to family dominance - a recipe can be entirely
+one family and never trigger Shiny Power, or mix families and trigger it),
+but its BENEFIT now targets whichever family happens to dominate that
+specific recipe (`StewInstance.dominantFamily`, already computed
+unconditionally for every stew) rather than either a fixed family or every
+creature at once.

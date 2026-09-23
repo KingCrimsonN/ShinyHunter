@@ -19,10 +19,44 @@ public static class StewDisplayUtil
         return string.IsNullOrEmpty(stew.displayName) ? "Stew" : stew.displayName;
     }
 
+    /// <summary>Spaced-out display name for a modifier type, e.g. "ShinyPower" -> "Shiny Power".</summary>
+    public static string FormatModifierName(StewModifierType type)
+    {
+        switch (type)
+        {
+            case StewModifierType.ShinyPower: return "Shiny Power";
+            case StewModifierType.IngredientPower: return "Ingredient Power";
+            case StewModifierType.EncounterPower: return "Encounter Power";
+            case StewModifierType.ChronoPower: return "Chrono Power";
+            case StewModifierType.CapturePower: return "Capture Power";
+            case StewModifierType.SoothingPower: return "Soothing Power";
+            default: return type.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Informal family nickname, matching the names already used in
+    /// IngredientFamily's own comments ("Bugs", "Freakies") - invented for
+    /// the other three (Plants/Warm-Blooded/Cold-Blooded), retune freely.
+    /// </summary>
+    public static string FormatFamily(IngredientFamily family)
+    {
+        switch (family)
+        {
+            case IngredientFamily.Animal: return "Bugs";
+            case IngredientFamily.Plant: return "Plants";
+            case IngredientFamily.Stranger: return "Freakies";
+            case IngredientFamily.Warm: return "Warm-Blooded";
+            case IngredientFamily.Cold: return "Cold-Blooded";
+            default: return family.ToString();
+        }
+    }
+
+    /// <summary>e.g. "Shiny Power: Bugs (73%)". Every active modifier is now family-scoped - see StewInstance.affectedFamily.</summary>
     public static string FormatModifier(StewInstance stew)
     {
         return stew.modifierType == StewModifierType.None
             ? "No modifier"
-            : $"{stew.modifierType} ({stew.modifierPower * 100f:0}%)";
+            : $"{FormatModifierName(stew.modifierType)}: {FormatFamily(stew.affectedFamily)} ({stew.modifierPower * 100f:0}%)";
     }
 }

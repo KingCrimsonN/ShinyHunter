@@ -34,19 +34,22 @@ public class StewCalculationConfig : ScriptableObject
     [Tooltip("Icon shown in the carousel. If left empty, the carousel entry keeps whatever sprite its prefab has.")]
     public Sprite defaultStewIcon;
 
+    // Every modifier below applies ONLY to creatures/captures of the active
+    // stew's randomly-rolled affected family (StewInstance.affectedFamily) -
+    // see decision log.
     [Header("Modifier Effect Scales")]
-    [Tooltip("Rarity-roll chances are multiplied by (1 + power * this) when Shiny Power is active - and ONLY for creatures whose family matches the active stew's dominant family (ActiveStew.dominantFamily). Every other family rolls at its normal odds.")]
+    [Tooltip("Rarity-roll chances are multiplied by (1 + power * this) when Shiny Power is active, for creatures of the affected family only.")]
     public float shinyRarityMultiplierScale = 1.5f;
-    [Tooltip("Chance (0-1) of double resources on transform, at power = 1.0, when Ingredient Power is active.")]
+    [Tooltip("Chance (0-1) of double resources on transform, at power = 1.0, when Ingredient Power is active and the CAPTURED creature was of the affected family. Rolled once AT CAPTURE, not at transform time - see decision log.")]
     public float ingredientDoubleChanceScale = 0.5f;
-    [Tooltip("Spawn-weight multiplier for the boosted family, at power = 1.0, when Encounter Power is active.")]
+    [Tooltip("Spawn-weight multiplier for the affected family, at power = 1.0, when Encounter Power is active.")]
     public float encounterFamilyWeightScale = 1.0f;
-    [Tooltip("Seconds banked for the NEXT expedition, at power = 1.0, when Chrono Power is active.")]
-    public float chronoMaxBonusSeconds = 60f;
-    [Tooltip("Flat capture-chance bonus (0-1), at power = 1.0, when Capture Power is active.")]
+    [Tooltip("Bonus expedition time (seconds), at power = 1.0, granted for EACH capture of the affected family while Chrono Power is active - up to a minute per capture at full power. Applied immediately to the CURRENT run, not banked for later - see decision log.")]
+    public float chronoMaxBonusPerCapture = 60f;
+    [Tooltip("Flat capture-chance bonus (0-1), at power = 1.0, when Capture Power is active and the targeted creature is of the affected family.")]
     public float captureChanceBonusScale = 0.3f;
-    [Tooltip("Hit areas auto-marked as hit at the start of the wheel, at power = 1.0, when Capture Power is active.")]
+    [Tooltip("Hit areas auto-marked as hit at the start of the wheel, at power = 1.0, when Capture Power is active and the targeted creature is of the affected family.")]
     public int captureMaxAutoBreakAreas = 2;
-    [Tooltip("Flee speed / detection radius reduction (0-1), at power = 1.0, when Soothing Power is active.")]
+    [Tooltip("Flee speed / detection radius reduction (0-1), at power = 1.0, when Soothing Power is active, for creatures of the affected family only.")]
     public float soothingMaxSlowdown = 0.5f;
 }

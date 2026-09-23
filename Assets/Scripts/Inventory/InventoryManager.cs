@@ -5,8 +5,9 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Central store of how many of each (species, rarity) combo the player has
-/// captured. Fires OnInventoryChanged so UI (and later, the bestiary/stew
-/// system) can react without polling.
+/// captured, plus how many of each stack are flagged double-yield (Ingredient
+/// Power - see sparkleCounts). Fires OnInventoryChanged so UI (and later, the
+/// bestiary/stew system) can react without polling.
 /// </summary>
 public class InventoryManager : MonoBehaviour
 {
@@ -14,6 +15,19 @@ public class InventoryManager : MonoBehaviour
 
     /// <summary>Key = species + rarity. A captured Rare rabbit and a Normal rabbit are separate entries.</summary>
     private readonly Dictionary<(CreatureData species, CreatureData.Rarity rarity), int> counts =
+        new Dictionary<(CreatureData, CreatureData.Rarity), int>();
+
+    /// <summary>
+    /// How many of each stack's CURRENT stock are flagged to yield double
+    /// resources when eventually transformed (Ingredient Power, rolled once
+    /// PER CAPTURED UNIT - see CreatureAI.TryCapture). Always &lt;= the
+    /// matching entry in counts. Not truly per-instance (individual captured
+    /// creatures aren't distinguishable, only counted) - flagged units within
+    /// a stack are interchangeable, and RemoveCreatures always consumes
+    /// flagged ones FIRST, so "which n are sparkly" is well-defined without
+    /// needing real per-instance identity. See decision log.
+    /// </summary>
+    private readonly Dictionary<(CreatureData species, CreatureData.Rarity rarity), int> sparkleCounts =
         new Dictionary<(CreatureData, CreatureData.Rarity), int>();
 
     /// <summary>Same shape as counts, but scoped to the current run only - cleared by ResetRunTracking().</summary>
@@ -62,7 +76,8 @@ public class InventoryManager : MonoBehaviour
             ResetRunTracking();
     }
 
-    public void AddCreature(CreatureData species, CreatureData.Rarity rarity, int amount = 1)
+    /// <param name="doubleYield">True if this capture was flagged by Ingredient Power to yield double resources on transform (see CreatureAI.TryCapture). Applies to the WHOLE amount being added in this one call.</param>
+    public void AddCreature(CreatureData species, CreatureData.Rarity rarity, int amount = 1, bool doubleYield = false)
     {
         if (species == null) return;
 
@@ -73,6 +88,12 @@ public class InventoryManager : MonoBehaviour
 
         if (!runCounts.ContainsKey(key)) runCounts[key] = 0;
         runCounts[key] += amount;
+
+        if (doubleYield)
+        {
+            if (!sparkleCounts.ContainsKey(key)) sparkleCounts[key] = 0;
+            sparkleCounts[key] += amount;
+        }
 
         if (!everCapturedSpecies.Contains(species))
         {
@@ -102,7 +123,14 @@ public class InventoryManager : MonoBehaviour
     /// <summary>How many species were captured for the first time ever, during THIS run.</summary>
     public int GetNewSpeciesThisRunCount() => newSpeciesThisRun.Count;
 
-    /// <summary>Removes captured creatures of a species+rarity (e.g. consumed by transforming them into resources).</summary>
+    /// <summary>
+    /// Removes captured creatures of a species+rarity (e.g. consumed by
+    /// transforming them into resources). Sparkle-flagged (double-yield)
+    /// units are always consumed FIRST - see the sparkleCounts field comment
+    /// - so a caller that wants to know how many of the units it's about to
+    /// remove were flagged should read GetSparkleCount(species, rarity)
+    /// (clamped to `amount`) BEFORE calling this.
+    /// </summary>
     public void RemoveCreatures(CreatureData species, CreatureData.Rarity rarity, int amount)
     {
         var key = (species, rarity);
@@ -111,6 +139,13 @@ public class InventoryManager : MonoBehaviour
         counts[key] -= amount;
         if (counts[key] <= 0) counts.Remove(key);
 
+        if (sparkleCounts.TryGetValue(key, out int sparkle))
+        {
+            int remainingSparkle = Mathf.Max(0, sparkle - amount);
+            if (remainingSparkle <= 0) sparkleCounts.Remove(key);
+            else sparkleCounts[key] = remainingSparkle;
+        }
+
         OnInventoryChanged?.Invoke();
     }
 
@@ -118,6 +153,12 @@ public class InventoryManager : MonoBehaviour
     public int GetCount(CreatureData species, CreatureData.Rarity rarity)
     {
         return counts.TryGetValue((species, rarity), out int c) ? c : 0;
+    }
+
+    /// <summary>How many of this species+rarity's current stock are flagged double-yield (Ingredient Power) - always &lt;= GetCount(species, rarity). 0 = no sparkle badge.</summary>
+    public int GetSparkleCount(CreatureData species, CreatureData.Rarity rarity)
+    {
+        return sparkleCounts.TryGetValue((species, rarity), out int c) ? c : 0;
     }
 
     /// <summary>Total captured of a species across all rarities - handy for bestiary "seen" checks.</summary>

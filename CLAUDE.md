@@ -120,10 +120,13 @@ decision log).
 
 ## Known simplifications / things to revisit
 
-- **Ingredient Power** (stew modifier) rolls its double-resource chance at
-  _transform_ time, not _capture_ time — the creature inventory only tracks
-  counts, not individual instances, so per-creature tagging at capture
-  wasn't possible without a larger inventory rework.
+- **Ingredient Power** now rolls its double-resource chance at _capture_
+  time (`CreatureAI.TryCapture`), not transform time — the flag is tracked as
+  a per-(species,rarity) sub-count (`InventoryManager.sparkleCounts`), not
+  true per-instance identity (captured creatures within a stack still aren't
+  individually distinguishable — flagged units are just consumed first).
+  Shown as a sparkle badge in both the regular inventory and the transform
+  station. See decision log.
 - **Stew "time cap"** is one global constant
   (`StewCalculationConfig.maxTimeSeconds`), not a per-bowl stat — revisit if
   bowl tiers get added.

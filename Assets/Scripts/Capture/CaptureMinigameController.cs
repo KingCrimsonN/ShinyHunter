@@ -168,12 +168,12 @@ public class CaptureMinigameController : MonoBehaviour
         return true;
     }
 
-    /// <summary>Capture Power head-start: marks some hit areas as already hit, without spending attempts.</summary>
+    /// <summary>Capture Power head-start: marks some hit areas as already hit, without spending attempts. Only if this creature's family matches the stew's affected family.</summary>
     private void ApplyCapturePowerAutoBreak()
     {
-        if (ExpeditionStewManager.Instance == null) return;
+        if (ExpeditionStewManager.Instance == null || creatureData == null) return;
 
-        int autoBreakCount = ExpeditionStewManager.Instance.GetCaptureAutoBreakCount();
+        int autoBreakCount = ExpeditionStewManager.Instance.GetCaptureAutoBreakCount(creatureData.family);
         for (int i = 0; i < autoBreakCount && i < activeHitAreas.Count; i++)
         {
             activeHitAreas[i].MarkHit();
@@ -266,8 +266,8 @@ public class CaptureMinigameController : MonoBehaviour
         cooldown = false; // a CoolDown() coroutine cancelled by ForceEndMinigame would otherwise leave this stuck true forever
 
         float ratio = hitAreaCount > 0 ? (float)hitsScored / hitAreaCount : 0f;
-        if (ExpeditionStewManager.Instance != null)
-            ratio = Mathf.Clamp01(ratio + ExpeditionStewManager.Instance.GetCaptureChanceBonus());
+        if (ExpeditionStewManager.Instance != null && creatureData != null)
+            ratio = Mathf.Clamp01(ratio + ExpeditionStewManager.Instance.GetCaptureChanceBonus(creatureData.family));
 
         bool success = targetCreature != null && targetCreature.TryCapture(ratio);
 

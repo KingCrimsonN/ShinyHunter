@@ -90,6 +90,29 @@ public class CreatureTransformStationUI : MonoBehaviour
         return selection.TryGetValue((species, rarity), out int c) ? c : 0;
     }
 
+    /// <summary>
+    /// How many of the AVAILABLE (not-yet-staged) units of this species+rarity
+    /// are sparkle-flagged - drives the sparkle badge on the inventory side.
+    /// Sparkle-flagged units are treated as "claimed" by staging FIRST
+    /// (matching InventoryManager.RemoveCreatures' actual consumption order),
+    /// so this is whatever's left over: total sparkle minus however many are
+    /// already staged. See CreatureTransformEntryUI.
+    /// </summary>
+    public int GetAvailableSparkleCount(CreatureData species, CreatureData.Rarity rarity)
+    {
+        int total = InventoryManager.Instance.GetSparkleCount(species, rarity);
+        int staged = GetSelectedCount(species, rarity);
+        return Mathf.Max(0, total - staged);
+    }
+
+    /// <summary>How many of the STAGED units of this species+rarity are sparkle-flagged - drives the sparkle badge on the selection side. See GetAvailableSparkleCount.</summary>
+    public int GetStagedSparkleCount(CreatureData species, CreatureData.Rarity rarity)
+    {
+        int total = InventoryManager.Instance.GetSparkleCount(species, rarity);
+        int staged = GetSelectedCount(species, rarity);
+        return Mathf.Min(total, staged);
+    }
+
     public IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int> GetSelection() => selection;
 
     // ---------------- Move actions (called by CreatureTransformEntryUI / TransformDropZoneUI) ----------------
@@ -176,7 +199,16 @@ public class CreatureTransformStationUI : MonoBehaviour
         // OnTransformInitiated?.Invoke(snapshot);
     }
 
-    /// <summary>Call once your transformation animation finishes. Consumes the staged creatures and grants resources.</summary>
+    /// <summary>
+    /// Call once your transformation animation finishes. Consumes the staged
+    /// creatures and grants resources. Ingredient Power is NOT rolled here
+    /// any more - it resolves at CAPTURE time now (CreatureAI.TryCapture),
+    /// and each unit's result is already tagged on InventoryManager's
+    /// sparkle count. This just reads how many of the units being consumed
+    /// were flagged (sparkle-flagged units are removed FIRST - see
+    /// InventoryManager.RemoveCreatures - so this is exact, not a guess).
+    /// See decision log.
+    /// </summary>
     public void CompleteTransform()
     {
         foreach (var kvp in selection)
@@ -185,23 +217,15 @@ public class CreatureTransformStationUI : MonoBehaviour
             var rarity = kvp.Key.rarity;
             int amount = kvp.Value;
 
+            int sparkleAvailable = InventoryManager.Instance.GetSparkleCount(species, rarity);
+            int sparkleUsed = Mathf.Min(sparkleAvailable, amount);
+
             InventoryManager.Instance.RemoveCreatures(species, rarity, amount);
 
             var resource = species.GetResource(rarity);
             if (resource == null) continue;
 
-            // Ingredient Power is rolled per unit here rather than tagged at
-            // capture time - the creature inventory only tracks counts, not
-            // individual instances, so this is where "a percentage chance of
-            // double ingredients from a creature" actually resolves.
-            int totalGranted = 0;
-            for (int i = 0; i < amount; i++)
-            {
-                bool doubled = ExpeditionStewManager.Instance != null
-                    && ExpeditionStewManager.Instance.TryRollDoubleIngredients(species.family);
-                totalGranted += doubled ? 2 : 1;
-            }
-
+            int totalGranted = sparkleUsed * 2 + (amount - sparkleUsed);
             ResourceInventoryManager.Instance.AddResource(resource, totalGranted);
         }
 

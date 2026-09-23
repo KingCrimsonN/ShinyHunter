@@ -84,9 +84,11 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     /// <summary>
     /// data.detectionRadius scaled by Soothing Power (less than 1 = notices
-    /// the player from closer) AND by how strongly this species hates the
-    /// active stew's scent (greater than 1 = notices/flees from farther away
-    /// the more it hates the smell - see CreatureData.GetScentAffinity).
+    /// the player from closer, ONLY for creatures of the stew's affected
+    /// family - see ExpeditionStewManager.GetSoothingMultiplier) AND by how
+    /// strongly this species hates the active stew's scent (greater than 1 =
+    /// notices/flees from farther away the more it hates the smell - see
+    /// CreatureData.GetScentAffinity).
     /// </summary>
     private float EffectiveDetectionRadius
     {
@@ -94,7 +96,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
         {
             if (ExpeditionStewManager.Instance == null) return data.detectionRadius;
 
-            float soothing = ExpeditionStewManager.Instance.GetSoothingMultiplier();
+            float soothing = ExpeditionStewManager.Instance.GetSoothingMultiplier(data.family);
 
             data.GetScentAffinity(ExpeditionStewManager.Instance.GetScents(), out _, out float hatedScore);
             float aversion = 1f + hatedScore * data.detectionAversionScale;
@@ -103,9 +105,9 @@ public class CreatureAI : MonoBehaviour, ICapturable
         }
     }
 
-    /// <summary>data.fleeSpeed scaled by Soothing Power (less than 1 = flees slower).</summary>
+    /// <summary>data.fleeSpeed scaled by Soothing Power (less than 1 = flees slower, ONLY for creatures of the stew's affected family).</summary>
     private float EffectiveFleeSpeed =>
-        data.fleeSpeed * (ExpeditionStewManager.Instance != null ? ExpeditionStewManager.Instance.GetSoothingMultiplier() : 1f);
+        data.fleeSpeed * (ExpeditionStewManager.Instance != null ? ExpeditionStewManager.Instance.GetSoothingMultiplier(data.family) : 1f);
 
     private void Awake()
     {
@@ -397,7 +399,20 @@ public class CreatureAI : MonoBehaviour, ICapturable
         if (success)
         {
             currentState = State.Captured;
-            InventoryManager.Instance.AddCreature(data, rolledRarity, 1);
+
+            // Ingredient Power now resolves HERE, at capture, not at transform
+            // time (see decision log) - one roll per captured unit, tagged
+            // straight onto the InventoryManager stack so the sparkle badge
+            // (inventory / transform station UI) reflects it immediately,
+            // long before the player ever visits the transform table.
+            bool doubleYield = ExpeditionStewManager.Instance != null
+                && ExpeditionStewManager.Instance.TryRollDoubleIngredients(data.family);
+            InventoryManager.Instance.AddCreature(data, rolledRarity, 1, doubleYield);
+
+            // Chrono Power: grants bonus CURRENT-run time immediately if this
+            // capture's family matches - a full no-op unless Chrono Power is
+            // active AND matches (see ApplyChronoBonusIfMatching).
+            ExpeditionStewManager.Instance?.ApplyChronoBonusIfMatching(data.family);
 
             if (stunParticles != null) stunParticles.SetActive(false);
             if (agent != null) agent.isStopped = true;

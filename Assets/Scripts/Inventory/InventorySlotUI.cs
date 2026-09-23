@@ -15,6 +15,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     [SerializeField] private Sprite[] rarityFrames; // normal, uncommon, rare, legendary
 
+    [Tooltip("Shown when any of this stack will yield double resources (Ingredient Power, flagged at capture time) - e.g. a sparkle graphic layered on top of the icon.")]
+    [SerializeField] private GameObject sparkleOverlay;
+
     private string description;
 
     [Header("Rarity Colors")]
@@ -36,6 +39,12 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         nameText.color = GetRarityColor(rarity);
         if (frame != null) frame.sprite = rarityFrames[(int)rarity];
         // }
+
+        if (sparkleOverlay != null)
+        {
+            bool hasSparkle = InventoryManager.Instance != null && InventoryManager.Instance.GetSparkleCount(species, rarity) > 0;
+            sparkleOverlay.SetActive(hasSparkle);
+        }
     }
 
     private Color GetRarityColor(CreatureData.Rarity rarity)

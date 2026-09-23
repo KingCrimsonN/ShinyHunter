@@ -31,6 +31,14 @@ public class StewInstance
     /// <summary>0-1 - how strongly the recipe leaned into this modifier's family/rarity.</summary>
     public float modifierPower;
 
+    /// <summary>Which family the recipe actually leaned into most (drives the stew's icon via StewVisualConfig) - NOT the same as affectedFamily. See decision log.</summary>
     public IngredientFamily dominantFamily;
+    /// <summary>
+    /// Which family modifierType's EFFECT applies to - rolled RANDOMLY once at
+    /// brew time (StewCalculator.CalculateModifier), independent of
+    /// dominantFamily and of whatever ratio actually triggered the modifier.
+    /// Meaningless when modifierType is None. See decision log.
+    /// </summary>
+    public IngredientFamily affectedFamily;
     public Sprite icon;
 }

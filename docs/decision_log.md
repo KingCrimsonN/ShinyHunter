@@ -513,3 +513,113 @@ but its BENEFIT now targets whichever family happens to dominate that
 specific recipe (`StewInstance.dominantFamily`, already computed
 unconditionally for every stew) rather than either a fixed family or every
 creature at once.
+
+## Every stew modifier is now scoped to a randomly-rolled family
+
+`StewInstance.affectedFamily` (new field, `IngredientFamily`) is rolled
+UNIFORMLY AT RANDOM once, whenever a modifier actually activates
+(`StewCalculator.CalculateModifier` -> `RollRandomFamily`) - completely
+independent of `dominantFamily` (which family had the most ingredients -
+still only drives the stew's icon via `StewVisualConfig`) and independent of
+whichever ratio actually triggered the modifier. Every modifier query on
+`ExpeditionStewManager` now takes the relevant creature's family and checks
+it against `ActiveStew.affectedFamily`:
+
+- `GetRarityChanceMultiplier(family)` - Shiny Power (previously used
+  `dominantFamily` for one pass, before this request generalized it to every
+  modifier via a random roll instead).
+- `TryRollDoubleIngredients(family)` - Ingredient Power (previously hardcoded
+  to `IngredientFamily.Animal` only).
+- `TryGetEncounterBoostFamily(out family, ...)` - Encounter Power
+  (previously ALWAYS returned `Stranger`, regardless of the recipe).
+- `GetCaptureChanceBonus(family)` / `GetCaptureAutoBreakCount(family)` -
+  Capture Power (previously applied to ANY capture, unscoped).
+- `GetSoothingMultiplier(family)` - Soothing Power (previously applied to
+  ANY creature's detection/flee, unscoped).
+- `ApplyChronoBonusIfMatching(family)` - Chrono Power (new mechanic
+  entirely - see the next entry).
+
+Trigger logic is UNCHANGED: which modifier activates still depends on the
+same per-family/rarity dominance ratios as before (`CalculateModifier`'s
+`ratios` dict, keyed by the same fixed families it always was: Ingredient
+Power still triggers off Animal dominance, Encounter Power off Stranger, and
+so on). Only the FAMILY THE EFFECT APPLIES TO decouples from that, via the
+random roll. This means, for example, a recipe dominated by Stranger-family
+ingredients can trigger Encounter Power, but that Encounter Power might end
+up boosting Cold-family spawns rather than Stranger - deliberate, per the
+request ("all powers should be linked to a random family").
+
+Display now shows the family: `StewDisplayUtil.FormatModifier` produces e.g.
+"Shiny Power: Bugs (73%)" (`FormatModifierName` spaces out the enum name,
+`FormatFamily` maps to the informal nicknames already used in
+`IngredientFamily`'s own comments - "Bugs" for Animal, "Freakies" for
+Stranger; "Plants"/"Warm-Blooded"/"Cold-Blooded" were invented for the other
+three and can be retuned freely in `StewDisplayUtil.FormatFamily`).
+
+## Chrono Power grants time per matching capture, not banked for next run
+
+Completely replaces the old mechanic (see the "Chrono Power is banked, not
+applied to the current run" entry above - retired, not deleted, so the
+reasoning stays visible). Old: picking a Chrono Power stew banked a flat
+bonus (`modifierPower * chronoMaxBonusSeconds`) applied ONCE, automatically,
+to whichever stew got picked for the NEXT expedition. New: Chrono Power does
+nothing at selection time at all - `ExpeditionStewManager.SetActiveStew` no
+longer touches it. Instead, `CreatureAI.TryCapture`'s success path calls
+`ApplyChronoBonusIfMatching(data.family)` on every successful capture: if
+Chrono Power is active and the captured creature's family matches
+`ActiveStew.affectedFamily`, `PlayerHealth.AddTemporaryMaxHealth` grants
+`modifierPower * chronoMaxBonusPerCapture` seconds immediately, to the
+CURRENT run (the same "for one run" bucket normal potions use - it doesn't
+need its own field any more). `chronoMaxBonusPerCapture` defaults to 60,
+matching "up to a minute [per capture] at 100% power". `PlayerHealth`'s
+`bankedChronoBonus` field and `AddBankedChronoBonus`/`ConsumeBankedChronoBonus`
+methods were removed entirely - nothing else used them.
+
+## No-tools warning at the hub exit door
+
+`Doors.UseDoor()` now checks `ToolInventoryManager` for any tool anywhere in
+the player's inventory (not just the 3 equip slots - owning a tool
+un-equipped still counts) before opening the stew-selection carousel. The
+STICK (`PlayerCapture`) is deliberately NOT counted - it's always available
+regardless of the tool inventory, not a `ToolData` item, so "no tools" here
+specifically means "nothing purchased/found yet". If nothing is found, a new
+`NoToolsWarningUI` (scene-scoped to the Hub, same popup convention as
+`BrewingStationUI`/`CreatureTransformStationUI`) gates the door: Yes proceeds
+to open the stew carousel anyway, No just closes the warning and leaves the
+player in the hub - "go back and buy tools" is left as the player's own next
+move, not an automatic teleport to the shop. `HasAnyTools()` fails OPEN
+(returns true, skipping the warning) if the tool inventory can't be checked
+at all, so a missing/broken reference can never trap the player in the hub.
+
+## Ingredient Power resolves at capture time, with a visible sparkle badge
+
+Retires the "Ingredient Power resolves at transform time, not capture time"
+entry above (kept, not deleted, for the historical reasoning - it explains
+why this was hard before). The blocker was that `InventoryManager` only
+tracked (species, rarity) -> COUNT, no way to tag "this specific captured
+unit is double-yield". Resolved not by moving to full per-instance tracking
+(overkill - individual captured creatures still don't need real identity),
+but by adding a parallel per-stack SUB-COUNT: `InventoryManager.sparkleCounts`,
+how many of a (species, rarity) stack's current stock are flagged. Flagged
+units are always consumed FIRST by `RemoveCreatures` - this is what makes
+"how many of the units being transformed were flagged" well-defined without
+needing to track which SPECIFIC unit is which.
+
+Flow: `CreatureAI.TryCapture`'s success path now rolls
+`ExpeditionStewManager.TryRollDoubleIngredients(data.family)` immediately
+and passes the result into `InventoryManager.AddCreature`'s new `doubleYield`
+parameter. `CreatureTransformStationUI.CompleteTransform` no longer rolls
+anything - it just reads `GetSparkleCount` (clamped to the amount being
+removed, since flagged units are removed first) to compute the resource
+yield, then calls `RemoveCreatures` as before.
+
+Visible sparkle badge in both places the request asked for: `InventorySlotUI`
+(regular inventory - simple `GetSparkleCount(species, rarity) > 0`, no
+staging concept there) and `CreatureTransformEntryUI` (transform station,
+which has TWO sides - available and staged - so `CreatureTransformStationUI`
+exposes `GetAvailableSparkleCount`/`GetStagedSparkleCount`, splitting the
+total sparkle count between "claimed by what's already staged" and "still in
+the available pool", consistent with the same "flagged units go first"
+rule). Both are a new `sparkleOverlay` GameObject field (e.g. a sparkle
+graphic layered on the icon) toggled on/off - the actual art isn't something
+this pass can add, see the editor setup notes.

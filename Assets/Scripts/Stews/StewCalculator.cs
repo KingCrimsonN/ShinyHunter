@@ -24,10 +24,11 @@ public static class StewCalculator
         stew.timeSeconds = CalculateTime(ingredients, config);
         stew.scents = CalculateScents(ingredients, totalCapacity, config);
 
-        var (modifier, power, dominantFamily) = CalculateModifier(ingredients, totalCapacity, config);
+        var (modifier, power, dominantFamily, affectedFamily) = CalculateModifier(ingredients, totalCapacity, config);
         stew.modifierType = modifier;
         stew.modifierPower = power;
         stew.dominantFamily = dominantFamily;
+        stew.affectedFamily = affectedFamily;
 
         return stew;
     }
@@ -76,16 +77,20 @@ public static class StewCalculator
 
     /// <summary>
     /// Picks the stew's modifier (whichever family/rarity dominates the
-    /// recipe) and its power (0-1). Each family-count / rarity-sum ratio is
-    /// divided by the CAULDRON'S TOTAL capacity (not by how many ingredients
-    /// were actually used) - same fix as CalculateScents, for the same
-    /// reason: a single matching ingredient used to hit ratio=1.0 (100%
-    /// power) outright, however small the cauldron. Reaching full power on a
-    /// modifier now needs filling the ENTIRE cauldron with ingredients of one
-    /// family / at max rarity - a deliberately rare, top-tier outcome. See
-    /// decision log.
+    /// recipe), its power (0-1), the recipe's dominant family (for the
+    /// stew's icon), and a RANDOMLY rolled affected family (which family the
+    /// modifier's effect actually applies to - decoupled from whichever
+    /// family/rarity ratio triggered the modifier in the first place, and
+    /// re-rolled independent of dominantFamily). Each family-count /
+    /// rarity-sum ratio is divided by the CAULDRON'S TOTAL capacity (not by
+    /// how many ingredients were actually used) - same fix as
+    /// CalculateScents, for the same reason: a single matching ingredient
+    /// used to hit ratio=1.0 (100% power) outright, however small the
+    /// cauldron. Reaching full power on a modifier now needs filling the
+    /// ENTIRE cauldron with ingredients of one family / at max rarity - a
+    /// deliberately rare, top-tier outcome. See decision log.
     /// </summary>
-    private static (StewModifierType type, float power, IngredientFamily dominantFamily) CalculateModifier(
+    private static (StewModifierType type, float power, IngredientFamily dominantFamily, IngredientFamily affectedFamily) CalculateModifier(
         List<ResourceData> ingredients, int totalCapacity, StewCalculationConfig config)
     {
         var familyCounts = new Dictionary<IngredientFamily, int>();
@@ -126,9 +131,9 @@ public static class StewCalculator
         var dominantFamily = GetDominantFamily(familyCounts);
 
         if (bestRatio < config.modifierActivationThreshold)
-            return (StewModifierType.None, 0f, dominantFamily);
+            return (StewModifierType.None, 0f, dominantFamily, IngredientFamily.Animal); // no modifier - affectedFamily is meaningless
 
-        return (best, bestRatio, dominantFamily);
+        return (best, bestRatio, dominantFamily, RollRandomFamily());
     }
 
     private static IngredientFamily GetDominantFamily(Dictionary<IngredientFamily, int> familyCounts)
@@ -144,5 +149,12 @@ public static class StewCalculator
             }
         }
         return dominant;
+    }
+
+    /// <summary>Uniformly random family, for a newly-active modifier's affectedFamily. See CalculateModifier.</summary>
+    private static IngredientFamily RollRandomFamily()
+    {
+        var values = (IngredientFamily[])System.Enum.GetValues(typeof(IngredientFamily));
+        return values[Random.Range(0, values.Length)];
     }
 }

@@ -29,24 +29,17 @@ public class ExpeditionStewManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Call when the player picks a stew at the exit door. Applies Time
-    /// (plus any bonus banked by a PREVIOUS stew's Chrono Power) to
+    /// Call when the player picks a stew at the exit door. Applies Time to
     /// PlayerHealth immediately; everything else is queried lazily by other
-    /// systems during the run via the getters below.
+    /// systems during the run via the getters below - including Chrono
+    /// Power, which no longer does anything here (see ApplyChronoBonusIfMatching).
     /// </summary>
     public void SetActiveStew(StewInstance stew)
     {
         ActiveStew = stew;
         if (stew == null) return;
 
-        float bankedBonus = PlayerHealth.Instance.ConsumeBankedChronoBonus();
-        PlayerHealth.Instance.AddTemporaryMaxHealth(stew.timeSeconds + bankedBonus);
-
-        if (stew.modifierType == StewModifierType.ChronoPower)
-        {
-            float bonusForNextRun = stew.modifierPower * config.chronoMaxBonusSeconds;
-            PlayerHealth.Instance.AddBankedChronoBonus(bonusForNextRun);
-        }
+        PlayerHealth.Instance.AddTemporaryMaxHealth(stew.timeSeconds);
     }
 
     public void ClearActiveStew()
@@ -96,26 +89,30 @@ public class ExpeditionStewManager : MonoBehaviour
 
     /// <summary>
     /// Multiplier for CreatureAI's rarity-roll chances - ONLY for creatures
-    /// whose family matches the active stew's dominant family
-    /// (ActiveStew.dominantFamily); every other family rolls at its normal
-    /// odds. Unlike the other family-scoped modifiers (Ingredient/Encounter/
-    /// Chrono/Capture/Soothing Power, each permanently tied to one fixed
-    /// family), Shiny Power's TRIGGER stays rarity-based, not family-based -
-    /// only its EFFECT is now scoped to whichever family happened to
-    /// dominate the recipe. See decision log.
+    /// whose family matches the active stew's RANDOMLY-ROLLED affected
+    /// family (ActiveStew.affectedFamily, NOT dominantFamily); every other
+    /// family rolls at its normal odds. Shiny Power's TRIGGER stays
+    /// rarity-based, not family-based - only its EFFECT is family-scoped,
+    /// same as every other modifier below. See decision log.
     /// </summary>
     public float GetRarityChanceMultiplier(IngredientFamily creatureFamily)
     {
         if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.ShinyPower) return 1f;
-        if (creatureFamily != ActiveStew.dominantFamily) return 1f;
+        if (creatureFamily != ActiveStew.affectedFamily) return 1f;
         return 1f + ActiveStew.modifierPower * config.shinyRarityMultiplierScale;
     }
 
-    /// <summary>Roll once per creature being transformed, for its family - true if it should yield double resources.</summary>
+    /// <summary>
+    /// Call once per CAPTURED creature (not per transformed one - see
+    /// decision log), for its family - true if it should be flagged to yield
+    /// double resources once eventually transformed. The flag itself is
+    /// stored on InventoryManager (AddCreature's doubleYield parameter), not
+    /// here - this only answers "should THIS capture roll get one".
+    /// </summary>
     public bool TryRollDoubleIngredients(IngredientFamily family)
     {
         if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.IngredientPower) return false;
-        if (family != IngredientFamily.Animal) return false; // Ingredient Power is Animal/Bugs-only by design
+        if (family != ActiveStew.affectedFamily) return false;
         return Random.value <= ActiveStew.modifierPower * config.ingredientDoubleChanceScale;
     }
 
@@ -127,29 +124,56 @@ public class ExpeditionStewManager : MonoBehaviour
 
         if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.EncounterPower) return false;
 
+        family = ActiveStew.affectedFamily;
         weightMultiplier = 1f + ActiveStew.modifierPower * config.encounterFamilyWeightScale;
         return true;
     }
 
-    /// <summary>Flat bonus (0-1) added to a capture attempt's final chance.</summary>
-    public float GetCaptureChanceBonus()
+    /// <summary>
+    /// Flat bonus (0-1) added to a capture attempt's final chance, for
+    /// creatures of the affected family only - 0 for every other family.
+    /// </summary>
+    public float GetCaptureChanceBonus(IngredientFamily creatureFamily)
     {
         if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.CapturePower) return 0f;
+        if (creatureFamily != ActiveStew.affectedFamily) return 0f;
         return ActiveStew.modifierPower * config.captureChanceBonusScale;
     }
 
-    /// <summary>How many capture-wheel hit areas should start already marked as hit.</summary>
-    public int GetCaptureAutoBreakCount()
+    /// <summary>How many capture-wheel hit areas should start already marked as hit, for creatures of the affected family only.</summary>
+    public int GetCaptureAutoBreakCount(IngredientFamily creatureFamily)
     {
         if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.CapturePower) return 0;
+        if (creatureFamily != ActiveStew.affectedFamily) return 0;
         return Mathf.RoundToInt(ActiveStew.modifierPower * config.captureMaxAutoBreakAreas);
     }
 
-    /// <summary>Multiplier for creature flee speed / detection radius (less than 1 = slower, blinder).</summary>
-    public float GetSoothingMultiplier()
+    /// <summary>Multiplier for creature flee speed / detection radius (less than 1 = slower, blinder) - only for creatures of the affected family; every other family gets 1 (no effect).</summary>
+    public float GetSoothingMultiplier(IngredientFamily creatureFamily)
     {
         if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.SoothingPower) return 1f;
+        if (creatureFamily != ActiveStew.affectedFamily) return 1f;
         return 1f - ActiveStew.modifierPower * config.soothingMaxSlowdown;
+    }
+
+    /// <summary>
+    /// Call once per successful capture. Chrono Power's ENTIRE mechanic now
+    /// lives here: if it's active and the captured creature's family matches
+    /// the affected family, grants bonus CURRENT-run expedition time right
+    /// away (0 to chronoMaxBonusPerCapture seconds, scaling with
+    /// modifierPower - up to a minute per capture at full power). No-op for
+    /// every other family, and a no-op entirely when Chrono Power isn't
+    /// active. Completely replaces the old "bank a bonus for the NEXT
+    /// expedition" design - see decision log.
+    /// </summary>
+    public void ApplyChronoBonusIfMatching(IngredientFamily capturedFamily)
+    {
+        if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.ChronoPower) return;
+        if (capturedFamily != ActiveStew.affectedFamily) return;
+        if (config == null || PlayerHealth.Instance == null) return;
+
+        float bonus = ActiveStew.modifierPower * config.chronoMaxBonusPerCapture;
+        PlayerHealth.Instance.AddTemporaryMaxHealth(bonus);
     }
 
     /// <summary>Player's current scent profile (Sweet, Fresh, Putrid, Metallic, Marine, each 0-100) - neutral (all 0, i.e. "not present") with no active stew.</summary>

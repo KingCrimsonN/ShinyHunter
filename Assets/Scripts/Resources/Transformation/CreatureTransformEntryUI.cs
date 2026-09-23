@@ -21,6 +21,8 @@ public class CreatureTransformEntryUI : MonoBehaviour,
     [SerializeField] private TMP_Text nameText;
     // [SerializeField] private TMP_Text rarityText;
     [SerializeField] private TMP_Text countText;
+    [Tooltip("Shown when any of this entry's units will yield double resources (Ingredient Power, flagged at capture time) - e.g. a sparkle graphic layered on top of the icon.")]
+    [SerializeField] private GameObject sparkleOverlay;
 
     /// <summary>Shared floating drag ghost, set once by CreatureTransformStationUI.Awake().</summary>
     public static Image DragIcon;
@@ -54,6 +56,17 @@ public class CreatureTransformEntryUI : MonoBehaviour,
 
         // nameText.color = GetRarityColor(rarity);
         if (frame != null) frame.sprite = rarityFrames[(int)rarity];
+
+        if (sparkleOverlay != null)
+        {
+            // Side-specific: how many of the units THIS ENTRY is showing
+            // (available on the inventory side, staged on the selection side)
+            // are sparkle-flagged - see CreatureTransformStationUI.
+            int sparkleShown = side == TransformEntrySide.Inventory
+                ? station.GetAvailableSparkleCount(species, rarity)
+                : station.GetStagedSparkleCount(species, rarity);
+            sparkleOverlay.SetActive(sparkleShown > 0);
+        }
     }
 
     /// <summary>Moves up to `amount` from this entry's side to the other side. Station clamps to what's actually available.</summary>

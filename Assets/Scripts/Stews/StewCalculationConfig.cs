@@ -50,6 +50,10 @@ public class StewCalculationConfig : ScriptableObject
     public float captureChanceBonusScale = 0.3f;
     [Tooltip("Hit areas auto-marked as hit at the start of the wheel, at power = 1.0, when Capture Power is active and the targeted creature is of the affected family.")]
     public int captureMaxAutoBreakAreas = 2;
+    [Tooltip("Weapon hit-power bonus (0-1), at power = 1.0, when Capture Power is active and the creature being hit is of the affected family - actual damage = baseDamage * (1 + modifierPower * this).")]
+    public float captureHitPowerBonusScale = 0.5f;
+    [Tooltip("Extra seconds added to the capture minigame's time limit, at power = 1.0, when Capture Power is active and the targeted creature is of the affected family.")]
+    public float captureTimeBonusScale = 3f;
     [Tooltip("Flee speed / detection radius reduction (0-1), at power = 1.0, when Soothing Power is active, for creatures of the affected family only.")]
     public float soothingMaxSlowdown = 0.5f;
 }

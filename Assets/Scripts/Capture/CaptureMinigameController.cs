@@ -7,10 +7,20 @@ using System.Collections;
 
 /// <summary>
 /// Drives the capture minigame: spins a needle around a wheel with randomly
-/// placed, non-overlapping hit arcs. Player has one attempt per arc and a
-/// time limit to hit as many as possible; final capture chance = hits/total
-/// (plus Capture Power's stew bonus, if active - see ApplyCapturePowerAutoBreak
-/// and EndMinigame).
+/// placed hit arcs ("barriers"). Player gets a number of attempts and a time
+/// limit to hit as many as possible; final capture chance = hits/total
+/// (plus Capture Power's stew bonus and the tool's own family bonus, if
+/// either applies - see EndMinigame).
+///
+/// Every run is configured from three independent sources (see BeginCapture
+/// and decision log):
+///   - The EQUIPPED TOOL (ToolData): time limit, attempt count, barrier
+///     orbit-speed multiplier, extra-ingredient chance, family capture bonus.
+///   - The CREATURE'S RARITY (CaptureMinigameConfig): barrier count/width,
+///     and whether/how fast barriers orbit the wheel (Shiny/Radiant only).
+///   - The ACTIVE STEW (ExpeditionStewManager): Capture Power's time bonus
+///     and hit-power bonus (the latter applied by PlayerCapture, not here),
+///     both family-scoped like every other modifier.
 ///
 /// Freezes player movement/capture input for the duration (camera stays
 /// static - see class docs on the project's rendering approach for why this
@@ -27,6 +37,10 @@ public class CaptureMinigameController : MonoBehaviour
     [SerializeField] private FirstPersonController playerMovement;
     [SerializeField] private PlayerCapture playerCapture;
     [SerializeField] private ToolEquipController toolEquip;
+
+    [Header("Balance Config")]
+    [Tooltip("Rarity-driven barrier count/size/movement and creature health. See CaptureMinigameConfig - CreatureAI reads health values through this controller (GetMaxHealthForRarity / GetFailedCaptureHealthRestoreFraction).")]
+    [SerializeField] private CaptureMinigameConfig config;
 
     [Header("UI - Attempts")]
     [SerializeField] private GameObject attemptPrefab;
@@ -56,12 +70,14 @@ public class CaptureMinigameController : MonoBehaviour
     [Tooltip("If true, a mark is left for every attempt (hit or miss). If false, only successful hits leave one.")]
     [SerializeField] private bool markOnMissToo = true;
 
-    [Header("Default Settings")]
-    [Tooltip("Also equals the number of hit attempts the player gets.")]
+    [Header("Default Settings (fallbacks - see Balance Config / ToolData for the real per-run values)")]
+    [Tooltip("Fallback barrier count/attempt count, used only if config or the equipped tool is unassigned.")]
     [SerializeField] private int defaultHitAreaCount = 3;
+    [Tooltip("Fallback barrier width, used only if config is unassigned.")]
     [SerializeField] private float defaultHitAreaWidthDegrees = 30f;
-    [Tooltip("Degrees per second.")]
+    [Tooltip("Degrees per second the NEEDLE spins - unaffected by rarity/tool, unlike the barriers themselves.")]
     [SerializeField] private float defaultNeedleSpeed = 180f;
+    [Tooltip("Fallback time limit, used only if the equipped tool is unassigned.")]
     [SerializeField] private float defaultTimeLimit = 5f;
     [Tooltip("Minimum angular gap enforced between adjacent arcs, on top of their width, so they never touch or overlap.")]
     [SerializeField] private float minGapBetweenAreasDegrees = 10f;
@@ -99,6 +115,20 @@ public class CaptureMinigameController : MonoBehaviour
     private bool ending;
     private bool cooldown;
 
+    // ---------------- Per-run config, resolved once in BeginCapture from the equipped tool + creature rarity + active stew ----------------
+
+    /// <summary>Whichever tool triggered this attempt (e.g. the doll) - cached once at the start, since the player can't switch tools while frozen mid-minigame anyway. Null-safe everywhere it's read.</summary>
+    private ToolData equippedToolForThisRun;
+    private float timeLimitForThisRun;
+    private int attemptsAtStart;
+
+    // ---------------- Moving barriers (Shiny/Radiant only - see CaptureMinigameConfig.barriersMovePerRarity) ----------------
+
+    private bool barriersMoving;
+    private float barrierOrbitSpeed;
+    private float barrierOrbitDirection;
+    private float barrierOrbitOffset;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -116,6 +146,7 @@ public class CaptureMinigameController : MonoBehaviour
         if (!IsRunning) return;
 
         TickNeedle();
+        TickBarrierOrbit();
         TickTimer();
 
         if (Input.GetKeyDown(hitKey))
@@ -130,7 +161,26 @@ public class CaptureMinigameController : MonoBehaviour
 
     }
 
-    /// <summary>Entry point - call this instead of ICapturable.TryCapture directly.</summary>
+    /// <summary>Max health for a creature of the given rarity - see CaptureMinigameConfig.healthPerRarity. Falls back to 10 if no config is assigned.</summary>
+    public float GetMaxHealthForRarity(CreatureData.Rarity rarity)
+    {
+        return config != null ? config.GetMaxHealth(rarity) : 10f;
+    }
+
+    /// <summary>Fraction of base health restored when a stun ends without a capture - see CaptureMinigameConfig.failedCaptureHealthRestoreFraction. Falls back to 0.5 if no config is assigned.</summary>
+    public float GetFailedCaptureHealthRestoreFraction()
+    {
+        return config != null ? config.failedCaptureHealthRestoreFraction : 0.5f;
+    }
+
+    /// <summary>
+    /// Entry point - call this instead of ICapturable.TryCapture directly.
+    /// Configures the whole run from three sources (see class docs and
+    /// decision log): the equipped tool (time limit, attempt count, barrier
+    /// speed multiplier, family capture bonus), the creature's rarity
+    /// (barrier count/size, whether/how fast they move - CaptureMinigameConfig),
+    /// and the active stew (Capture Power's time bonus, family-scoped).
+    /// </summary>
     /// <returns>True if the minigame started. False if it didn't (already running, or the creature is gone / no longer stunned) - callers must not consume anything for a capture that never began.</returns>
     public bool BeginCapture(ICapturable creature)
     {
@@ -147,11 +197,33 @@ public class CaptureMinigameController : MonoBehaviour
 
         ending = false;
         cooldown = false;
-        hitAreaCount = defaultHitAreaCount;
-        hitAreaWidthDegrees = defaultHitAreaWidthDegrees;
+
+        // Cached once - the player can't swap tools while frozen mid-minigame
+        // (ToolEquipController is disabled by PlayerStateManager.Freeze below),
+        // so re-fetching later would only risk reading something stale anyway.
+        equippedToolForThisRun = ToolInventoryManager.Instance != null ? ToolInventoryManager.Instance.EquippedSlot?.data : null;
+
+        CreatureData.Rarity rarity = creature.Rarity;
+        hitAreaCount = config != null ? config.GetBarrierCount(rarity) : defaultHitAreaCount;
+        hitAreaWidthDegrees = config != null ? config.GetBarrierWidthDegrees(rarity) : defaultHitAreaWidthDegrees;
+
+        barriersMoving = config != null && config.GetBarriersMove(rarity);
+        float toolSpeedMultiplier = equippedToolForThisRun != null ? equippedToolForThisRun.barrierSpeedMultiplier : 1f;
+        barrierOrbitSpeed = (config != null ? config.GetBarrierOrbitSpeed(rarity) : 0f) * toolSpeedMultiplier;
+        barrierOrbitDirection = UnityEngine.Random.value < 0.5f ? 1f : -1f; // not always clockwise
+        barrierOrbitOffset = 0f;
+
         needleSpeed = defaultNeedleSpeed;
-        timeRemaining = defaultTimeLimit;
-        attemptsRemaining = hitAreaCount;
+
+        float toolTimeLimit = equippedToolForThisRun != null ? equippedToolForThisRun.minigameTimeLimit : defaultTimeLimit;
+        float captureTimeBonus = ExpeditionStewManager.Instance != null && creatureData != null
+            ? ExpeditionStewManager.Instance.GetCaptureTimeBonus(creatureData.family)
+            : 0f;
+        timeLimitForThisRun = toolTimeLimit + captureTimeBonus;
+        timeRemaining = timeLimitForThisRun;
+
+        attemptsAtStart = equippedToolForThisRun != null ? equippedToolForThisRun.minigameAttemptCount : hitAreaCount;
+        attemptsRemaining = attemptsAtStart;
         hitsScored = 0;
         needleAngle = 0f;
         IsRunning = true;
@@ -185,8 +257,8 @@ public class CaptureMinigameController : MonoBehaviour
     {
         if (attemptsParent != null)
         {
-            attemptIcons = new GameObject[defaultHitAreaCount];
-            for (int i = 0; i < defaultHitAreaCount; i++)
+            attemptIcons = new GameObject[attemptsAtStart];
+            for (int i = 0; i < attemptsAtStart; i++)
             {
                 var icon = Instantiate(attemptPrefab, attemptsParent.transform);
                 attemptIcons[i] = icon;
@@ -217,6 +289,27 @@ public class CaptureMinigameController : MonoBehaviour
     {
         timeRemaining -= Time.deltaTime;
         UpdateTimerUI();
+    }
+
+    /// <summary>
+    /// Orbits every still-active (not yet hit) barrier by the same amount,
+    /// as one rigid ring - their relative spacing never changes, so they can
+    /// never drift into overlapping each other regardless of how long the
+    /// wheel runs. Already-hit barriers stop moving where they were hit, as
+    /// a visual "broken" marker of progress. No-op for rarities where
+    /// CaptureMinigameConfig.barriersMovePerRarity is false (barrierOrbitSpeed is 0).
+    /// </summary>
+    private void TickBarrierOrbit()
+    {
+        if (!barriersMoving || barrierOrbitSpeed <= 0f) return;
+
+        barrierOrbitOffset += barrierOrbitDirection * barrierOrbitSpeed * Time.deltaTime;
+
+        foreach (var area in activeHitAreas)
+        {
+            if (area == null || area.IsHit) continue;
+            area.UpdateAngle(area.BaseStartAngle + barrierOrbitOffset);
+        }
     }
 
     private void HandleHitAttempt()
@@ -266,8 +359,18 @@ public class CaptureMinigameController : MonoBehaviour
         cooldown = false; // a CoolDown() coroutine cancelled by ForceEndMinigame would otherwise leave this stuck true forever
 
         float ratio = hitAreaCount > 0 ? (float)hitsScored / hitAreaCount : 0f;
-        if (ExpeditionStewManager.Instance != null && creatureData != null)
-            ratio = Mathf.Clamp01(ratio + ExpeditionStewManager.Instance.GetCaptureChanceBonus(creatureData.family));
+
+        float stewBonus = ExpeditionStewManager.Instance != null && creatureData != null
+            ? ExpeditionStewManager.Instance.GetCaptureChanceBonus(creatureData.family)
+            : 0f;
+
+        // Tool's own family bonus (ToolData.bonusFamily/bonusFamilyCaptureChance) -
+        // stacks additively with the stew's Capture Power bonus above.
+        float toolBonus = 0f;
+        if (equippedToolForThisRun != null && creatureData != null && creatureData.family == equippedToolForThisRun.bonusFamily)
+            toolBonus = equippedToolForThisRun.bonusFamilyCaptureChance;
+
+        ratio = Mathf.Clamp01(ratio + stewBonus + toolBonus);
 
         bool success = targetCreature != null && targetCreature.TryCapture(ratio);
 
@@ -315,11 +418,7 @@ public class CaptureMinigameController : MonoBehaviour
     {
         if (centerIcon == null) return;
 
-        var equippedData = ToolInventoryManager.Instance != null
-            ? ToolInventoryManager.Instance.EquippedSlot?.data
-            : null;
-
-        centerIcon.sprite = equippedData != null ? equippedData.icon : defaultCenterIcon;
+        centerIcon.sprite = equippedToolForThisRun != null ? equippedToolForThisRun.icon : defaultCenterIcon;
         centerIcon.enabled = centerIcon.sprite != null;
     }
 
@@ -423,17 +522,17 @@ public class CaptureMinigameController : MonoBehaviour
 
     private void UpdateTimerUI()
     {
-        if (timerSlider != null) timerSlider.value = Mathf.Clamp01(timeRemaining / defaultTimeLimit);
+        if (timerSlider != null) timerSlider.value = Mathf.Clamp01(timeRemaining / Mathf.Max(0.01f, timeLimitForThisRun));
     }
 
     private void UpdateAttemptsUI()
     {
-        print(attemptsRemaining);
-        if (attemptsRemaining == defaultHitAreaCount)
+        if (attemptsRemaining == attemptsAtStart)
         {
             return;
         }
-        attemptIcons[Mathf.Max(0, attemptsRemaining)]?.SetActive(false);
+        if (attemptIcons != null && attemptsRemaining < attemptIcons.Length)
+            attemptIcons[Mathf.Max(0, attemptsRemaining)]?.SetActive(false);
     }
 
     /// <summary>

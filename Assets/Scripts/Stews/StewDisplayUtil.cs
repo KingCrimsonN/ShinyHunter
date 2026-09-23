@@ -43,9 +43,9 @@ public static class StewDisplayUtil
     {
         switch (family)
         {
-            case IngredientFamily.Animal: return "Bugs";
+            case IngredientFamily.Bug: return "Bugs";
             case IngredientFamily.Plant: return "Plants";
-            case IngredientFamily.Stranger: return "Freakies";
+            case IngredientFamily.Freaky: return "Freakies";
             case IngredientFamily.Warm: return "Warm-Blooded";
             case IngredientFamily.Cold: return "Cold-Blooded";
             default: return family.ToString();

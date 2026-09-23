@@ -26,6 +26,8 @@ public class PlayerCapture : MonoBehaviour
     [Tooltip("How far off the crosshair (world units, on top of the creature's own size) still counts as aiming at it.")]
     [SerializeField] private float hitRadius = 0.5f;
     [SerializeField] private KeyCode hitKey = KeyCode.Mouse0;
+    [Tooltip("Damage dealt per hit, before Capture Power's bonus - see CreatureAI/CaptureMinigameConfig.healthPerRarity for what this means in hits-to-stun per rarity.")]
+    [SerializeField] private float baseDamage = 10f;
 
     public bool isActive;
 
@@ -57,7 +59,14 @@ public class PlayerCapture : MonoBehaviour
 
         if (CreatureTargeting.TryFind(cam.transform, hitRange, hitRadius, out CreatureTarget target))
         {
-            target.creature.OnHit();
+            // Capture Power can raise hit power - family-scoped like every
+            // other modifier (see ExpeditionStewManager.GetHitPowerBonus).
+            float hitPowerBonus = ExpeditionStewManager.Instance != null
+                ? ExpeditionStewManager.Instance.GetHitPowerBonus(target.creature.Data.family)
+                : 0f;
+            float damage = baseDamage * (1f + hitPowerBonus);
+
+            target.creature.OnHit(damage);
             SoundFXManager.instance.PlaySoundFX(hitSound, transform, 0.5f);
         }
     }

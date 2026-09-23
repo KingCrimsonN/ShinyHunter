@@ -33,6 +33,8 @@ public class CaptureHitAreaUI : MonoBehaviour
     private RectTransform rect;
 
     public float StartAngle { get; private set; }
+    /// <summary>The angle this arc was originally placed at (SpawnHitAreas' non-overlapping roll) - moving barriers add the current orbit offset ON TOP of this each frame, rather than accumulating onto StartAngle directly, so there's no compounding drift and relative spacing between barriers never changes. See CaptureMinigameController.TickBarrierOrbit.</summary>
+    public float BaseStartAngle { get; private set; }
     public float WidthDegrees { get; private set; }
     public bool IsHit { get; private set; }
 
@@ -54,6 +56,7 @@ public class CaptureHitAreaUI : MonoBehaviour
     public void SetArc(float startAngle, float widthDegrees)
     {
         StartAngle = startAngle;
+        BaseStartAngle = startAngle;
         WidthDegrees = widthDegrees;
         IsHit = false;
 
@@ -86,6 +89,20 @@ public class CaptureHitAreaUI : MonoBehaviour
     {
         float delta = ((angle - StartAngle) % 360f + 360f) % 360f;
         return delta <= WidthDegrees;
+    }
+
+    /// <summary>
+    /// Moves this arc to a new absolute start angle - used by moving
+    /// barriers (rarities where CaptureMinigameConfig.barriersMovePerRarity
+    /// is true). Purely visual/positional - does NOT touch hit state or color,
+    /// unlike SetArc.
+    /// </summary>
+    public void UpdateAngle(float newStartAngle)
+    {
+        StartAngle = newStartAngle;
+        rect.localRotation = Quaternion.Euler(0f, 0f, -newStartAngle);
+        PositionEdge(startEdge, 0);
+        PositionEdge(endEdge, WidthDegrees);
     }
 
     public void MarkHit()

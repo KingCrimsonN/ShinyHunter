@@ -623,3 +623,99 @@ the available pool", consistent with the same "flagged units go first"
 rule). Both are a new `sparkleOverlay` GameObject field (e.g. a sparkle
 graphic layered on the icon) toggled on/off - the actual art isn't something
 this pass can add, see the editor setup notes.
+
+## Capture minigame now driven by tool + creature rarity + stew (three sources)
+
+Big rework of `CaptureMinigameController.BeginCapture`, previously a fixed
+set of inspector defaults for every capture regardless of what you were
+fighting or holding. Now configured from three independent sources every
+single run:
+
+- **Equipped tool** (`ToolData`, new fields): `minigameTimeLimit`,
+  `minigameAttemptCount` (needle/nail count - now DECOUPLED from barrier
+  count, previously the same number), `barrierSpeedMultiplier`,
+  `extraIngredientChance`, `bonusFamily` + `bonusFamilyCaptureChance`. Read
+  once at `BeginCapture` and cached (`equippedToolForThisRun`) - the player
+  can't swap tools mid-minigame anyway (`PlayerStateManager.Freeze` disables
+  `ToolEquipController` for the duration), so there's nothing to gain from
+  re-fetching later, only a risk of reading something stale.
+- **Creature rarity** (new `CaptureMinigameConfig` asset, indexed 0-3 =
+  Normal/Uncommon/Rare/Legendary = the request's "Regular/Sparkling/Shiny/
+  Radiant" - assumed to be the SAME 4-tier system with flavor names, not a
+  5th axis - flag this assumption if wrong): barrier count, barrier width,
+  whether barriers orbit the wheel at all (only Rare/Legendary do, per spec),
+  and their base orbit speed (Legendary faster than Rare).
+- **Active stew**: Capture Power's existing family-scoped bonus/auto-break,
+  plus two NEW family-scoped effects - `GetCaptureTimeBonus` (extra seconds
+  added to the tool's time limit) and `GetHitPowerBonus` (multiplies weapon
+  damage, applied by `PlayerCapture`, not the controller).
+
+`ICapturable` gained `Rarity` (so the controller can read it without needing
+a full `CreatureData` cast) and `OnHit()` became `OnHit(float damage)` (see
+the creature-health entry below).
+
+`CaptureMinigameConfig` is referenced by `CaptureMinigameController`
+(SerializeField, like `StewCalculationConfig` on `ExpeditionStewManager`),
+NOT by `CreatureAI` directly - `CreatureAI` reads health values through
+`CaptureMinigameController.Instance.GetMaxHealthForRarity()` /
+`GetFailedCaptureHealthRestoreFraction()` instead of holding its own
+reference. This was deliberate: `CaptureMinigameController` is scene-scoped,
+NOT persistent (freshly created per expedition scene, unlike
+`ExpeditionStewManager`), so `CreatureAI.Awake()` reading it directly would
+race against scene-load order. Dodged entirely by reading health LAZILY
+(`CreatureAI.CurrentHealth`'s nullable backing field only initializes on
+first access) - by the time anything can actually hit a creature, the player
+has had to walk up to it, so the scene (and `CaptureMinigameController`) has
+long since finished loading. No new per-prefab wiring needed on the 8
+creature prefabs as a result.
+
+**Moving barriers** (`CaptureHitAreaUI.UpdateAngle`, `CaptureMinigameController
+.TickBarrierOrbit`): all active (not-yet-hit) barriers orbit together as ONE
+RIGID RING - a single direction (rolled once per minigame, not always
+clockwise) and speed shared by all of them, so their relative spacing never
+changes and they can never drift into overlapping each other however long
+the wheel runs (a design choice: independent per-barrier movement would need
+continuous overlap re-validation, which felt like needless complexity for a
+mechanic that's about ADDING difficulty, not more collision logic). Each
+barrier remembers its own spawn-time `BaseStartAngle`; every frame the
+controller computes `BaseStartAngle + orbitOffset`, so there's no compounding
+drift from repeatedly rotating a live value. A barrier STOPS moving once hit
+(`TickBarrierOrbit` skips `IsHit` ones) - a deliberate visual "this one's
+done" marker, not strictly requested but a natural fit for existing "broken
+edge" hit feedback.
+
+**Tool's `extraIngredientChance`** reuses the EXACT SAME sparkle/double-yield
+mechanic Ingredient Power added (`InventoryManager.AddCreature`'s
+`doubleYield` flag) rather than inventing a parallel bonus-ingredient system
+- a successful capture rolls the stew's Ingredient Power chance first, and
+only rolls the tool's own chance if that one didn't already succeed (either
+is enough; no reason to roll a second, wasted chance). This means a
+double-yield sparkle badge doesn't tell you WHICH source granted it, which
+seems like an acceptable simplification (the design shape - "some of this
+stack yields double" - is what the badge is communicating, not the reason).
+
+## Creatures now have hit-point health, no visual bar
+
+`CaptureMinigameConfig.healthPerRarity` (10/20/30/50 for Normal/Uncommon/
+Rare/Legendary). `CreatureAI.OnHit(damage)` accumulates damage instead of
+stunning on any hit at all like before; the creature only enters Stunned
+once health reaches 0 or below. The base weapon (`PlayerCapture.baseDamage`,
+10) means Regular stuns in exactly 1 hit (matching the OLD any-hit-stuns
+behaviour, so nothing changes for the common case), Sparkling in 2, Shiny in
+3, Radiant in 5 - scaled down if Capture Power's hit-power bonus is active
+for a matching family. Already-stunned or already-captured creatures ignore
+further hits entirely (no reason for a second hit mid-stun to do anything).
+
+**Failed-capture health restore**: when a stun ends WITHOUT a successful
+capture - either the stun timer just runs out (nobody engaged the wheel) or
+`TryCapture`'s failure branch sends it fleeing - health resets to
+`CaptureMinigameConfig.failedCaptureHealthRestoreFraction` (0.5) of BASE
+(max), not a full heal and not "whatever it was" (which is always ≤0 by
+definition of having been stunned). This lives in `CreatureAI.EnterState`,
+checking the OLD state before it's overwritten, so it applies uniformly
+regardless of which path ended the stun - the same pattern the stun-particle
+cleanup already used, for the same reason (one central place instead of
+duplicating logic per exit path).
+
+Health has genuinely NO visual representation anywhere (per the request) -
+no bar, no CritterDex stat, nothing. It's pure internal state.

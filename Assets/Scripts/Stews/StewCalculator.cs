@@ -110,8 +110,8 @@ public static class StewCalculator
         var ratios = new Dictionary<StewModifierType, float>
         {
             { StewModifierType.ShinyPower, rarityRatio },
-            { StewModifierType.IngredientPower, Mathf.Clamp01(familyCounts[IngredientFamily.Animal] / slots) },
-            { StewModifierType.EncounterPower, Mathf.Clamp01(familyCounts[IngredientFamily.Stranger] / slots) },
+            { StewModifierType.IngredientPower, Mathf.Clamp01(familyCounts[IngredientFamily.Bug] / slots) },
+            { StewModifierType.EncounterPower, Mathf.Clamp01(familyCounts[IngredientFamily.Freaky] / slots) },
             { StewModifierType.ChronoPower, Mathf.Clamp01(familyCounts[IngredientFamily.Warm] / slots) },
             { StewModifierType.CapturePower, Mathf.Clamp01(familyCounts[IngredientFamily.Cold] / slots) },
             { StewModifierType.SoothingPower, Mathf.Clamp01(familyCounts[IngredientFamily.Plant] / slots) },
@@ -131,14 +131,14 @@ public static class StewCalculator
         var dominantFamily = GetDominantFamily(familyCounts);
 
         if (bestRatio < config.modifierActivationThreshold)
-            return (StewModifierType.None, 0f, dominantFamily, IngredientFamily.Animal); // no modifier - affectedFamily is meaningless
+            return (StewModifierType.None, 0f, dominantFamily, IngredientFamily.Bug); // no modifier - affectedFamily is meaningless
 
         return (best, bestRatio, dominantFamily, RollRandomFamily());
     }
 
     private static IngredientFamily GetDominantFamily(Dictionary<IngredientFamily, int> familyCounts)
     {
-        IngredientFamily dominant = IngredientFamily.Animal;
+        IngredientFamily dominant = IngredientFamily.Bug;
         int best = -1;
         foreach (var kvp in familyCounts)
         {

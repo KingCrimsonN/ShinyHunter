@@ -7,10 +7,21 @@
 public interface ICapturable
 {
     CreatureData Data { get; }
+
+    /// <summary>This instance's rolled rarity - drives the capture minigame's barrier count/size/movement and this creature's max health. See CaptureMinigameConfig.</summary>
+    CreatureData.Rarity Rarity { get; }
+
     bool IsStunned { get; }
 
-    /// <summary>Called when the player's stick connects. Should stun the creature.</summary>
-    void OnHit();
+    /// <summary>
+    /// Called when the player's weapon connects, dealing damage. Only stuns
+    /// once accumulated damage brings health to 0 or below - see
+    /// CaptureMinigameConfig.healthPerRarity. damage is computed by the
+    /// caller (base weapon damage, scaled by Capture Power's hit-power bonus
+    /// if active) - same "compute it externally" convention as TryCapture's
+    /// captureChance.
+    /// </summary>
+    void OnHit(float damage);
 
     /// <summary>Attempt to capture. Only meaningful while IsStunned. Returns success.</summary>
     bool TryCapture();

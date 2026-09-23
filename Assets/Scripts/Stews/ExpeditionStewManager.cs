@@ -119,7 +119,7 @@ public class ExpeditionStewManager : MonoBehaviour
     /// <summary>Which family (if any) gets a spawn-weight boost, and by how much.</summary>
     public bool TryGetEncounterBoostFamily(out IngredientFamily family, out float weightMultiplier)
     {
-        family = IngredientFamily.Stranger;
+        family = IngredientFamily.Freaky;
         weightMultiplier = 1f;
 
         if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.EncounterPower) return false;
@@ -154,6 +154,22 @@ public class ExpeditionStewManager : MonoBehaviour
         if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.SoothingPower) return 1f;
         if (creatureFamily != ActiveStew.affectedFamily) return 1f;
         return 1f - ActiveStew.modifierPower * config.soothingMaxSlowdown;
+    }
+
+    /// <summary>Weapon hit-power bonus (0 = no bonus) for a hit against a creature of the given family - Capture Power, family-scoped like everything else. Actual damage = baseDamage * (1 + this).</summary>
+    public float GetHitPowerBonus(IngredientFamily creatureFamily)
+    {
+        if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.CapturePower) return 0f;
+        if (creatureFamily != ActiveStew.affectedFamily) return 0f;
+        return ActiveStew.modifierPower * config.captureHitPowerBonusScale;
+    }
+
+    /// <summary>Extra seconds added to the capture minigame's time limit for a creature of the given family - Capture Power, family-scoped.</summary>
+    public float GetCaptureTimeBonus(IngredientFamily creatureFamily)
+    {
+        if (ActiveStew == null || ActiveStew.modifierType != StewModifierType.CapturePower) return 0f;
+        if (creatureFamily != ActiveStew.affectedFamily) return 0f;
+        return ActiveStew.modifierPower * config.captureTimeBonusScale;
     }
 
     /// <summary>

@@ -5,9 +5,9 @@
 /// </summary>
 public enum IngredientFamily
 {
-    Animal,   // "Bugs" - arthropods
+    Bug,   // "Bugs" - arthropods
     Plant,    // living vegetables, fungi, carnivorous plants
-    Stranger, // "Undiscoverable/Freakies" - unnatural beings, living dead
+    Freaky, // "Undiscoverable/Freakies" - unnatural beings, living dead
     Warm,     // mammals and birds
     Cold      // fish, reptiles, amphibians
 }

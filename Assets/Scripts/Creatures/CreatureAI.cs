@@ -57,6 +57,26 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     public bool IsStunned => currentState == State.Stunned;
 
+    // ---------------- Health (no visual representation - see CaptureMinigameConfig) ----------------
+
+    /// <summary>Lazily initialized (not in Awake) so it doesn't matter whether CaptureMinigameController.Instance exists yet at spawn time - by the time anything can actually hit this creature, the scene has long since finished loading.</summary>
+    private float? currentHealth;
+
+    /// <summary>Max health for this instance's rolled rarity - see CaptureMinigameConfig.healthPerRarity. Falls back to 10 if no config is wired up.</summary>
+    private float MaxHealth => CaptureMinigameController.Instance != null
+        ? CaptureMinigameController.Instance.GetMaxHealthForRarity(rolledRarity)
+        : 10f;
+
+    private float CurrentHealth
+    {
+        get
+        {
+            if (currentHealth == null) currentHealth = MaxHealth;
+            return currentHealth.Value;
+        }
+        set => currentHealth = value;
+    }
+
     // ---------------- Targeting support (see CreatureTargeting) ----------------
 
     private static readonly List<CreatureAI> active = new List<CreatureAI>();
@@ -187,6 +207,21 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     private void EnterState(State newState)
     {
+        // Stun ending WITHOUT a capture (the stun timer running out because
+        // nobody engaged the wheel, or TryCapture's failure branch sending it
+        // to Flee) restores health to a FRACTION of base, not a full heal -
+        // see CaptureMinigameConfig.failedCaptureHealthRestoreFraction. This
+        // has to happen here, reading the OLD currentState, before it's
+        // overwritten below - repeated attempts wear the creature down across
+        // multiple encounters instead of resetting to full each time.
+        if (currentState == State.Stunned && newState != State.Captured)
+        {
+            float restoreFraction = CaptureMinigameController.Instance != null
+                ? CaptureMinigameController.Instance.GetFailedCaptureHealthRestoreFraction()
+                : 0.5f;
+            CurrentHealth = MaxHealth * restoreFraction;
+        }
+
         currentState = newState;
 
         // Only the Stunned state can be mid-capture; any other transition
@@ -347,10 +382,20 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     // ---------------- ICapturable ----------------
 
-    public void OnHit()
+    /// <summary>
+    /// Applies damage; only stuns once accumulated damage brings health to 0
+    /// or below (see CaptureMinigameConfig.healthPerRarity - a Regular takes
+    /// 1 base-weapon hit, a Radiant takes 5). Already-stunned/captured
+    /// creatures ignore further hits - there's nothing more for another hit
+    /// to do once the capture window is already open.
+    /// </summary>
+    public void OnHit(float damage)
     {
-        if (currentState == State.Captured) return;
-        EnterState(State.Stunned);
+        if (currentState == State.Captured || currentState == State.Stunned) return;
+
+        CurrentHealth -= damage;
+        if (CurrentHealth <= 0f)
+            EnterState(State.Stunned);
     }
 
     public void StartCapture()
@@ -407,6 +452,18 @@ public class CreatureAI : MonoBehaviour, ICapturable
             // long before the player ever visits the transform table.
             bool doubleYield = ExpeditionStewManager.Instance != null
                 && ExpeditionStewManager.Instance.TryRollDoubleIngredients(data.family);
+
+            // A tool can ALSO grant an independent chance at the same flag
+            // (ToolData.extraIngredientChance) - either roll succeeding is
+            // enough, so only bother rolling this one if the stew didn't
+            // already get there first.
+            if (!doubleYield)
+            {
+                var equippedTool = ToolInventoryManager.Instance != null ? ToolInventoryManager.Instance.EquippedSlot?.data : null;
+                if (equippedTool != null && Random.value <= equippedTool.extraIngredientChance)
+                    doubleYield = true;
+            }
+
             InventoryManager.Instance.AddCreature(data, rolledRarity, 1, doubleYield);
 
             // Chrono Power: grants bonus CURRENT-run time immediately if this

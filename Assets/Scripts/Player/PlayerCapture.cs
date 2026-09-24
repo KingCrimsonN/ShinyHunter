@@ -28,6 +28,10 @@ public class PlayerCapture : MonoBehaviour
     [SerializeField] private KeyCode hitKey = KeyCode.Mouse0;
     [Tooltip("Damage dealt per hit, before Capture Power's bonus - see CreatureAI/CaptureMinigameConfig.healthPerRarity for what this means in hits-to-stun per rarity.")]
     [SerializeField] private float baseDamage = 10f;
+    [Tooltip("Seconds between stick swings - stops it being spammed. The swing animation/sound are gated too, not just the damage.")]
+    [SerializeField] private float hitCooldown = 0.5f;
+
+    private float nextHitTime;
 
     public bool isActive;
 
@@ -50,6 +54,9 @@ public class PlayerCapture : MonoBehaviour
 
     private void TrySwingStick()
     {
+        if (Time.time < nextHitTime) return;
+        nextHitTime = Time.time + hitCooldown;
+
         Camera cam = playerCamera != null ? playerCamera : Camera.main;
 
         if (handAnimator != null) handAnimator.SetTrigger("Hit");

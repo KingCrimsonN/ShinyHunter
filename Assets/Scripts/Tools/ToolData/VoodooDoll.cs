@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -48,7 +49,14 @@ public class VoodooDoll : ToolBehaviour
 
     private PlayerCapture stick;
     private CaptureTargetIndicator indicator;
-    private GameObject flyingProjectile;
+
+    /// <summary>
+    /// Every projectile currently in flight. A set, not a single field: throws
+    /// can overlap (each is its own coroutine), and one shared field made a
+    /// second throw overwrite the first's reference - orphaning the first
+    /// projectile forever while the first coroutine destroyed the second's.
+    /// </summary>
+    private readonly HashSet<GameObject> flyingProjectiles = new HashSet<GameObject>();
 
     private CreatureTarget target;
     private CaptureTargetState targetState;
@@ -70,7 +78,11 @@ public class VoodooDoll : ToolBehaviour
     private void OnDestroy()
     {
         DestroyIndicator();
-        if (flyingProjectile != null) Destroy(flyingProjectile); // the throw coroutine dies with this object - don't leave its projectile hanging in the world
+
+        // The throw coroutines die with this object - don't leave their projectiles hanging in the world.
+        foreach (var projectile in flyingProjectiles)
+            if (projectile != null) Destroy(projectile);
+        flyingProjectiles.Clear();
     }
 
     private void DestroyIndicator()
@@ -145,22 +157,30 @@ public class VoodooDoll : ToolBehaviour
     private IEnumerator ThrowDollAt(Vector3 aimPoint, ICapturable creature)
     {
         Vector3 startPos = throwOrigin != null ? throwOrigin.position : transform.position;
-        flyingProjectile = dollProjectilePrefab != null
-            ? Instantiate(dollProjectilePrefab, startPos, Quaternion.identity)
-            : null;
+
+        // Local, so overlapping throws each own and clean up their own projectile.
+        GameObject projectile = null;
+        if (dollProjectilePrefab != null)
+        {
+            projectile = Instantiate(dollProjectilePrefab, startPos, Quaternion.identity);
+            flyingProjectiles.Add(projectile);
+        }
 
         float t = 0f;
         while (t < throwDuration)
         {
             t += Time.deltaTime;
             float progress = throwDuration > 0f ? t / throwDuration : 1f;
-            if (flyingProjectile != null)
-                flyingProjectile.transform.position = Vector3.Lerp(startPos, aimPoint, progress);
+            if (projectile != null)
+                projectile.transform.position = Vector3.Lerp(startPos, aimPoint, progress);
             yield return null;
         }
 
-        if (flyingProjectile != null) Destroy(flyingProjectile);
-        flyingProjectile = null;
+        if (projectile != null)
+        {
+            flyingProjectiles.Remove(projectile);
+            Destroy(projectile);
+        }
 
         bool hitSomething = IsAlive(creature) && creature.IsStunned;
         if (!hitSomething) yield break; // missed / nothing there / it recovered mid-flight - doll just lands, not consumed, no capture

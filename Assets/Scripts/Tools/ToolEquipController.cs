@@ -28,6 +28,9 @@ public class ToolEquipController : MonoBehaviour
     private ToolData currentToolData;
     private Coroutine swapRoutine;
 
+    /// <summary>Time.time before which the held tool can't be used again - see TryUseCurrentTool / ToolData.useCooldown.</summary>
+    private float nextUseTime;
+
     private void OnEnable()
     {
         CanUse = true;
@@ -70,7 +73,13 @@ public class ToolEquipController : MonoBehaviour
 
     private void TryUseCurrentTool()
     {
-        currentToolInstance?.UseTool();
+        // One shared cooldown for the whole hand (not per tool), so swapping
+        // tools can't be used to dodge it. Nothing held = nothing used = no
+        // cooldown started. Uses Time.time, so it also pauses with timeScale 0.
+        if (currentToolInstance == null || Time.time < nextUseTime) return;
+
+        nextUseTime = Time.time + (currentToolData != null ? currentToolData.useCooldown : 0f);
+        currentToolInstance.UseTool();
         // No consumption logic here anymore - HandleToolConsumed (subscribed
         // whenever a tool is spawned, see SwapToolRoutine) handles it
         // whenever the TOOL says it's actually ready, not the instant

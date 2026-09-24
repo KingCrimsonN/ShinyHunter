@@ -822,3 +822,22 @@ drifting closer; movement only resumes once the player leaves attack range
 again. Combined with `EnterState(State.Attacking)`'s existing `isStopped =
 true`, an aggressive creature is now stationary for its entire time within
 attackRange, not just during the swing itself.
+
+## Use cooldowns on the stick and on tools; doll projectiles tracked per throw
+
+Stick: `PlayerCapture.hitCooldown` (0.5s, serialized like `baseDamage`/`hitRange`)
+gates the whole swing - animation, sound and damage - not just the damage.
+Tools: `ToolData.useCooldown` (default 1s) enforced in
+`ToolEquipController.TryUseCurrentTool` via a single `nextUseTime`. It's one
+cooldown for the whole hand, not per tool, so swapping tools can't dodge it;
+it isn't started when nothing is held. Uses `Time.time`, so it pauses with the
+tablet's `timeScale = 0`. The cooldown lives on the controller (runtime
+state) and only its duration on the shared `ToolData` (config), per
+convention #1.
+
+Doll bug: `VoodooDoll` kept its in-flight projectile in ONE field, but each
+throw is its own coroutine. A second throw overwrote the reference, orphaning
+the first projectile forever (the first coroutine then destroyed the SECOND
+one instead). Each throw now owns a local reference, and a `HashSet` of all
+in-flight projectiles lets `OnDestroy` clean up whatever's still flying if the
+tool is unequipped mid-throw.

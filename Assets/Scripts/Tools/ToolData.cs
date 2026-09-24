@@ -23,6 +23,8 @@ public class ToolData : ScriptableObject
     [Header("Behaviour")]
     [Tooltip("Prefab instantiated in the player's hand socket when this tool is equipped. Must have a ToolBehaviour (or subclass) component on its root.")]
     public ToolBehaviour toolPrefab;
+    [Tooltip("Seconds after using this tool before ANY tool can be used again (enforced by ToolEquipController, so swapping tools can't dodge it). Stops the tool being spammed.")]
+    [Min(0f)] public float useCooldown = 1f;
 
     // Only meaningful for tools that trigger the capture minigame (currently
     // just the voodoo doll) - inert defaults for anything else. See

@@ -59,11 +59,22 @@ public class UIManager : MonoBehaviour
     {
         if (hurtScreen != null)
         {
-            hurtScreen.color = new Color(hurtScreen.color.r, hurtScreen.color.g, hurtScreen.color.b, 1f);
-            hurtScreen.DOColor(new Color(hurtScreen.color.r, hurtScreen.color.g, hurtScreen.color.b, 0f), 0.5f);
+
+            DOTween.Kill(hurtScreen); // kill any existing tweens on the hurtScreen to prevent overlapping animations
+            hurtScreen.DOFade(1f, 0f).OnComplete(() =>
+            {
+                hurtScreen.DOFade(0f, 0.75f).SetEase(Ease.OutCirc);
+            });
+            // hurtScreen.DOColor(new Color(hurtScreen.color.r, hurtScreen.color.g, hurtScreen.color.b, 1f), 0f).OnComplete(() =>
+            // {
+            // hurtScreen.DOColor(new Color(hurtScreen.color.r, hurtScreen.color.g, hurtScreen.color.b, 0f), 0.05f);
+            // });
+
         }
 
     }
+
+
 
     private void OnDestroy()
     {

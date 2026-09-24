@@ -4,8 +4,10 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// Drives a single creature's behaviour: idle/wander naturally, flee when the
-/// player gets close, go stunned when hit, and resolve capture attempts.
+/// Drives a single creature's behaviour: idle/wander naturally, react to the
+/// player getting close (flee, or - for CreatureData.isAggressive species -
+/// chase and attack instead), go stunned when hit enough to zero its health,
+/// and resolve capture attempts.
 ///
 /// Ground/Swimming creatures use NavMeshAgent (bake a NavMesh in the scene).
 /// Flying creatures use a simple point-to-point mover so they aren't
@@ -17,7 +19,8 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Collider))]
 public class CreatureAI : MonoBehaviour, ICapturable
 {
-    public enum State { Idle, Wander, Flee, Stunned, Captured }
+    /// <summary>Aggressive and Attacking are only ever entered for species with CreatureData.isAggressive set - see CheckPlayerProximity.</summary>
+    public enum State { Idle, Wander, Flee, Stunned, Captured, Aggressive, Attacking }
 
     [Header("Config")]
     [SerializeField] private CreatureData data;
@@ -31,6 +34,8 @@ public class CreatureAI : MonoBehaviour, ICapturable
     [Header("Effects")]
     [SerializeField] private GameObject stunParticles;
     [SerializeField] private GameObject captureParticles;
+    [SerializeField] private GameObject hitParticles;
+    [SerializeField] private ParticleSystem playerSpottedParticles;
 
     [Header("Debug (read-only)")]
     [SerializeField] private State currentState = State.Idle;
@@ -52,6 +57,13 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     /// <summary>True while a capture minigame is running against this creature - the stun timer is suspended so the creature can't recover before the attempt resolves.</summary>
     private bool captureInProgress;
+
+    /// <summary>Counts down after a hit that damages but doesn't stun (non-aggressive creatures only) - see OnHit / EffectiveFleeSpeed.</summary>
+    private float dashTimer;
+    private float dashSpeedMultiplier = 1f;
+
+    /// <summary>Counts down after an aggressive creature lands an attack - it can't attack again until this reaches 0, regardless of how close it stays to the player.</summary>
+    private float attackCooldownTimer;
 
     private CreatureSpriteAnimator animator;
 
@@ -125,9 +137,18 @@ public class CreatureAI : MonoBehaviour, ICapturable
         }
     }
 
-    /// <summary>data.fleeSpeed scaled by Soothing Power (less than 1 = flees slower, ONLY for creatures of the stew's affected family).</summary>
+    /// <summary>
+    /// data.fleeSpeed scaled by Soothing Power (less than 1 = flees slower,
+    /// ONLY for creatures of the stew's affected family) and, while dashTimer
+    /// is running, by the rarity-scaled dash multiplier (see OnHit /
+    /// CaptureMinigameConfig). Also doubles as the AGGRESSIVE chase speed
+    /// (TickAggressive) - one "urgent movement" speed either way, fleeing or
+    /// charging, rather than a separate per-species chase-speed field.
+    /// </summary>
     private float EffectiveFleeSpeed =>
-        data.fleeSpeed * (ExpeditionStewManager.Instance != null ? ExpeditionStewManager.Instance.GetSoothingMultiplier(data.family) : 1f);
+        data.fleeSpeed
+        * (ExpeditionStewManager.Instance != null ? ExpeditionStewManager.Instance.GetSoothingMultiplier(data.family) : 1f)
+        * (dashTimer > 0f ? dashSpeedMultiplier : 1f);
 
     private void Awake()
     {
@@ -192,6 +213,11 @@ public class CreatureAI : MonoBehaviour, ICapturable
     {
         if (currentState == State.Captured) return;
 
+        // Tick independently of state - a dash/cooldown shouldn't pause just
+        // because e.g. a stun briefly interrupted the chase.
+        if (dashTimer > 0f) dashTimer -= Time.deltaTime;
+        if (attackCooldownTimer > 0f) attackCooldownTimer -= Time.deltaTime;
+
         CheckPlayerProximity();
 
         switch (currentState)
@@ -200,6 +226,8 @@ public class CreatureAI : MonoBehaviour, ICapturable
             case State.Wander: TickWander(); break;
             case State.Flee: TickFlee(); break;
             case State.Stunned: TickStunned(); break;
+            case State.Aggressive: TickAggressive(); break;
+            case State.Attacking: TickAttacking(); break;
         }
     }
 
@@ -263,6 +291,25 @@ public class CreatureAI : MonoBehaviour, ICapturable
                 StartCoroutine(WaitAnChangeAnimation(State.Captured, 0.5f));
                 break;
 
+            case State.Aggressive:
+                if (agent != null) { agent.isStopped = false; agent.speed = EffectiveFleeSpeed; }
+                animator?.Play(CreatureAnimState.Move); // chasing reuses the normal movement animation - only the attack itself gets its own state
+                break;
+
+            case State.Attacking:
+                // Damage lands immediately on entering this state, not at the
+                // end of the windup - TickAttacking only holds the creature
+                // here (stateTimer) so the attack animation has time to play
+                // and to act as the "recovery" before it can chase/attack
+                // again. This is only ever entered from TickAggressive, which
+                // has JUST verified range and cooldown, so no need to re-check here.
+                stateTimer = data.attackWindupDuration;
+                attackCooldownTimer = data.attackCooldown;
+                if (agent != null) agent.isStopped = true;
+                animator?.Play(CreatureAnimState.Attack);
+                if (PlayerHealth.Instance != null) PlayerHealth.Instance.TakeDamage(data.attackDamage);
+                break;
+
                 // case State.Captured:
                 //     if (agent != null) agent.isStopped = true;
                 //     animator?.Play(CreatureAnimState.Captured);
@@ -288,8 +335,26 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
         float dist = Vector3.Distance(transform.position, player.position);
 
+        if (data.isAggressive)
+        {
+            bool isChasingOrAttacking = currentState == State.Aggressive || currentState == State.Attacking;
+
+            if (dist <= EffectiveDetectionRadius && !isChasingOrAttacking)
+            {
+                playerSpottedParticles?.Play();
+                EnterState(State.Aggressive);
+            }
+            else if (isChasingOrAttacking && dist >= data.fleeDistance)
+            {
+                EnterState(State.Idle); // player got far enough away - loses interest, same threshold a fleeing species uses to feel safe
+            }
+
+            return;
+        }
+
         if (dist <= EffectiveDetectionRadius && currentState != State.Flee)
         {
+            playerSpottedParticles?.Play();
             EnterState(State.Flee);
         }
         else if (currentState == State.Flee && dist >= data.fleeDistance)
@@ -317,10 +382,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     private void TickFlee()
     {
-        Vector3 fleeDir = (transform.position - player.position);
-        fleeDir.y = 0f;
-        fleeDir = fleeDir.sqrMagnitude > 0.01f ? fleeDir.normalized : Random.insideUnitSphere.normalized;
-        Vector3 fleeTarget = transform.position + fleeDir * data.fleeDistance;
+        Vector3 fleeTarget = transform.position + GetFleeDirection() * data.fleeDistance;
 
         if (data.movementMode == CreatureMovementMode.Flying)
         {
@@ -329,6 +391,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
         }
         else if (agent != null)
         {
+            agent.speed = EffectiveFleeSpeed; // live-refreshed every tick (not just on EnterState) so a dash kicking in mid-flee takes effect immediately, and drops back down the instant it ends
             if (NavMesh.SamplePosition(fleeTarget, out NavMeshHit hit, data.fleeDistance, NavMesh.AllAreas))
                 agent.SetDestination(hit.position);
         }
@@ -340,6 +403,89 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
         stunTimer -= Time.deltaTime;
         if (stunTimer <= 0f) EnterState(State.Idle);
+    }
+
+    /// <summary>
+    /// Aggressive-only: closes in on the player, attacking once in range and
+    /// off cooldown. Mirror image of TickFlee (moves TOWARD instead of
+    /// away), re-aiming every frame the same way TickFlee does - see its
+    /// comment for why that's the existing convention here.
+    ///
+    /// Once within attackRange, it HOLDS POSITION rather than continuing to
+    /// close the last bit of distance or walking through the player - even
+    /// while on cooldown and unable to actually attack yet, it just waits at
+    /// range instead of drifting closer.
+    /// </summary>
+    private void TickAggressive()
+    {
+        if (player == null) return;
+
+        Vector3 toPlayer = player.position - transform.position;
+        toPlayer.y = 0f;
+
+        if (toPlayer.magnitude <= data.attackRange)
+        {
+            if (agent != null) agent.isStopped = true; // flying creatures "hold" simply by not calling MoveTowardsFlyTarget below
+
+            if (attackCooldownTimer <= 0f)
+                EnterState(State.Attacking);
+
+            return;
+        }
+
+        if (data.movementMode == CreatureMovementMode.Flying)
+        {
+            currentFlyTarget = player.position + Vector3.up * Random.Range(data.flightHeightMin, data.flightHeightMax);
+            MoveTowardsFlyTarget(EffectiveFleeSpeed);
+        }
+        else if (agent != null)
+        {
+            agent.isStopped = false;
+            agent.speed = EffectiveFleeSpeed; // live-refreshed here (not just on EnterState) so a dash-equivalent or Soothing Power change takes effect immediately, same as TickFlee
+            if (NavMesh.SamplePosition(player.position, out NavMeshHit hit, data.fleeDistance, NavMesh.AllAreas))
+                agent.SetDestination(hit.position);
+        }
+    }
+
+    private void TickAttacking()
+    {
+        stateTimer -= Time.deltaTime;
+        UIManager.Instance.ShowHurtScreen(); // flash the red overlay on the player's screen when hit, same as PlayerHealth.TakeDamage
+        if (stateTimer <= 0f) EnterState(State.Aggressive); // recovery over - resume the chase (cooldown keeps it from attacking again immediately)
+    }
+
+    /// <summary>Horizontal direction AWAY from the player - shared by TickFlee (the ongoing flee target) and BlinkAway (the dash's instant hop), so both agree on "which way is away".</summary>
+    private Vector3 GetFleeDirection()
+    {
+        Vector3 dir = transform.position - player.position;
+        dir.y = 0f;
+        return dir.sqrMagnitude > 0.01f ? dir.normalized : Random.insideUnitSphere.normalized;
+    }
+
+    /// <summary>
+    /// The snappy part of a dash: instantly repositions the creature a short
+    /// distance away from the player, before the speed-boost part of the
+    /// dash takes over - see OnHit. Ground/swimming creatures use
+    /// NavMeshAgent.Warp (a direct transform set would fight the agent's own
+    /// tracking) and sample the NavMesh first, so it can't blink off it or
+    /// into geometry; flying creatures just move transform.position directly,
+    /// same as everywhere else they're moved.
+    /// </summary>
+    private void BlinkAway(float distance)
+    {
+        if (distance <= 0f || player == null) return;
+
+        Vector3 target = transform.position + GetFleeDirection() * distance;
+
+        if (data.movementMode == CreatureMovementMode.Flying)
+        {
+            transform.position = target;
+        }
+        else if (agent != null)
+        {
+            if (NavMesh.SamplePosition(target, out NavMeshHit hit, distance, NavMesh.AllAreas))
+                agent.Warp(hit.position);
+        }
     }
 
     private void PickNewWanderTarget()
@@ -394,8 +540,38 @@ public class CreatureAI : MonoBehaviour, ICapturable
         if (currentState == State.Captured || currentState == State.Stunned) return;
 
         CurrentHealth -= damage;
+        Destroy(Instantiate(hitParticles, transform.position, Quaternion.identity), 0.5f);
         if (CurrentHealth <= 0f)
+        {
             EnterState(State.Stunned);
+            return;
+        }
+
+        // Aggressive creatures don't flee or dash when damaged-but-not-stunned
+        // - they keep pressing the attack, unaffected. Only non-aggressive
+        // (fleeing) species dash.
+        if (data.isAggressive) return;
+
+        if (CaptureMinigameController.Instance != null)
+        {
+            float duration = CaptureMinigameController.Instance.GetDashDuration(rolledRarity);
+            if (duration > 0f)
+            {
+                dashSpeedMultiplier = CaptureMinigameController.Instance.GetDashSpeedMultiplier(rolledRarity);
+                dashTimer = duration;
+
+                // The instant "blink" happens FIRST, right here - immediate,
+                // snappy feedback - before the eased speed boost takes over
+                // for the rest of the dash's duration.
+                BlinkAway(CaptureMinigameController.Instance.GetDashBlinkDistance(rolledRarity));
+            }
+        }
+
+        // Getting hit is reason enough to flee regardless of prior state -
+        // the hit range and detection radius aren't necessarily the same, so
+        // this isn't always a no-op.
+        if (currentState != State.Flee)
+            EnterState(State.Flee);
     }
 
     public void StartCapture()
@@ -500,5 +676,11 @@ public class CreatureAI : MonoBehaviour, ICapturable
         Gizmos.DrawWireSphere(transform.position, data.detectionRadius);
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, data.wanderRadius);
+
+        if (data.isAggressive)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, data.attackRange);
+        }
     }
 }

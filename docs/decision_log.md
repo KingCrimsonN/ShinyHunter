@@ -719,3 +719,106 @@ duplicating logic per exit path).
 
 Health has genuinely NO visual representation anywhere (per the request) -
 no bar, no CritterDex stat, nothing. It's pure internal state.
+
+## Post-hit dash (non-stunning hits push rarer creatures into a speed burst)
+
+`CreatureAI.OnHit`, when a hit damages but doesn't stun, now briefly boosts
+flee speed - rarity-scaled via new `CaptureMinigameConfig.dashSpeedMultiplierPerRarity`
+/ `dashDurationPerRarity` (Regular gets 0 duration = no dash by default,
+since it always stuns in one hit at base damage anyway; higher rarities get
+a bigger, longer boost). Lives on `CaptureMinigameConfig` rather than a new
+asset, since it's the same "rarity-indexed creature-combat number" shape as
+health - see that class's updated doc comment.
+
+`EffectiveFleeSpeed` applies the dash multiplier on top of Soothing Power's
+existing one. Previously `agent.speed` was only SET once, on entering
+`State.Flee` - a dash kicking in mid-flee (the common case: the creature is
+almost always already fleeing by the time it's in hit range) would never
+have taken effect until the NEXT full state transition. Fixed by having
+`TickFlee` (and the new `TickAggressive` - see below) refresh `agent.speed =
+EffectiveFleeSpeed` every tick instead of only on entry, matching how flying
+creatures already recompute their effective speed live each frame via
+`MoveTowardsFlyTarget`.
+
+A hit that damages but doesn't stun also now forces the creature into Flee
+if it wasn't already there (previously ANY hit unconditionally stunned, so
+"hit while not fleeing" never happened) - getting hit is reason enough to
+react, and the hit range and detection radius aren't guaranteed to be the
+same value.
+
+## Aggressive creatures: chase and attack instead of fleeing
+
+New `CreatureData.isAggressive` (per-SPECIES toggle, not per-rarity) plus
+`attackRange`/`attackCooldown`/`attackDamage`/`attackWindupDuration`. Two new
+`CreatureAI.State` values, `Aggressive` (closing in) and `Attacking`
+(landing a hit) - both ONLY ever reachable for `isAggressive` species,
+gated in `CheckPlayerProximity`, which now branches early into a mirror
+image of the existing flee logic: same `detectionRadius` to notice the
+player, same `fleeDistance` threshold to give up and go back to Idle (reused
+as-is rather than adding parallel aggression-specific radii - "the distance
+this species reacts at" doesn't need a second definition depending on
+whether the reaction is fleeing or charging).
+
+`TickAggressive` is a literal mirror of `TickFlee` - moves TOWARD the player
+instead of away, re-targeting every frame the same way (matches the
+existing convention there, not a new one). It also reuses `fleeSpeed`/
+`EffectiveFleeSpeed` as the chase speed rather than adding a separate
+per-species field - one "urgent movement" speed number covers both fleeing
+and charging, since a species is only ever doing one or the other.
+
+Landing an attack (`EnterState(State.Attacking)`) applies `PlayerHealth
+.TakeDamage(attackDamage)` immediately, not at the end of the windup -
+`attackWindupDuration` is purely how long the creature holds still
+afterward (animation + "recovery"), not a telegraph before the hit connects.
+`attackCooldownTimer` is set at the same moment and ticks down independent
+of state (alongside the dash timer, for the same reason: shouldn't pause
+just because a stun briefly interrupts the chase), so the cooldown is
+strictly time-based, not "time spent actively chasing".
+
+A hit that damages but doesn't stun is a NO-OP for aggressive creatures
+(`OnHit` returns early on `data.isAggressive` before the dash/forced-flee
+logic) - they keep pressing the attack unaffected rather than fleeing or
+dashing, which would contradict the whole point of being aggressive. This
+wasn't explicitly specified either way; flagged as the interpretation taken.
+
+New `CreatureAnimState.Attack` (appended at the END of the enum - inserting
+would have shifted every existing authored `CreatureVariantVisuals` clip's
+serialized `state` index). Only aggressive species ever play it; chasing
+itself reuses the existing `Move` animation rather than adding a dedicated
+"chase" state, since only the ATTACK was asked to have its own animation.
+
+## Dash gained an instant "blink" before the speed boost
+
+`CaptureMinigameConfig.dashBlinkDistancePerRarity` (new, alongside the
+existing speed/duration arrays) - the moment a dash triggers, the creature
+is instantly repositioned a short distance in the flee direction (`OnHit` ->
+`BlinkAway`), THEN the eased speed boost takes over for the rest of the
+dash's duration as before. This is what makes it read as a snappy "dash"
+rather than just a quiet speed-up - the instant hop is the visible feedback.
+
+`GetFleeDirection()` was factored out of `TickFlee` (previously computed
+inline) so `BlinkAway` uses the EXACT same "away from player" direction the
+ongoing flee target does - the blink and the flee that follows it always
+point the same way, not two independently-computed directions that could
+disagree.
+
+Ground/swimming creatures blink via `NavMeshAgent.Warp` (sampling the
+NavMesh first), not a direct `transform.position` set - a raw position
+write would fight the agent's own internal tracking (same category of
+problem noted elsewhere in this codebase for the player's CharacterController).
+Flying creatures set `transform.position` directly, consistent with how
+they're moved everywhere else (`MoveTowardsFlyTarget`).
+
+## Aggressive creatures hold position once in attack range
+
+`TickAggressive` used to only stop closing the distance if BOTH in range AND
+off cooldown - meaning a creature that reached attack range while still on
+cooldown kept walking, potentially straight through the player. Fixed by
+splitting the check: entering `attackRange` at all now stops movement
+(`agent.isStopped = true`, or for flying creatures simply not calling
+`MoveTowardsFlyTarget`), and ONLY THEN checks cooldown to decide whether to
+actually swing. On cooldown, it just waits at range instead of attacking or
+drifting closer; movement only resumes once the player leaves attack range
+again. Combined with `EnterState(State.Attacking)`'s existing `isStopped =
+true`, an aggressive creature is now stationary for its entire time within
+attackRange, not just during the swing itself.

@@ -99,9 +99,14 @@ MonoBehaviour:
   wanderIntervalRange: {x: 3, y: 8}
   flightHeightMin: 2
   flightHeightMax: 5
-  detectionRadius: 2
+  detectionRadius: 4
   fleeDistance: 10
   detectionAversionScale: 1
+  isAggressive: 1
+  attackRange: 2
+  attackCooldown: 5
+  attackDamage: 15
+  attackWindupDuration: 0.5
   baseCaptureChance: 1
   stunDuration: 3
   resources:

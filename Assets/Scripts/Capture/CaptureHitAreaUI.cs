@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -112,5 +113,8 @@ public class CaptureHitAreaUI : MonoBehaviour
 
         if (startEdgeImage != null) startEdgeImage.GetComponent<Image>().sprite = brokenEdgeSprite;
         if (endEdgeImage != null) endEdgeImage.GetComponent<Image>().sprite = brokenEdgeSprite;
+
+        startEdgeImage?.DOColor(hitColor, 0.2f);
+        endEdgeImage?.DOColor(hitColor, 0.2f);
     }
 }

@@ -9,5 +9,7 @@ public enum CreatureAnimState
     Move,
     Flee,
     Hit,
-    Captured
+    Captured,
+    /// <summary>Only ever played by aggressive creatures (CreatureData.isAggressive) landing an attack - see CreatureAI.State.Attacking. Chasing itself reuses Move.</summary>
+    Attack
 }

@@ -173,6 +173,24 @@ public class CaptureMinigameController : MonoBehaviour
         return config != null ? config.failedCaptureHealthRestoreFraction : 0.5f;
     }
 
+    /// <summary>Instant "blink" distance for a post-hit dash, for a creature of the given rarity - see CaptureMinigameConfig.dashBlinkDistancePerRarity. Falls back to 0 (no blink) if no config is assigned.</summary>
+    public float GetDashBlinkDistance(CreatureData.Rarity rarity)
+    {
+        return config != null ? config.GetDashBlinkDistance(rarity) : 0f;
+    }
+
+    /// <summary>Flee-speed multiplier for a post-hit "dash", for a creature of the given rarity - see CaptureMinigameConfig.dashSpeedMultiplierPerRarity. Falls back to 1 (no dash) if no config is assigned.</summary>
+    public float GetDashSpeedMultiplier(CreatureData.Rarity rarity)
+    {
+        return config != null ? config.GetDashSpeedMultiplier(rarity) : 1f;
+    }
+
+    /// <summary>How long a post-hit dash lasts, for a creature of the given rarity - see CaptureMinigameConfig.dashDurationPerRarity. Falls back to 0 (no dash) if no config is assigned.</summary>
+    public float GetDashDuration(CreatureData.Rarity rarity)
+    {
+        return config != null ? config.GetDashDuration(rarity) : 0f;
+    }
+
     /// <summary>
     /// Entry point - call this instead of ICapturable.TryCapture directly.
     /// Configures the whole run from three sources (see class docs and

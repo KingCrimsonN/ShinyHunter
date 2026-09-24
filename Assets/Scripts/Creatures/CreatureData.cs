@@ -57,12 +57,24 @@ public class CreatureData : ScriptableObject
     public float flightHeightMax = 5f;
 
     [Header("Fear / Detection")]
-    [Tooltip("Player distance at which the creature notices and flees.")]
+    [Tooltip("Player distance at which the creature notices and reacts (flees, or moves in to attack if isAggressive).")]
     public float detectionRadius = 6f;
-    [Tooltip("Player distance the creature must reach before it feels safe again.")]
+    [Tooltip("Player distance the creature must reach before it feels safe/loses interest again (fleeing OR aggressive - see isAggressive).")]
     public float fleeDistance = 10f;
     [Tooltip("How much a fully-matching hated scent (see hatedScent above) stretches detectionRadius. 1 = doubles it when the stew is maxed out on the hated axis; 0 = hated scents don't affect detection at all.")]
     public float detectionAversionScale = 1f;
+
+    [Header("Aggression")]
+    [Tooltip("If true, this species moves TOWARD the player and attacks once it notices them, instead of fleeing. Everything else (detectionRadius, fleeDistance as the \"give up\" distance, fleeSpeed as the chase speed) is reused as-is - see CreatureAI.CheckPlayerProximity.")]
+    public bool isAggressive;
+    [Tooltip("Distance at which an aggressive creature can land an attack.")]
+    public float attackRange = 1.5f;
+    [Tooltip("Seconds between attacks - deliberately generous (\"reasonably big cooldown\" per design), not spammable.")]
+    public float attackCooldown = 5f;
+    [Tooltip("Expedition time (seconds) removed from the player per landed attack - see PlayerHealth.TakeDamage.")]
+    public float attackDamage = 15f;
+    [Tooltip("How long the attack animation holds the creature in place before it resumes chasing. Damage is applied immediately on landing the attack, not at the end of this window - this is purely how long the recovery/animation hold lasts.")]
+    public float attackWindupDuration = 0.5f;
 
     [Header("Capture")]
     [Tooltip("NOT currently used - capture chance now comes from the capture minigame's hit ratio (see CaptureMinigameController). Left in place in case you want to fold it back in as a per-species multiplier later.")]

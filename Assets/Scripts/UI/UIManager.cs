@@ -1,6 +1,8 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /// <summary>
 /// Lives on the Overlay prefab's root and is persistent (DontDestroyOnLoad),
@@ -26,6 +28,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject mapPage;
     [SerializeField] private GameObject settingsPage;
     [SerializeField] private GameObject dialogPanel;
+    [SerializeField] private Image hurtScreen;
 
     [SerializeField] private TMP_Text interactionText;
 
@@ -50,6 +53,16 @@ public class UIManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    public void ShowHurtScreen()
+    {
+        if (hurtScreen != null)
+        {
+            hurtScreen.color = new Color(hurtScreen.color.r, hurtScreen.color.g, hurtScreen.color.b, 1f);
+            hurtScreen.DOColor(new Color(hurtScreen.color.r, hurtScreen.color.g, hurtScreen.color.b, 0f), 0.5f);
+        }
+
     }
 
     private void OnDestroy()

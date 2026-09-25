@@ -841,3 +841,143 @@ the first projectile forever (the first coroutine then destroyed the SECOND
 one instead). Each throw now owns a local reference, and a `HashSet` of all
 in-flight projectiles lets `OnDestroy` clean up whatever's still flying if the
 tool is unequipped mid-throw.
+
+## CritterDex folded into the tablet; grid/detail rebuilt from scratch
+
+The dex was a leftover from before the tablet existed: a standalone popup
+toggled by `J`, setting `Time.timeScale`/cursor state directly rather than
+going through `PlayerStateManager` like every other popup (convention #5).
+Moved into `UIManager` as a fourth page (`critterDexPage` /
+`ShowCritterDexPage()`, alongside Inventory/Map/Settings) - `CritterDexUI`
+lost its popup/freeze/cursor logic entirely and now only wires the grid's
+selection into the detail panel, same shape as every other tablet page's
+controller. `UIManager`'s three `Show*Page` methods were also collapsed into
+one shared `SetActivePage` helper rather than duplicating the four-way
+mutual-exclusion by hand a fourth time.
+
+Within the dex page, `CritterDexTabController` adds a SECOND level of tab
+switching for the future compendium sections the request named (Tools,
+Ingredients, NPCs, Locations) - each is just a placeholder panel for now
+(e.g. a "Coming soon" label), no script needed until they're actually built.
+"Critters" is the only sub-tab with real content.
+
+**Why it looked broken**: `CritterDexGridUI` only ever built its grid ONCE
+(a `built` guard) and only refreshed lock states while the popup was open
+and subscribed to `InventoryManager.OnInventoryChanged` - which, because it
+lived under an inactive `popupRoot`, never even ran `OnEnable` until the
+first manual open. A capture during an expedition (dex closed) never
+reached it. Rebuilt to match convention #8 (grid UIs rebuild fully on
+refresh) exactly like `InventoryUI` does: subscribe in `OnEnable`, full
+rebuild immediately and on every future `OnInventoryChanged` while the panel
+is enabled. This is also what makes item 2 (dex updates the moment a
+critter is captured) actually true now, not just while it happens to be open.
+
+**Rarity frame on grid entries** (new): shows the frame for the HIGHEST
+rarity of that species caught so far, styled like `InventorySlotUI`'s
+existing rarity frames - the species icon itself stays the Normal-rarity
+artwork; only the frame communicates "you've caught a Legendary of this."
+Computed by checking `InventoryManager.GetCount` from Legendary down to
+Normal per species on each grid rebuild (cheap - a handful of species x 4
+checks).
+
+**Detail panel now has two independent levels** driven by which rarity
+button is selected: species-level fields (family via
+`StewDisplayUtil.FormatFamily`, name, description, favorite/hated scent -
+replacing the OLD detail panel's stale 5-axis `ResourceData` scent readout,
+left over from before the scent-simplification pass in an earlier session)
+stay fixed once a species is picked; rarity-level fields (portrait,
+ingredient-drop icon+name) switch with the rarity buttons and silhouette
+independently PER RARITY (a species caught only as Normal shows a real
+Normal portrait but a silhouetted Legendary one) - `CritterDexRarityBadgeUI`
+changed from a static "have I caught this" readout into a clickable
+selector accordingly; its old count display (`x3`) was dropped since the
+badges are navigational now, not informational - flag if you want it back
+elsewhere.
+
+**Family filter**: `CritterDexFamilyFilterUI`, one explicit method per
+`IngredientFamily` value (5 families - a small fixed set, so hand-wired
+buttons rather than a dynamically generated list, matching how `UIManager`'s
+own tablet-page buttons are wired). Filtering preserves the current
+selection if it's still visible, otherwise falls back to the first visible
+entry, rather than always resetting to the top of the list.
+
+## Per-tab tablet shortcuts (I/M/J + Escape)
+
+`UIManager.Update` now has one shortcut key per tab: I -> Inventory, M ->
+Map, J -> CritterDex, Escape -> Settings. All four go through one shared
+`HandleTabletShortcut(page, showPage)`: closed -> opens straight to that
+page (behind the same "don't open over another frozen popup" guard
+`ToggleTabletUI` already used - factored out into `CanOpenTablet()` so both
+share it rather than duplicating the check); open on a DIFFERENT page ->
+just switches to this one; open on THIS SAME page -> closes, so each key
+doubles as its own close shortcut (matches how `I` already behaved).
+
+Escape is the one exception, kept as an explicit branch rather than routed
+through `HandleTabletShortcut` from the top: it closes the tablet
+UNCONDITIONALLY if it's open, regardless of which page is currently
+showing, THEN falls through to "open to Settings" only once already closed
+- the universal "back" key, not just Settings' toggle.
+
+Incidental fix: the old Escape handler had `if
+(CreatureTransformStationUI.Instance != null) ToggleTabletUI();` before
+unconditionally calling `ShowSettingsPage()` - a leftover check that doesn't
+actually test whether anything is OPEN (the station's Instance is set the
+whole time its scene-scoped object exists, not just while its popup is
+showing), so in expedition scenes (no transform station in that scene at
+all) Escape would silently activate the Settings page without ever opening
+the tablet - invisible, no visible effect. Removed as part of implementing
+the explicit Settings shortcut properly.
+
+## Fixed: CritterDexGridUI could destroy its own ScrollView
+
+`CritterDexGridUI.Refresh()` destroys every child of its grid-parent
+transform before rebuilding. The field meant to hold that transform
+(`gridParent`, meant to be the ScrollView's Content object) used to fall
+back to THIS COMPONENT'S OWN `transform` whenever left unassigned in the
+inspector. If `CritterDexGridUI` sits on a panel that also parents the
+ScrollView itself (a very natural way to build it, and what the class doc's
+"attach to the panel that HOLDS the grid" advice invites), an unassigned
+field meant the ScrollView (Viewport, Content, Scrollbar, all of it) got
+destroyed the moment the page opened and `Refresh()` ran - reported as "the
+ScrollView and content get removed, entries spawn in the wrong place without
+size" (no Grid Layout Group parent left to size/position them once their
+real Content object was gone).
+
+Fixed by removing the fallback entirely: `Refresh()` now requires
+`gridParent` to be explicitly assigned and logs an error + refuses to
+rebuild (touching nothing) if it isn't, rather than silently guessing wrong.
+A miswired reference is now loud and harmless instead of quiet and
+destructive.
+
+## CritterDex: caught-forever tracking, unwanted auto-open, single frame
+
+**Transforming a creature un-discovered it in the dex.** The dex's "is this
+unlocked" checks used `InventoryManager.GetCount`/`GetTotalCount`, which
+read CURRENT STOCK - once every unit of a species+rarity was transformed
+into resources, the count dropped to 0 and the dex treated it as never
+caught. `InventoryManager` already had exactly this problem solved at the
+SPECIES level (`everCapturedSpecies`, a HashSet that's only ever added to,
+feeding the run-summary "new species" stat) - added the missing per-RARITY
+equivalent (`everCapturedRarities`) and two `HasEverCaptured` overloads, and
+switched every dex "unlocked"/"owned" check to them instead of
+GetCount/GetTotalCount. Current-stock counts stay exactly as they were for
+everything else (inventory display, transform station) - only the dex reads
+the new persistent tracking.
+
+**The detail popup was opening on its own.** `CritterDexGridUI.Refresh()`
+used to auto-select the first visible entry whenever nothing was selected
+and fire `OnSpeciesSelected` for it - meaning ANY refresh (opening the dex
+tab, switching a family filter, an inventory change while the dex happened
+to be open) could pop the detail panel open, since `CritterDexDetailUI.Show`
+activates its own GameObject. Fixed by making refreshes silent: a refresh
+now only re-applies the grid highlight if the previously-selected species is
+still visible (no event fired either way), and `OnSpeciesSelected` fires
+ONLY from an actual entry click. The user's own `Show`/`Hide` addition
+(toggling the panel's own GameObject) is the correct, complete popup
+open/close mechanism and needed no changes - the bug was entirely upstream
+in what was triggering `Show` unprompted, not in `Show`/`Hide` themselves.
+
+**Grid entry frame simplified.** Dropped the per-rarity frame-sprite
+swapping added in an earlier pass (`rarityFrames[]`, "highest rarity
+caught") - `CritterDexEntryUI.frame` is now one fixed sprite, tinted the
+same silhouette color as the icon, no rarity distinction in the grid at all.

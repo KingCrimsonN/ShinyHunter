@@ -37,6 +37,17 @@ public class InventoryManager : MonoBehaviour
     /// <summary>Every species ever captured, any rarity, persists for the whole play session (never cleared).</summary>
     private readonly HashSet<CreatureData> everCapturedSpecies = new HashSet<CreatureData>();
 
+    /// <summary>
+    /// Every (species, rarity) combo ever captured, persists for the whole
+    /// play session (never cleared) - unlike `counts`, which drops back out
+    /// once every unit of that combo is later transformed/consumed. The
+    /// CritterDex reads THIS, not GetCount, for "has this rarity been seen" -
+    /// a species/rarity that's been caught once must never disappear from
+    /// the dex again just because none are currently held. See decision log.
+    /// </summary>
+    private readonly HashSet<(CreatureData species, CreatureData.Rarity rarity)> everCapturedRarities =
+        new HashSet<(CreatureData, CreatureData.Rarity)>();
+
     /// <summary>Species that became "ever captured" for the first time during the CURRENT run - cleared by ResetRunTracking().</summary>
     private readonly HashSet<CreatureData> newSpeciesThisRun = new HashSet<CreatureData>();
 
@@ -100,6 +111,7 @@ public class InventoryManager : MonoBehaviour
             everCapturedSpecies.Add(species);
             newSpeciesThisRun.Add(species);
         }
+        everCapturedRarities.Add(key);
 
         OnInventoryChanged?.Invoke();
     }
@@ -161,7 +173,7 @@ public class InventoryManager : MonoBehaviour
         return sparkleCounts.TryGetValue((species, rarity), out int c) ? c : 0;
     }
 
-    /// <summary>Total captured of a species across all rarities - handy for bestiary "seen" checks.</summary>
+    /// <summary>Total captured of a species across all rarities, CURRENTLY HELD. Drops back to 0 once every unit is transformed/consumed - NOT what the CritterDex should use for "seen" (see HasEverCaptured), just for inventory/UI stock displays.</summary>
     public int GetTotalCount(CreatureData species)
     {
         int total = 0;
@@ -171,6 +183,18 @@ public class InventoryManager : MonoBehaviour
                 total += kvp.Value;
         }
         return total;
+    }
+
+    /// <summary>True if this species has EVER been captured at any rarity - survives every unit later being transformed away. What the CritterDex should check for "is this species unlocked" instead of GetTotalCount.</summary>
+    public bool HasEverCaptured(CreatureData species)
+    {
+        return everCapturedSpecies.Contains(species);
+    }
+
+    /// <summary>True if this exact species+rarity has EVER been captured - survives every unit later being transformed away. What the CritterDex should check for "has this rarity been seen" instead of GetCount.</summary>
+    public bool HasEverCaptured(CreatureData species, CreatureData.Rarity rarity)
+    {
+        return everCapturedRarities.Contains((species, rarity));
     }
 
     public IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int> GetAll() => counts;

@@ -66,6 +66,20 @@ public class SceneTransitionManager : MonoBehaviour
         return true;
     }
 
+    public void TransitionToSceneImmediate(string sceneName)
+    {
+        if (IsTransitioning) return;
+
+        if (!Application.CanStreamedLevelBeLoaded(sceneName))
+        {
+            Debug.LogError($"SceneTransitionManager: scene '{sceneName}' can't be loaded - is it added to the Build Settings?");
+            return;
+        }
+
+        SceneManager.LoadScene(sceneName);
+        Destroy(gameObject);
+    }
+
     private IEnumerator TransitionRoutine(string sceneName)
     {
         IsTransitioning = true;

@@ -3,112 +3,156 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Detail panel for whichever species is selected in the grid: name,
-/// description, scent stats, resource, and which rarities have been caught.
-/// Locked (never-caught) species show "???" placeholders instead of real data,
-/// matching the real Pokedex's "seen but not caught" behaviour.
+/// Detail panel for whichever species is selected in the grid. Two levels:
+/// SPECIES-level info (family, name, description, favorite/hated scent)
+/// never changes with the rarity buttons; RARITY-level info (portrait,
+/// ingredient drop) does, driven by the 4 CritterDexRarityBadgeUI buttons -
+/// clicking one shows THAT rarity's icon/ingredient, silhouetted if that
+/// specific rarity hasn't been caught yet (a species unlocked at Normal but
+/// never seen as Legendary still silhouettes the Legendary tab). A totally
+/// locked (never-caught-at-all) species shows "???" everywhere instead,
+/// matching the real Pokedex's "not yet discovered" behaviour.
 /// </summary>
 public class CritterDexDetailUI : MonoBehaviour
 {
-    [Header("Portrait")]
+    [Header("Portrait (selected rarity)")]
     [SerializeField] private Image portraitImage;
 
-    [Header("Text")]
+    [Header("Species Info")]
+    [SerializeField] private TMP_Text familyText;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text descriptionText;
+    [SerializeField] private TMP_Text favoriteScentText;
+    [SerializeField] private TMP_Text hatedScentText;
 
-    [Header("Scents")]
-    [SerializeField] private TMP_Text sweetText;
-    [SerializeField] private TMP_Text freshText;
-    [SerializeField] private TMP_Text putridText;
-    [SerializeField] private TMP_Text metallicText;
-    [SerializeField] private TMP_Text marineText;
-
-    [Header("Resource")]
+    [Header("Ingredient Drop (selected rarity)")]
     [SerializeField] private Image resourceIcon;
     [SerializeField] private TMP_Text resourceNameText;
 
-    [Header("Rarities Found")]
+    [Header("Rarity Select")]
     [Tooltip("Exactly 4, in CreatureData.Rarity enum order: Normal, Uncommon, Rare, Legendary.")]
     [SerializeField] private CritterDexRarityBadgeUI[] rarityBadges;
 
-    private CreatureData currentSpecies;
+    [Header("Silhouette")]
+    [SerializeField] private Color unlockedColor = Color.white;
+    [SerializeField] private Color lockedColor = new Color(0.12f, 0.12f, 0.12f, 1f);
 
+    private CreatureData currentSpecies;
+    private CreatureData.Rarity selectedRarity;
+
+    /// <summary>Species-selection entry point - wired to CritterDexGridUI.OnSpeciesSelected by CritterDexUI. null = nothing selectable (empty/filtered-out grid).</summary>
     public void Show(CreatureData species)
     {
+        gameObject.SetActive(true);
         currentSpecies = species;
-        if (species == null) return;
+        selectedRarity = CreatureData.Rarity.Normal; // always land back on Normal for a freshly-selected species
 
-        bool unlocked = InventoryManager.Instance.GetTotalCount(species) > 0;
-
-        if (portraitImage != null)
+        if (species == null)
         {
-            portraitImage.sprite = species.GetIcon(CreatureData.Rarity.Normal);
-            portraitImage.color = unlocked ? Color.white : Color.black;
+            ShowNothing();
+            return;
         }
 
-        if (!unlocked)
+        bool speciesUnlocked = InventoryManager.Instance.HasEverCaptured(species); // survives the species later being transformed away entirely
+        if (!speciesUnlocked)
         {
             ShowLockedPlaceholder(species);
             return;
         }
 
+        if (familyText != null) familyText.text = StewDisplayUtil.FormatFamily(species.family);
         if (nameText != null) nameText.text = species.creatureName;
         if (descriptionText != null) descriptionText.text = species.description;
+        if (favoriteScentText != null) favoriteScentText.text = species.favoriteScent.ToString();
+        if (hatedScentText != null) hatedScentText.text = species.hatedScent.ToString();
 
-        SetScentTexts(species);
+        RefreshRarityBadges();
+        ShowSelectedRarity();
+    }
 
-        var resource = species.GetResource(CreatureData.Rarity.Normal);
+    public void Hide()
+    {
+        gameObject.SetActive(false);
+        currentSpecies = null;
+        ShowNothing();
+    }
+
+    /// <summary>Called when a rarity button is clicked - only the rarity-level half of the panel changes.</summary>
+    private void SelectRarity(CreatureData.Rarity rarity)
+    {
+        selectedRarity = rarity;
+        ShowSelectedRarity();
+        RefreshRarityBadges(); // re-highlight which badge is now selected
+    }
+
+    private void ShowSelectedRarity()
+    {
+        if (currentSpecies == null) return;
+
+        bool rarityOwned = InventoryManager.Instance.HasEverCaptured(currentSpecies, selectedRarity);
+
+        if (portraitImage != null)
+        {
+            portraitImage.sprite = currentSpecies.GetIcon(selectedRarity);
+            portraitImage.color = rarityOwned ? unlockedColor : lockedColor;
+            portraitImage.enabled = portraitImage.sprite != null;
+        }
+
+        var resource = currentSpecies.GetResource(selectedRarity);
         if (resourceIcon != null)
         {
             resourceIcon.sprite = resource != null ? resource.icon : null;
-            resourceIcon.enabled = resource != null && resource.icon != null;
+            resourceIcon.color = rarityOwned ? unlockedColor : lockedColor;
+            resourceIcon.enabled = resourceIcon.sprite != null;
         }
-        if (resourceNameText != null) resourceNameText.text = resource != null ? resource.resourceName : "-";
-
-        RefreshRarityBadges(species);
+        if (resourceNameText != null) resourceNameText.text = resource != null ? (rarityOwned ? resource.resourceName : "???") : "-";
     }
 
-    private void ShowLockedPlaceholder(CreatureData species)
+    private void RefreshRarityBadges()
     {
-        if (nameText != null) nameText.text = "???";
-        if (descriptionText != null) descriptionText.text = "Not yet discovered.";
-
-        if (sweetText != null) sweetText.text = "-";
-        if (freshText != null) freshText.text = "-";
-        if (putridText != null) putridText.text = "-";
-        if (metallicText != null) metallicText.text = "-";
-        if (marineText != null) marineText.text = "-";
-
-        if (resourceIcon != null) resourceIcon.enabled = false;
-        if (resourceNameText != null) resourceNameText.text = "-";
-
-        if (rarityBadges != null)
-        {
-            for (int i = 0; i < rarityBadges.Length; i++)
-                rarityBadges[i].Set(species, (CreatureData.Rarity)i, 0);
-        }
-    }
-
-    private void SetScentTexts(CreatureData species)
-    {
-        var resource = species.GetResource(CreatureData.Rarity.Normal);
-        if (sweetText != null) sweetText.text = resource != null ? resource.sweetScent.ToString("0.#") : "-";
-        if (freshText != null) freshText.text = resource != null ? resource.freshScent.ToString("0.#") : "-";
-        if (putridText != null) putridText.text = resource != null ? resource.putridScent.ToString("0.#") : "-";
-        if (metallicText != null) metallicText.text = resource != null ? resource.metallicScent.ToString("0.#") : "-";
-        if (marineText != null) marineText.text = resource != null ? resource.marineScent.ToString("0.#") : "-";
-    }
-
-    private void RefreshRarityBadges(CreatureData species)
-    {
-        if (rarityBadges == null) return;
+        if (rarityBadges == null || currentSpecies == null) return;
 
         for (int i = 0; i < rarityBadges.Length; i++)
         {
             var rarity = (CreatureData.Rarity)i;
-            int count = InventoryManager.Instance.GetCount(species, rarity);
-            rarityBadges[i].Set(species, rarity, count);
+            bool owned = InventoryManager.Instance.HasEverCaptured(currentSpecies, rarity);
+            rarityBadges[i].Set(currentSpecies, rarity, owned, rarity == selectedRarity, SelectRarity);
         }
+    }
+
+    public void ShowNothing()
+    {
+        if (portraitImage != null) portraitImage.enabled = false;
+        if (familyText != null) familyText.text = "-";
+        if (nameText != null) nameText.text = "-";
+        if (descriptionText != null) descriptionText.text = "";
+        if (favoriteScentText != null) favoriteScentText.text = "-";
+        if (hatedScentText != null) hatedScentText.text = "-";
+        if (resourceIcon != null) resourceIcon.enabled = false;
+        if (resourceNameText != null) resourceNameText.text = "-";
+        ClearRarityBadges();
+    }
+
+    private void ShowLockedPlaceholder(CreatureData species)
+    {
+        if (portraitImage != null) portraitImage.enabled = false;
+
+        if (familyText != null) familyText.text = "???";
+        if (nameText != null) nameText.text = "???";
+        if (descriptionText != null) descriptionText.text = "Not yet discovered.";
+        if (favoriteScentText != null) favoriteScentText.text = "???";
+        if (hatedScentText != null) hatedScentText.text = "???";
+
+        if (resourceIcon != null) resourceIcon.enabled = false;
+        if (resourceNameText != null) resourceNameText.text = "???";
+
+        ClearRarityBadges(); // fully locked - no rarity has been seen, so there's nothing to select yet
+    }
+
+    private void ClearRarityBadges()
+    {
+        if (rarityBadges == null) return;
+        foreach (var badge in rarityBadges)
+            badge.Set(null, CreatureData.Rarity.Normal, false, false, null);
     }
 }

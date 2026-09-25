@@ -27,6 +27,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject inventoryPage;
     [SerializeField] private GameObject mapPage;
     [SerializeField] private GameObject settingsPage;
+    [SerializeField] private GameObject critterDexPage;
     [SerializeField] private GameObject dialogPanel;
     [SerializeField] private Image hurtScreen;
 
@@ -127,10 +128,15 @@ public class UIManager : MonoBehaviour
     {
         if (extraOpened)
             return;
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            ToggleTabletUI();
-        }
+
+        // Each tab has its own shortcut key straight to that page - see
+        // HandleTabletShortcut. Escape is the odd one out: it ALWAYS closes
+        // the tablet first if it's open (universal "back", not just when
+        // Settings happens to be the visible page), only falling through to
+        // "open to Settings" once it's already closed.
+        if (Input.GetKeyDown(KeyCode.I)) HandleTabletShortcut(inventoryPage, ShowInventoryPage);
+        if (Input.GetKeyDown(KeyCode.M)) HandleTabletShortcut(mapPage, ShowMapPage);
+        if (Input.GetKeyDown(KeyCode.J)) HandleTabletShortcut(critterDexPage, ShowCritterDexPage);
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -139,10 +145,36 @@ public class UIManager : MonoBehaviour
                 HideTabletUI();
                 return;
             }
-            if (CreatureTransformStationUI.Instance != null)
-                ToggleTabletUI();
-            ShowSettingsPage();
+            HandleTabletShortcut(settingsPage, ShowSettingsPage);
         }
+    }
+
+    /// <summary>
+    /// Shared behaviour for every tablet-tab shortcut key (I/M/J, and Escape
+    /// once it's confirmed the tablet is closed): if the tablet is closed,
+    /// opens it straight to this page (respecting the same "don't open over
+    /// another frozen popup" guard ToggleTabletUI uses). If it's already open
+    /// showing THIS SAME page, pressing the key again closes it - so I/M/J
+    /// each double as their own close shortcut. If it's open on a DIFFERENT
+    /// page, just switches to this one without closing.
+    /// </summary>
+    private void HandleTabletShortcut(GameObject page, System.Action showPage)
+    {
+        bool tabletOpen = tabletUI != null && tabletUI.activeSelf;
+
+        if (tabletOpen)
+        {
+            if (page != null && page.activeSelf)
+                HideTabletUI();
+            else
+                showPage();
+            return;
+        }
+
+        if (!CanOpenTablet()) return;
+
+        SetTabletOpen(true);
+        showPage();
     }
 
     public void ShowDialogue()
@@ -160,12 +192,7 @@ public class UIManager : MonoBehaviour
         if (tabletUI == null) return;
 
         bool opening = !tabletUI.activeSelf;
-
-        // Another popup (dialogue, brewing, run summary...) already owns the
-        // player - opening the tablet on top of it would unfreeze/relock the
-        // cursor underneath that popup when the tablet closes again.
-        if (opening && PlayerStateManager.Instance != null && PlayerStateManager.Instance.IsFrozen)
-            return;
+        if (opening && !CanOpenTablet()) return;
 
         SetTabletOpen(opening);
     }
@@ -174,6 +201,12 @@ public class UIManager : MonoBehaviour
     {
         if (tabletUI != null && tabletUI.activeSelf)
             SetTabletOpen(false);
+    }
+
+    /// <summary>Another popup (dialogue, brewing, run summary...) already owns the player - opening the tablet on top of it would unfreeze/relock the cursor underneath that popup when the tablet closes again.</summary>
+    private bool CanOpenTablet()
+    {
+        return PlayerStateManager.Instance == null || !PlayerStateManager.Instance.IsFrozen;
     }
 
     private void SetTabletOpen(bool open)
@@ -233,33 +266,16 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void ShowInventoryPage()
-    {
-        if (inventoryPage != null)
-            inventoryPage.SetActive(true);
-        if (mapPage != null)
-            mapPage.SetActive(false);
-        if (settingsPage != null)
-            settingsPage.SetActive(false);
-    }
+    public void ShowInventoryPage() => SetActivePage(inventoryPage);
+    public void ShowMapPage() => SetActivePage(mapPage);
+    public void ShowSettingsPage() => SetActivePage(settingsPage);
+    public void ShowCritterDexPage() => SetActivePage(critterDexPage);
 
-    public void ShowMapPage()
+    private void SetActivePage(GameObject page)
     {
-        if (inventoryPage != null)
-            inventoryPage.SetActive(false);
-        if (mapPage != null)
-            mapPage.SetActive(true);
-        if (settingsPage != null)
-            settingsPage.SetActive(false);
-    }
-
-    public void ShowSettingsPage()
-    {
-        if (inventoryPage != null)
-            inventoryPage.SetActive(false);
-        if (mapPage != null)
-            mapPage.SetActive(false);
-        if (settingsPage != null)
-            settingsPage.SetActive(true);
+        if (inventoryPage != null) inventoryPage.SetActive(page == inventoryPage);
+        if (mapPage != null) mapPage.SetActive(page == mapPage);
+        if (settingsPage != null) settingsPage.SetActive(page == settingsPage);
+        if (critterDexPage != null) critterDexPage.SetActive(page == critterDexPage);
     }
 }

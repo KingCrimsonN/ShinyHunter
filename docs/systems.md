@@ -58,10 +58,24 @@ behind the less obvious choices called out here.
 
 ## CritterDex (bestiary)
 
+Now a tablet page like Inventory/Map/Settings (`UIManager.critterDexPage` /
+`ShowCritterDexPage()`), not a standalone popup — the old J-key toggle,
+`Time.timeScale`, and cursor handling it used to own itself are gone;
+`PlayerStateManager` freeze/unfreeze comes from the tablet like everywhere
+else. Within the page, `CritterDexTabController` is a second, nested level of
+tab-switching — "Critters" (fully built) plus stub panels for future Tools/
+Ingredients/NPCs/Locations compendium sections.
+
 | File                                                                                                            | Role                                                                                                                   |
 | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `CritterDexRegistry.cs`                                                                                         | Ordered list of every species — defines dex numbers and what shows as a locked silhouette (a species not yet captured) |
-| Grid/detail/entry UI (`CritterDexGridUI`, `CritterDexDetailUI`, `CritterDexEntryUI`, `CritterDexRarityBadgeUI`) | Locked = dark-tinted icon of the same sprite, not a separate silhouette asset                                          |
+| `CritterDexTabController.cs`                                                                                    | Sub-tab navigation WITHIN the dex page — Critters vs. the Tools/Ingredients/NPCs/Locations stubs. Mirrors `UIManager`'s own page-switching one level down |
+| `CritterDexUI.cs`                                                                                               | Thin coordinator on the Critters sub-panel: wires `CritterDexGridUI.OnSpeciesSelected` into `CritterDexDetailUI.Show`. Nothing else — see decision log for what USED to live here |
+| `CritterDexGridUI.cs`                                                                                           | Fully rebuilds on every refresh (registry + `InventoryManager.OnInventoryChanged`, subscribed only while the panel is enabled) — same convention as every other grid UI (#8), and what makes captures show up live. Optional family filter (`SetFamilyFilter`, driven by `CritterDexFamilyFilterUI`'s buttons) |
+| `CritterDexEntryUI.cs`                                                                                          | One grid cell — Normal-rarity icon + dex number, plus a rarity FRAME for the highest rarity of that species caught so far (species icon stays Normal-rarity art regardless — only the frame reflects the catch) |
+| `CritterDexDetailUI.cs`                                                                                         | Two-level detail panel: species-level info (family/name/description/favorite+hated scent) is fixed once a species is selected; rarity-level info (portrait, ingredient-drop icon) switches via the 4 `CritterDexRarityBadgeUI` buttons, independently silhouetted per rarity |
+| `CritterDexRarityBadgeUI.cs`                                                                                    | A clickable rarity-select button (not just a static "caught" badge) — tells `CritterDexDetailUI` which rarity's portrait/ingredient to show |
+| `CritterDexFamilyFilterUI.cs`                                                                                   | "All" + one button per `IngredientFamily`, each an explicit method calling `CritterDexGridUI.SetFamilyFilter` — same fixed-small-set convention as `UIManager`'s own page buttons, not dynamically generated |
 
 ## Dialogue
 

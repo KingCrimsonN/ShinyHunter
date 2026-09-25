@@ -1,45 +1,28 @@
 using UnityEngine;
 
 /// <summary>
-/// Top-level CritterDex controller: toggles the popup and wires grid
-/// selection into the detail panel. Place this on an object that stays
-/// active (NOT inside popupRoot itself) - popupRoot is what gets shown/hidden.
+/// Wires the CritterDex grid's selection into the detail panel. Lives on the
+/// "Critters" sub-panel of the CritterDex tablet page (see
+/// CritterDexTabController) - it no longer owns any popup/freeze/cursor
+/// logic of its own (that used to duplicate what the tablet already does via
+/// UIManager.SetTabletOpen -> PlayerStateManager, and the old standalone J-key
+/// toggle this component used is retired now that the dex lives in the
+/// tablet - see decision log). OnEnable/OnDisable fire whenever this panel
+/// itself is shown/hidden by CritterDexTabController, which is exactly when
+/// the wiring should be live.
 /// </summary>
 public class CritterDexUI : MonoBehaviour
 {
-    [SerializeField] private GameObject popupRoot;
     [SerializeField] private CritterDexGridUI gridUI;
     [SerializeField] private CritterDexDetailUI detailUI;
-    [SerializeField] private KeyCode toggleKey = KeyCode.J;
-
-    private void Awake()
-    {
-        if (popupRoot != null) popupRoot.SetActive(false);
-    }
 
     private void OnEnable()
     {
-        if (gridUI != null) gridUI.OnSpeciesSelected += detailUI.Show;
+        if (gridUI != null && detailUI != null) gridUI.OnSpeciesSelected += detailUI.Show;
     }
 
     private void OnDisable()
     {
-        if (gridUI != null) gridUI.OnSpeciesSelected -= detailUI.Show;
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(toggleKey))
-            TogglePopup();
-    }
-
-    private void TogglePopup()
-    {
-        bool opening = !popupRoot.activeSelf;
-        popupRoot.SetActive(opening);
-        Time.timeScale = opening ? 0 : 1;
-
-        Cursor.lockState = opening ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = opening;
+        if (gridUI != null && detailUI != null) gridUI.OnSpeciesSelected -= detailUI.Show;
     }
 }

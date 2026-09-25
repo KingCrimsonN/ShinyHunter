@@ -12,10 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
   m_Name: Candy
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
-  creatureName: CandyMan
-  description: 'Candiiii
-
-'
+  creatureName: Sweetmeat
+  description: "It appears to be a slimier variant of some kind of lichen capable
+    of simple thought. It has a special taste for sweets and is probably the cause
+    of many kids disappearing in the forest, maybe attracted by the candy it drops
+    or maybe because it eats the candy trail some kids leave to know their way back.\r\n\nNote
+    from Luc\xEDa: Its eyes are funny and it skips around the forest. One time I
+    tried to feed it some candy but it was so full it dropped another one trying
+    to eat the one I gave it.\r\n"
   family: 2
   favoriteScent: 0
   hatedScent: 1
@@ -239,6 +243,11 @@ MonoBehaviour:
   detectionRadius: 2
   fleeDistance: 10
   detectionAversionScale: 1
+  isAggressive: 0
+  attackRange: 1.5
+  attackCooldown: 5
+  attackDamage: 15
+  attackWindupDuration: 0.5
   baseCaptureChance: 1
   stunDuration: 3
   resources:

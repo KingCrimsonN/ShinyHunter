@@ -13,7 +13,13 @@ MonoBehaviour:
   m_Name: Snipe
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: Snipe
-  description: Funny little motherfucker
+  description: "This is probably just a malformed chicken, but it has some unique
+    characteristics like a dense layer of fur underneath all the feathers or a pretty
+    long tongue it uses to catch small insects. Its eyesight isn\u2019t very good,
+    so it leaves marks on the forest trees from accidentally running into them.\n\nNote
+    from Luc\xEDa: This is the only critter I\u2019ve heard about before coming to
+    live with Auntie, but I always thought they weren\u2019t real. They are very
+    real and very funny when they run around smashing into everything."
   family: 3
   favoriteScent: 1
   hatedScent: 2
@@ -167,6 +173,12 @@ MonoBehaviour:
   flightHeightMax: 5
   detectionRadius: 4
   fleeDistance: 10
+  detectionAversionScale: 1
+  isAggressive: 0
+  attackRange: 1.5
+  attackCooldown: 5
+  attackDamage: 15
+  attackWindupDuration: 0.5
   baseCaptureChance: 1
   stunDuration: 3
   resources:

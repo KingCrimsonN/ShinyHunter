@@ -28,10 +28,19 @@ public class Interactor : MonoBehaviour
                 if (Input.GetKeyDown(KeyCode.E))
                 {
                     interactable.Interact();
+                    UIManager.Instance.HideInteractionText();
                 }
             }
 
         }
-        interactionPrompt.SetActive(hitSomething);
+        if (hitSomething)
+        {
+            UIManager.Instance.ShowInteractionText("Press E to interact");
+        }
+        else
+        {
+            UIManager.Instance.HideInteractionText();
+        }
+        // interactionPrompt.SetActive(hitSomething);
     }
 }

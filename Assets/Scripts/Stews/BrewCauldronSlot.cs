@@ -9,6 +9,7 @@ public class BrewCauldronSlotUI : MonoBehaviour, IDropHandler, IPointerClickHand
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private GameObject lockedOverlay;
+    [SerializeField] private Button closeButton;
 
     private int slotIndex;
     private BrewingStationUI station;
@@ -17,6 +18,8 @@ public class BrewCauldronSlotUI : MonoBehaviour, IDropHandler, IPointerClickHand
     {
         this.slotIndex = slotIndex;
         this.station = station;
+        closeButton.onClick.AddListener(Close);
+        closeButton.gameObject.SetActive(false);
     }
 
     public void Display(ResourceData resource, bool unlocked)
@@ -40,10 +43,18 @@ public class BrewCauldronSlotUI : MonoBehaviour, IDropHandler, IPointerClickHand
 
         station.PlaceIngredient(draggedEntry.Resource, slotIndex);
         BrewIngredientEntryUI.DragIcon.gameObject.SetActive(false);
+        closeButton.gameObject.SetActive(true);
+    }
+
+    private void Close()
+    {
+        station.ClearSlot(slotIndex);
+        closeButton.gameObject.SetActive(false);
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        station.ClearSlot(slotIndex); // click a filled slot to take the ingredient back out
+        // station.ClearSlot(slotIndex); // click a filled slot to take the ingredient back out
+
     }
 }

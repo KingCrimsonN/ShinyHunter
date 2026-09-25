@@ -12,8 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
   m_Name: Boletus
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
-  creatureName: Shroom
-  description: Fuckoff Shroom
+  creatureName: 'Mushtink '
+  description: "A colony of sentient fungi that buries itself into the soil and scares
+    passerbies by jumping out of the dirt. I still don\u2019t know if it does this
+    as a defense mechanism or because it finds it amusing, either way, this habit
+    makes its \u201Clegs\u201D very strong and with a pungent odor.\n\nNote from
+    Luc\xEDa: I hate these guys. They\u2019re not dangerous or even scary-looking,
+    but they constantly jump-scare me while looking for other critters!"
   family: 1
   favoriteScent: 2
   hatedScent: 4
@@ -87,6 +92,11 @@ MonoBehaviour:
   detectionRadius: 4
   fleeDistance: 5
   detectionAversionScale: 1
+  isAggressive: 0
+  attackRange: 1.5
+  attackCooldown: 5
+  attackDamage: 15
+  attackWindupDuration: 0.5
   baseCaptureChance: 1
   stunDuration: 3
   resources:

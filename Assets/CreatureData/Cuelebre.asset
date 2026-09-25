@@ -12,8 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
   m_Name: Cuelebre
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
-  creatureName: Cuelebre
-  description: Lizard bitch
+  creatureName: Viperoo
+  description: "This is one of the few critters you can breed, you just need to be
+    very patient since any viper snake can become a Viperoo if it survives 100 years.
+    A Viperoo is a very venomous critter, but if you submerge one in warm water or
+    milk for a couple of minutes, the venom will become innocuous for over a week.\r\n\nNote
+    from Luc\xEDa: I don\u2019t like snakes AT ALL, but it\u2019s mostly the \u201Cno
+    legs\u201D part that freaks me out, so this one having two funny little wings
+    makes me like it a bit more."
   family: 4
   favoriteScent: 3
   hatedScent: 2
@@ -135,6 +141,11 @@ MonoBehaviour:
   detectionRadius: 4
   fleeDistance: 10
   detectionAversionScale: 1
+  isAggressive: 0
+  attackRange: 1.5
+  attackCooldown: 5
+  attackDamage: 15
+  attackWindupDuration: 0.5
   baseCaptureChance: 1
   stunDuration: 3
   resources:

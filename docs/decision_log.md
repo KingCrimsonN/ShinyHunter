@@ -981,3 +981,59 @@ in what was triggering `Show` unprompted, not in `Show`/`Hide` themselves.
 swapping added in an earlier pass (`rarityFrames[]`, "highest rarity
 caught") - `CritterDexEntryUI.frame` is now one fixed sprite, tinted the
 same silhouette color as the icon, no rarity distinction in the grid at all.
+
+## Fixed: interaction prompt stayed visible while a popup was open
+
+`Interactor.Update()` set a local `hitSomething = true` as soon as its
+raycast found an interactable, BEFORE checking whether E was pressed. The
+E-press branch called `HideInteractionText()` after `Interact()` - but
+`hitSomething` was still true, so execution fell straight through to the
+`if (hitSomething) ShowInteractionText(...)` a few lines later, on the SAME
+frame, undoing the hide immediately. It ever looked hidden only because
+`Interact()` (opening a shop/transform table/brewing/door popup) freezes the
+player, which sets `Interactor.enabled = false` via `PlayerStateManager` -
+but disabling a component mid-frame does NOT cancel its already-running
+Update() call, so the prompt still got shown one more time on that exact
+frame before the freeze actually stopped anything.
+
+Fixed two ways: `Update()` now `return`s immediately after handling an
+E-press, instead of falling through to the show/hide check below (fixes the
+common case - Interact() called on this object, this frame). `OnDisable()`
+also now explicitly hides the prompt (fixes every other path to getting
+disabled - a freeze triggered by something other than this exact
+interaction, e.g. a dialogue trigger volume). Applies uniformly to every
+IInteractable (shop, transform table, brewing, doors) since it's all routed
+through this one method - no per-interactable changes needed.
+
+## CritterDex: closing the detail popup now clears the grid highlight too
+
+`CritterDexDetailUI.Hide()` only ever touched the detail panel itself -
+`CritterDexGridUI`'s own `selectedEntry`/`selectedSpecies` state was
+untouched, so the just-viewed entry stayed visually selected after closing.
+Added `CritterDexDetailUI.OnClosed` (fired from `Hide()`) and
+`CritterDexGridUI.ClearSelection()`, wired together by `CritterDexUI` (which
+already wires the grid->detail direction) - no new inspector wiring needed,
+the existing Close button just keeps calling `Hide()` as before.
+
+## CritterDex: closing the tablet also closes the detail popup and deselects
+
+No new event needed for "the detail popup closes when the tablet closes" -
+Unity already calls OnDisable on every active descendant when an ancestor
+is deactivated, and closing the tablet (J/Esc/re-pressing the CritterDex
+shortcut) deactivates `tabletUI`, which cascades down to the detail popup's
+GameObject if it happened to be open. So `CritterDexDetailUI.Hide()` was
+simplified to just `SetActive(false)` - the actual cleanup (clearing
+`currentSpecies`, blanking the shown fields, firing `OnClosed`) moved into
+`OnDisable()`, which now runs for BOTH the explicit close button and the
+tablet-closing cascade, with no extra wiring for the latter.
+
+One ordering risk this surfaced: `CritterDexGridUI` and `CritterDexDetailUI`
+are separate objects both disabled by that same cascade, and Unity doesn't
+guarantee which sibling's `OnDisable` runs first. If `CritterDexUI` (which
+relays `OnClosed` into `ClearSelection`) happened to unsubscribe before the
+detail panel's `OnDisable` fired, the grid's selection would silently fail
+to clear on THIS path specifically (the explicit close-button path is
+unaffected, since nothing unsubscribes mid-click). Rather than depend on
+that ordering, `CritterDexGridUI.OnDisable()` now ALSO calls its own
+`ClearSelection()` directly - redundant with the event on the close-button
+path, but the only reliable guarantee on the tablet-closing path.

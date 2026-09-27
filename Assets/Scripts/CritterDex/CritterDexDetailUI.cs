@@ -40,6 +40,9 @@ public class CritterDexDetailUI : MonoBehaviour
     private CreatureData currentSpecies;
     private CreatureData.Rarity selectedRarity;
 
+    /// <summary>Fires whenever the popup closes (Hide()) - CritterDexUI wires this to CritterDexGridUI.ClearSelection so closing also drops the grid's highlight, rather than leaving the last-viewed entry looking selected.</summary>
+    public event System.Action OnClosed;
+
     /// <summary>Species-selection entry point - wired to CritterDexGridUI.OnSpeciesSelected by CritterDexUI. null = nothing selectable (empty/filtered-out grid).</summary>
     public void Show(CreatureData species)
     {
@@ -70,11 +73,31 @@ public class CritterDexDetailUI : MonoBehaviour
         ShowSelectedRarity();
     }
 
+    /// <summary>Wire to a close button's OnClick.</summary>
     public void Hide()
     {
-        gameObject.SetActive(false);
+        gameObject.SetActive(false); // triggers OnDisable below, which does the actual cleanup
+    }
+
+    /// <summary>
+    /// Fires whenever this popup stops being active - not just from Hide()
+    /// explicitly, but also whenever an ANCESTOR is deactivated while this
+    /// was open: closing the whole tablet (J/Esc/re-pressing the CritterDex
+    /// shortcut) deactivates tabletUI, which cascades OnDisable down to every
+    /// active child, including this one if it happened to be open. That's
+    /// exactly the "closing the tablet should also close+deselect the
+    /// detail popup" behaviour - no extra wiring needed for it, since Unity
+    /// already calls this in that case. Only fires if this was actually
+    /// active (Unity doesn't call OnDisable from an already-inactive state),
+    /// so it's a no-op whenever the popup wasn't open to begin with.
+    /// </summary>
+    private void OnDisable()
+    {
         currentSpecies = null;
         ShowNothing();
+
+        OnClosed?.Invoke();
+        gameObject.SetActive(false);
     }
 
     /// <summary>Called when a rarity button is clicked - only the rarity-level half of the panel changes.</summary>

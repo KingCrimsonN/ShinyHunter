@@ -5,42 +5,52 @@ public interface IInteractable
     void Interact();
 }
 
+/// <summary>
+/// Raycasts forward each frame for an IInteractable and shows/hides "Press E
+/// to interact" accordingly.
+///
+/// Disabled centrally by PlayerStateManager.Freeze while any popup (shop,
+/// transform table, brewing, dialogue, a door's stew carousel...) owns the
+/// player - OnDisable hides the prompt right then, so it can't linger over
+/// whatever just opened. This matters because disabling a component mid-frame
+/// does NOT cancel an already-running Update() call: if Interact() itself
+/// triggers the freeze, the SAME Update() call that just called it keeps
+/// running afterward, so relying only on "Update() stops running once
+/// disabled" would still let the prompt get shown one more time on that
+/// exact frame before actually disappearing. See decision log.
+/// </summary>
 public class Interactor : MonoBehaviour
 {
-
     public Transform interactionSource;
     public float interactionRange = 2f;
 
-    [SerializeField] private GameObject interactionPrompt;
-
-    // Update is called once per frame
-    void Update()
+    private void OnDisable()
     {
-        Ray r = new Ray(interactionSource.position, interactionSource.forward);
-        RaycastHit hit;
-        bool hitSomething = false;
+        if (UIManager.Instance != null) UIManager.Instance.HideInteractionText();
+    }
 
-        if (Physics.Raycast(r, out hit, interactionRange))
-        {
-            if (hit.collider.TryGetComponent<IInteractable>(out var interactable))
-            {
-                hitSomething = true;
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    interactable.Interact();
-                    UIManager.Instance.HideInteractionText();
-                }
-            }
+    private void Update()
+    {
+        IInteractable interactable = null;
 
-        }
-        if (hitSomething)
+        if (Physics.Raycast(interactionSource.position, interactionSource.forward, out RaycastHit hit, interactionRange))
+            hit.collider.TryGetComponent(out interactable);
+
+        if (interactable != null && Input.GetKeyDown(KeyCode.E))
         {
-            UIManager.Instance.ShowInteractionText("Press E to interact");
-        }
-        else
-        {
+            interactable.Interact();
+            // Interact() may open a popup (freezing the player, disabling
+            // this component - see OnDisable above). Hide immediately and
+            // bail out rather than falling through to ShowInteractionText
+            // below, which would otherwise re-show it on this exact frame
+            // regardless of what Interact() just did.
             UIManager.Instance.HideInteractionText();
+            return;
         }
-        // interactionPrompt.SetActive(hitSomething);
+
+        if (interactable != null)
+            UIManager.Instance.ShowInteractionText("Press E to interact");
+        else
+            UIManager.Instance.HideInteractionText();
     }
 }

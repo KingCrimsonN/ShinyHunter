@@ -1,8 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// Wires the CritterDex grid's selection into the detail panel. Lives on the
-/// "Critters" sub-panel of the CritterDex tablet page (see
+/// Wires the CritterDex grid's selection into the detail panel, and the
+/// detail panel's closing back into clearing the grid's highlight. Lives on
+/// the "Critters" sub-panel of the CritterDex tablet page (see
 /// CritterDexTabController) - it no longer owns any popup/freeze/cursor
 /// logic of its own (that used to duplicate what the tablet already does via
 /// UIManager.SetTabletOpen -> PlayerStateManager, and the old standalone J-key
@@ -18,11 +19,17 @@ public class CritterDexUI : MonoBehaviour
 
     private void OnEnable()
     {
-        if (gridUI != null && detailUI != null) gridUI.OnSpeciesSelected += detailUI.Show;
+        if (gridUI == null || detailUI == null) return;
+
+        gridUI.OnSpeciesSelected += detailUI.Show;
+        detailUI.OnClosed += gridUI.ClearSelection;
     }
 
     private void OnDisable()
     {
-        if (gridUI != null && detailUI != null) gridUI.OnSpeciesSelected -= detailUI.Show;
+        if (gridUI == null || detailUI == null) return;
+
+        gridUI.OnSpeciesSelected -= detailUI.Show;
+        detailUI.OnClosed -= gridUI.ClearSelection;
     }
 }

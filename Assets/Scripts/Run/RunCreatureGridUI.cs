@@ -11,7 +11,8 @@ public class RunCreatureGridUI : MonoBehaviour
 {
     [SerializeField] private RunCreatureEntryUI entryPrefab;
     [Tooltip("Index 0=Normal, 1=Uncommon, 2=Rare, 3=Legendary.")]
-    [SerializeField] private Sprite[] rarityFrames = new Sprite[4];
+    // [SerializeField] private Sprite[] rarityFrames = new Sprite[4];
+    [SerializeField] private CritterFrames critterFrames;
 
     private readonly List<RunCreatureEntryUI> spawned = new List<RunCreatureEntryUI>();
 
@@ -40,9 +41,9 @@ public class RunCreatureGridUI : MonoBehaviour
 
     private Sprite GetFrame(CreatureData.Rarity rarity)
     {
-        if (rarityFrames == null || rarityFrames.Length == 0) return null;
+        // if (rarityFrames == null || rarityFrames.Length == 0) return null;
         int index = (int)rarity;
-        return index < rarityFrames.Length ? rarityFrames[index] : rarityFrames[0];
+        return index < critterFrames.rarityFrames.Length ? critterFrames.rarityFrames[index] : critterFrames.rarityFrames[0];
     }
 
     private void Clear()

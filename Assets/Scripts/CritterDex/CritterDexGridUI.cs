@@ -44,6 +44,14 @@ public class CritterDexGridUI : MonoBehaviour
     {
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.OnInventoryChanged -= Refresh;
+
+        // Also cleared directly here (not just via CritterDexDetailUI.OnClosed,
+        // which CritterDexUI relays into ClearSelection) - this and the detail
+        // panel are separate objects both disabled by the same "tablet closed"
+        // cascade, and sibling OnDisable order isn't guaranteed, so relying on
+        // the event alone risks it firing after CritterDexUI already
+        // unsubscribed. Reopening the dex must never show a stale selection.
+        ClearSelection();
     }
 
     /// <summary>Null = show every species. Rebuilds immediately.</summary>
@@ -98,6 +106,19 @@ public class CritterDexGridUI : MonoBehaviour
         // never pop the detail panel open (or closed) on its own.
         selectedEntry = matchedEntry;
         if (selectedEntry != null) selectedEntry.SetSelected(true);
+    }
+
+    /// <summary>
+    /// Drops the grid's highlight without touching anything else - wired to
+    /// CritterDexDetailUI.OnClosed by CritterDexUI, so closing the detail
+    /// popup doesn't leave the last-viewed entry looking selected. Does NOT
+    /// fire OnSpeciesSelected (closing isn't a new selection).
+    /// </summary>
+    public void ClearSelection()
+    {
+        if (selectedEntry != null) selectedEntry.SetSelected(false);
+        selectedEntry = null;
+        selectedSpecies = null;
     }
 
     private void HandleEntryClicked(CreatureData species)

@@ -14,7 +14,7 @@ using TMPro;
 /// the opposite side works - see TransformDropZoneUI for the empty-space case.
 /// </summary>
 public class CreatureTransformEntryUI : MonoBehaviour,
-    IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+    IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Image icon;
     [SerializeField] private Image frame;
@@ -33,14 +33,9 @@ public class CreatureTransformEntryUI : MonoBehaviour,
     private CreatureData.Rarity rarity;
     private CreatureTransformStationUI station;
 
-    [Header("Rarity Colors")]
-    [SerializeField] private Color normalColor = Color.white;
-    [SerializeField] private Color uncommonColor = new Color(0.3f, 0.8f, 0.3f);
-    [SerializeField] private Color rareColor = new Color(0.3f, 0.5f, 1f);
-    [SerializeField] private Color legendaryColor = new Color(1f, 0.65f, 0f);
 
-
-    [SerializeField] private Sprite[] rarityFrames; // normal, uncommon, rare, legendary
+    // [SerializeField] private Sprite[] rarityFrames; // normal, uncommon, rare, legendary
+    [SerializeField] private CritterFrames critterFrames;
 
     public void Setup(CreatureData species, CreatureData.Rarity rarity, int count, TransformEntrySide side, CreatureTransformStationUI station)
     {
@@ -55,7 +50,7 @@ public class CreatureTransformEntryUI : MonoBehaviour,
         if (countText != null) countText.text = "x" + count;
 
         // nameText.color = GetRarityColor(rarity);
-        if (frame != null) frame.sprite = rarityFrames[(int)rarity];
+        if (frame != null) frame.sprite = critterFrames.rarityFrames[(int)rarity];
 
         if (sparkleOverlay != null)
         {
@@ -125,5 +120,15 @@ public class CreatureTransformEntryUI : MonoBehaviour,
         if (draggedEntry == null || draggedEntry.Side == Side) return; // dropped back on its own side - no-op
 
         draggedEntry.MoveAmount(int.MaxValue); // drag = whole stack
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        frame.sprite = critterFrames.selectedFrames[(int)rarity];
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        frame.sprite = critterFrames.rarityFrames[(int)rarity];
     }
 }

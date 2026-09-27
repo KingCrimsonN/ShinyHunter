@@ -13,10 +13,12 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private TMP_Text countText;
     [SerializeField] public TMP_Text descriptionText;
 
-    [SerializeField] private Sprite[] rarityFrames; // normal, uncommon, rare, legendary
+    // [SerializeField] private Sprite[] rarityFrames; // normal, uncommon, rare, legendary
+    [SerializeField] private CritterFrames critterFrames;
 
     [Tooltip("Shown when any of this stack will yield double resources (Ingredient Power, flagged at capture time) - e.g. a sparkle graphic layered on top of the icon.")]
     [SerializeField] private GameObject sparkleOverlay;
+    private CreatureData.Rarity rarity;
 
     private string description;
 
@@ -28,6 +30,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void Set(CreatureData species, CreatureData.Rarity rarity, int count)
     {
+        this.rarity = rarity;
         if (icon != null) icon.sprite = species.GetIcon(rarity);
         if (nameText != null) nameText.text = species.creatureName;
         if (countText != null) countText.text = "x" + count;
@@ -37,7 +40,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         // {
         //     rarityText.text = rarity.ToString();
         nameText.color = GetRarityColor(rarity);
-        if (frame != null) frame.sprite = rarityFrames[(int)rarity];
+        if (frame != null) frame.sprite = critterFrames.rarityFrames[(int)rarity];
         // }
 
         if (sparkleOverlay != null)
@@ -65,6 +68,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        frame.sprite = critterFrames.selectedFrames[(int)rarity];
         if (descriptionText != null)
         {
             descriptionText.text = description;
@@ -73,6 +77,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        frame.sprite = critterFrames.rarityFrames[(int)rarity];
         if (descriptionText != null)
         {
             descriptionText.text = "";

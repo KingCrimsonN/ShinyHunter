@@ -149,6 +149,17 @@ public class ToolInventoryManager : MonoBehaviour
         return slots[index].data.description;
     }
 
+    /// <summary>Total of a given tool across ALL slots - "how many do I already have" (shop, etc), not just whatever's in one slot.</summary>
+    public int GetTotalCount(ToolData data)
+    {
+        if (data == null || slots == null) return 0;
+
+        int total = 0;
+        foreach (var slot in slots)
+            if (slot.data == data) total += slot.count;
+        return total;
+    }
+
     /// <summary>
     /// The "Sort" button's action for a fixed-slot inventory: gather the
     /// filled slots, sort them (here: alphabetically by name), and rewrite

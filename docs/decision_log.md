@@ -1037,3 +1037,94 @@ unaffected, since nothing unsubscribes mid-click). Rather than depend on
 that ordering, `CritterDexGridUI.OnDisable()` now ALSO calls its own
 `ClearSelection()` directly - redundant with the event on the close-button
 path, but the only reliable guarantee on the tablet-closing path.
+
+## Escape now centralized in UIManager - fixed shop/brewing/transform table
+
+Two separate bugs, one root cause: nothing coordinated Escape across
+popups. `Shop`/`PotionMaker` each ran their OWN `Update()` checking
+`Input.GetKeyDown(KeyCode.Escape)` to close themselves, in the SAME frame
+`UIManager.Update()` independently checked the SAME keypress to open the
+tablet's Settings page - two separate `Update()` calls reacting to one
+keypress with no defined order between them. Whichever ran first "won":
+the popup's own handler closed it and called `Unfreeze()`, and if that
+happened before `UIManager.Update()` read `PlayerStateManager.IsFrozen`,
+the tablet's guard no longer saw anything frozen and opened Settings right
+on top of the just-closed popup. `CreatureTransformStationUI` (and
+`BrewingStationUI`, the actual "brewing menu" - `PotionMaker` turned out to
+be a separate, older interactable, fixed too for consistency but not what
+the brewing complaint was about) had NO Escape handling at all, so Escape
+did nothing while they were open - `UIManager`'s guard correctly saw
+`IsFrozen == true` and refused to open the tablet, but nothing else was
+listening to actually close them.
+
+Fixed by making `UIManager` the single authority over what Escape does,
+and giving `PlayerStateManager.Freeze` an optional `closeOnEscape` callback
+so a popup can register itself as "what Escape should close" without
+needing its own key-listening code at all:
+
+- `PlayerStateManager.Freeze(Action closeOnEscape = null)` stores the
+  callback; `Unfreeze()` clears it. `TryCloseCurrentPopup()` invokes it if
+  set - a no-op if the popup didn't register one (preserves old behavior
+  for anything that doesn't pass a callback, e.g. dialogue, which has its
+  own reasons to handle input differently).
+- `UIManager.Update()` now checks Escape FIRST and unconditionally, ahead
+  of the `extraOpened` early-return that gates I/M/J - it has to run even
+  while `extraOpened` is true, since it's the thing that's supposed to turn
+  `extraOpened` back off. `HandleEscape()` is strict priority order: tablet
+  open -> close it; else something else has the player frozen -> close
+  THAT via `TryCloseCurrentPopup` and STOP (never fall through to opening
+  Settings while frozen, whether or not a closer was registered); else ->
+  open to Settings.
+- `Shop`/`PotionMaker` lost their own Escape-checking `Update()` entirely
+  and now pass their own Close method into `Freeze()`. `BrewingStationUI`/
+  `CreatureTransformStationUI` gained the same registration (they never had
+  competing Update() code, just no way to get closed by Escape at all).
+
+Other existing `Freeze()` callers (capture minigame, dialogue, run summary,
+scene transitions, the stew-selection carousel, the no-tools warning)
+were NOT touched - they weren't part of this request, and forcing a plain
+Escape-closes behaviour onto e.g. dialogue could fight whatever input
+handling it already does for choices. Worth revisiting if the same
+complaint comes up for any of them.
+
+## Shop: on-hand quantity, persistent selection, and the Vertical Layout bug
+
+**On-hand quantity**: `ToolInventoryManager.GetTotalCount(ToolData)` (new,
+mirrors `InventoryManager.GetTotalCount`) sums a tool across all slots, not
+just one. `ShopItemButtonUI.onHandText` already existed as an unused field
+(never wired up) - now set from it. `ShopCatalogUI` rebuilds its whole grid
+(not just this one field) whenever `ToolInventoryManager.OnInventoryChanged`
+fires while the shop is open, so a purchase updates the count immediately,
+not just the next time the shop is reopened.
+
+**Persistent selection**: same pattern as the CritterDex grid/detail work
+earlier - `ShopPurchasePanelUI` gained `OnClosed` (fired from `Hide()` for
+the normal cancel/purchase path, and again from a new `OnDisable()` for the
+"whole shop closed while a panel was open" path, since that path never
+calls `Hide()` - only cascades a deactivation down). `ShopCatalogUI` wires
+`OnClosed` to drop the selected button's highlight, and re-applies it to
+whichever NEW button instance matches the selected entry after every grid
+rebuild (rebuilding destroys/recreates every button, so the OLD instance is
+gone even though the entry is still selected - same reasoning as
+`CritterDexGridUI`). The prefab already had an unused "Selection" child
+object wired to `hoverHighlight` by mistake (a hover-only highlight,
+cleared on pointer exit, can't be what stays lit while the purchase panel
+is open) - `ShopItemButtonUI` gained a proper `selectedHighlight` field,
+separate from `hoverHighlight`, for this.
+
+**The grid layout bug** (diagnosed, not changed directly - this is scene
+Inspector state, not code): the shop's `gridParent` has a
+`VerticalLayoutGroup` with `Child Control Width/Height` AND `Child Force
+Expand Width/Height` ALL off - meaning it only POSITIONS children (stacking
+them with spacing), it does not SIZE them at all. The `ShopItem` prefab's
+root `RectTransform` has `m_SizeDelta: {0, 0}` and no `LayoutElement` - so
+every instantiated entry has zero width and zero height to lay out, and
+only appears to render at all because its own children (Icon, Name, Money,
+Selection) are anchored via fixed absolute offsets from that zero-size
+rect, not relative to a real laid-out row. Every OTHER grid in the project
+uses `GridLayoutGroup` (which enforces a uniform `cellSize` on every child
+regardless of the child's own RectTransform, sidestepping this whole
+class of bug) - this is why nothing like it showed up in script or
+elsewhere: a `GridLayoutGroup` never needed a `LayoutElement` to begin
+with. Fix is Editor-side (see chat) - not applied directly since this is
+exactly the kind of live-tunable visual state the user is mid-adjusting.

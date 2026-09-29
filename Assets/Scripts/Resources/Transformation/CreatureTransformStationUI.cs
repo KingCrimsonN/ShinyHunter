@@ -58,8 +58,12 @@ public class CreatureTransformStationUI : MonoBehaviour
 
         if (popupRoot != null) popupRoot.SetActive(true);
         // Freezes movement, Interactor, the stick and tool use together
-        // (and frees the cursor) - see PlayerStateManager.
-        PlayerStateManager.Instance.Freeze();
+        // (and frees the cursor) - see PlayerStateManager. Registers Close
+        // as the Escape callback (see PlayerStateManager.TryCloseCurrentPopup
+        // / UIManager's centralized Escape handling) - this popup had NO
+        // Escape handling at all before, so Escape did nothing while it was
+        // open. See decision log.
+        PlayerStateManager.Instance.Freeze(Close);
 
         // -= first so an Open() without a matching Close() can't double-subscribe
         InventoryManager.Instance.OnInventoryChanged -= RefreshGrids;

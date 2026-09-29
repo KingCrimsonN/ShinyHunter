@@ -24,6 +24,8 @@ public class CritterDexDetailUI : MonoBehaviour
     [SerializeField] private TMP_Text descriptionText;
     [SerializeField] private TMP_Text favoriteScentText;
     [SerializeField] private TMP_Text hatedScentText;
+    [SerializeField] private CritterFrames critterFrames;
+    [SerializeField] private Image familyFrame;
 
     [Header("Ingredient Drop (selected rarity)")]
     [SerializeField] private Image resourceIcon;
@@ -63,7 +65,8 @@ public class CritterDexDetailUI : MonoBehaviour
             return;
         }
 
-        if (familyText != null) familyText.text = StewDisplayUtil.FormatFamily(species.family);
+        // if (familyText != null) familyText.text = StewDisplayUtil.FormatFamily(species.family);
+        if (familyFrame != null) familyFrame.sprite = critterFrames != null ? critterFrames.familyFrames[(int)species.family] : null;
         if (nameText != null) nameText.text = species.creatureName;
         if (descriptionText != null) descriptionText.text = species.description;
         if (favoriteScentText != null) favoriteScentText.text = species.favoriteScent.ToString();
@@ -160,7 +163,8 @@ public class CritterDexDetailUI : MonoBehaviour
     {
         if (portraitImage != null) portraitImage.enabled = false;
 
-        if (familyText != null) familyText.text = "???";
+        // if (familyText != null) familyText.text = "???";
+        if (familyFrame != null) familyFrame.sprite = critterFrames != null ? critterFrames.familyFrames[(int)species.family] : null;
         if (nameText != null) nameText.text = "???";
         if (descriptionText != null) descriptionText.text = "Not yet discovered.";
         if (favoriteScentText != null) favoriteScentText.text = "???";

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -26,6 +27,9 @@ public class PlayerStateManager : MonoBehaviour
     private ToolEquipController toolEquip;
 
     public bool IsFrozen { get; private set; }
+
+    /// <summary>Whatever popup most recently froze the player via Freeze(closeOnEscape) - see TryCloseCurrentPopup / UIManager's centralized Escape handling.</summary>
+    private Action currentPopupCloser;
 
     private void Awake()
     {
@@ -72,9 +76,19 @@ public class PlayerStateManager : MonoBehaviour
         toolEquip = FindFirstObjectByType<ToolEquipController>();
     }
 
-    public void Freeze()
+    /// <summary>
+    /// Freezes player input. Pass this popup's own Close method as
+    /// closeOnEscape if UIManager's centralized Escape handling should close
+    /// THIS popup while it owns the player, rather than falling through to
+    /// opening the tablet - see TryCloseCurrentPopup. Leave it null (default)
+    /// to keep Escape doing nothing while this popup is open, e.g. for a
+    /// popup that already handles Escape itself for something else (a
+    /// dialogue choice, say).
+    /// </summary>
+    public void Freeze(Action closeOnEscape = null)
     {
         IsFrozen = true;
+        currentPopupCloser = closeOnEscape;
         ApplyState(true);
 
         Cursor.lockState = CursorLockMode.None;
@@ -84,10 +98,23 @@ public class PlayerStateManager : MonoBehaviour
     public void Unfreeze()
     {
         IsFrozen = false;
+        currentPopupCloser = null;
         ApplyState(false);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    /// <summary>
+    /// Invokes whatever close callback the current popup registered via
+    /// Freeze(closeOnEscape), if any. Called by UIManager's Escape handling
+    /// - callers should check IsFrozen themselves first and treat Escape as
+    /// "handled" (don't fall through to opening the tablet) regardless of
+    /// whether a callback was actually registered.
+    /// </summary>
+    public void TryCloseCurrentPopup()
+    {
+        currentPopupCloser?.Invoke();
     }
 
     private void ApplyState(bool frozen)

@@ -1,5 +1,15 @@
 using UnityEngine;
 
+/// <summary>
+/// Escape used to be handled here directly (its own Update() checking
+/// Input.GetKeyDown(KeyCode.Escape)) - removed. UIManager's Escape handling
+/// is now the single place that decides what Escape does; it calls
+/// PlayerStateManager.TryCloseCurrentPopup(), which invokes whatever's
+/// registered - see the Freeze(ClosePotions) call below. Having both this
+/// and UIManager listening for the same keypress raced (no defined order
+/// for two separate Update() calls), which is what let closing this also
+/// pop the tablet's Settings page open on the same press. See decision log.
+/// </summary>
 public class PotionMaker : MonoBehaviour, IInteractable
 {
     [SerializeField] private GameObject potionUI;
@@ -19,7 +29,7 @@ public class PotionMaker : MonoBehaviour, IInteractable
         {
             potionUI.SetActive(!potionUI.activeSelf);
             if (potionUI.activeSelf)
-                PlayerStateManager.Instance.Freeze();
+                PlayerStateManager.Instance.Freeze(ClosePotions);
         }
     }
 
@@ -30,14 +40,6 @@ public class PotionMaker : MonoBehaviour, IInteractable
         {
             potionUI.SetActive(false);
             PlayerStateManager.Instance.Unfreeze();
-        }
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape) && potionUI != null && potionUI.activeSelf)
-        {
-            ClosePotions();
         }
     }
 

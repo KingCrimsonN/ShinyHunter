@@ -65,7 +65,11 @@ public class BrewingStationUI : MonoBehaviour
         System.Array.Clear(slotContents, 0, slotContents.Length);
 
         if (popupRoot != null) popupRoot.SetActive(true);
-        PlayerStateManager.Instance.Freeze();
+        // Registers Close as the Escape callback - see
+        // PlayerStateManager.TryCloseCurrentPopup / UIManager's centralized
+        // Escape handling. This popup had no Escape handling at all before,
+        // so Escape did nothing while it was open. See decision log.
+        PlayerStateManager.Instance.Freeze(Close);
 
         RefreshAll();
     }
@@ -75,7 +79,7 @@ public class BrewingStationUI : MonoBehaviour
         System.Array.Clear(slotContents, 0, slotContents.Length);
 
         if (popupRoot != null) popupRoot.SetActive(true);
-        PlayerStateManager.Instance.Freeze();
+        PlayerStateManager.Instance.Freeze(Close);
 
         RefreshAll();
     }

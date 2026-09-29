@@ -126,27 +126,52 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        // Escape is handled FIRST and unconditionally - NOT behind the
+        // extraOpened guard below - because it has to be able to close
+        // whatever popup set extraOpened in the first place (shop, brewing).
+        // It used to be gated the same as I/M/J, which meant it could only
+        // ever reach "open Settings" once whatever OTHER popup had already
+        // closed itself (via that popup's own separate Escape check racing
+        // this one in the same frame, with no defined order) - see decision log.
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            HandleEscape();
+            return;
+        }
+
         if (extraOpened)
             return;
 
-        // Each tab has its own shortcut key straight to that page - see
-        // HandleTabletShortcut. Escape is the odd one out: it ALWAYS closes
-        // the tablet first if it's open (universal "back", not just when
-        // Settings happens to be the visible page), only falling through to
-        // "open to Settings" once it's already closed.
+        // Each tab has its own shortcut key straight to that page - see HandleTabletShortcut.
         if (Input.GetKeyDown(KeyCode.I)) HandleTabletShortcut(inventoryPage, ShowInventoryPage);
         if (Input.GetKeyDown(KeyCode.M)) HandleTabletShortcut(mapPage, ShowMapPage);
         if (Input.GetKeyDown(KeyCode.J)) HandleTabletShortcut(critterDexPage, ShowCritterDexPage);
+    }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+    /// <summary>
+    /// The single place Escape's behaviour is decided, in priority order:
+    /// (1) tablet open -> close it (universal "back"); (2) something ELSE
+    /// has the player frozen (shop, brewing, transform table...) -> close
+    /// THAT via PlayerStateManager.TryCloseCurrentPopup instead, and stop -
+    /// never fall through to opening the tablet while frozen, regardless of
+    /// whether that popup registered a closer; (3) otherwise -> open the
+    /// tablet to Settings.
+    /// </summary>
+    private void HandleEscape()
+    {
+        if (tabletUI != null && tabletUI.activeSelf)
         {
-            if (tabletUI != null && tabletUI.activeSelf)
-            {
-                HideTabletUI();
-                return;
-            }
-            HandleTabletShortcut(settingsPage, ShowSettingsPage);
+            HideTabletUI();
+            return;
         }
+
+        if (PlayerStateManager.Instance != null && PlayerStateManager.Instance.IsFrozen)
+        {
+            PlayerStateManager.Instance.TryCloseCurrentPopup();
+            return;
+        }
+
+        HandleTabletShortcut(settingsPage, ShowSettingsPage);
     }
 
     /// <summary>

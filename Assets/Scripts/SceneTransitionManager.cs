@@ -120,4 +120,9 @@ public class SceneTransitionManager : MonoBehaviour
             blackoutCanvasGroup.gameObject.SetActive(false);
         }
     }
+
+    public void CloseGame()
+    {
+        Application.Quit();
+    }
 }

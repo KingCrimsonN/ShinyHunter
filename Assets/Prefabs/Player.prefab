@@ -193,10 +193,9 @@ MonoBehaviour:
   swingSound: {fileID: 8300000, guid: fbc478e090e2a554b97a2ccbc342a531, type: 3}
   hitRange: 2.5
   hitRadius: 0.5
-  creatureLayer:
-    serializedVersion: 2
-    m_Bits: 4294967295
   hitKey: 323
+  baseDamage: 10
+  hitCooldown: 0.5
   isActive: 1
 --- !u!114 &6783043108836218301
 MonoBehaviour:
@@ -381,7 +380,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Interactor
   interactionSource: {fileID: 6540291153621555805}
   interactionRange: 2
-  interactionPrompt: {fileID: 3603336777393051648}
 --- !u!1 &3603336777393051648
 GameObject:
   m_ObjectHideFlags: 0

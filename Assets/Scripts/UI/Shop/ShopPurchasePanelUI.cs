@@ -36,6 +36,9 @@ public class ShopPurchasePanelUI : MonoBehaviour
     private ShopItemEntry currentEntry;
     private int quantity = 1;
 
+    /// <summary>Fires whenever this panel closes - ShopCatalogUI uses this to drop the corresponding item button's persistent selection highlight.</summary>
+    public event System.Action OnClosed;
+
     private void Awake()
     {
         if (panelRoot != null) panelRoot.SetActive(false);
@@ -44,6 +47,14 @@ public class ShopPurchasePanelUI : MonoBehaviour
         if (decreaseHold != null) decreaseHold.OnRepeat += () => ChangeQuantity(-1);
         if (purchaseButton != null) purchaseButton.onClick.AddListener(Purchase);
         if (cancelButton != null) cancelButton.onClick.AddListener(Hide);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            Purchase();
+        }
     }
 
     public void Show(ShopItemEntry entry)
@@ -60,10 +71,28 @@ public class ShopPurchasePanelUI : MonoBehaviour
         if (panelRoot != null) panelRoot.SetActive(true);
     }
 
+    /// <summary>Wire to a Cancel button's OnClick - also called internally by Purchase() once it completes.</summary>
     public void Hide()
     {
         if (panelRoot != null) panelRoot.SetActive(false);
         currentEntry = null;
+        OnClosed?.Invoke();
+    }
+
+    /// <summary>
+    /// Covers closing the WHOLE shop (Shop.CloseShop deactivating shopUI,
+    /// which this object is a descendant of) rather than just this panel -
+    /// Hide() only runs for the normal cancel/purchase path, where panelRoot
+    /// toggles but this component's own object stays active, so that path
+    /// alone wouldn't catch "the whole shop just closed while a purchase
+    /// panel was open". Firing OnClosed again if Hide() already ran is
+    /// harmless - currentEntry is already null and ShopCatalogUI's handler
+    /// is idempotent. See decision log (same pattern as CritterDexDetailUI).
+    /// </summary>
+    private void OnDisable()
+    {
+        currentEntry = null;
+        OnClosed?.Invoke();
     }
 
     private void ChangeQuantity(int delta)

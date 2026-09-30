@@ -30,4 +30,18 @@ public class ResourceData : ScriptableObject
 
     [Header("Stacking")]
     [Min(1)] public int maxStack = 20;
+
+    /// <summary>This ingredient's value on one scent axis - lets UI loop over ScentType instead of hand-picking the five fields.</summary>
+    public float GetScent(ScentType type)
+    {
+        switch (type)
+        {
+            case ScentType.Sweet: return sweetScent;
+            case ScentType.Fresh: return freshScent;
+            case ScentType.Putrid: return putridScent;
+            case ScentType.Metallic: return metallicScent;
+            case ScentType.Marine: return marineScent;
+            default: return 0f;
+        }
+    }
 }

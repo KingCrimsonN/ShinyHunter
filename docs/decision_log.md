@@ -1128,3 +1128,36 @@ class of bug) - this is why nothing like it showed up in script or
 elsewhere: a `GridLayoutGroup` never needed a `LayoutElement` to begin
 with. Fix is Editor-side (see chat) - not applied directly since this is
 exactly the kind of live-tunable visual state the user is mid-adjusting.
+
+## CritterDex became a book (critters only)
+
+The dex no longer has Tools/Ingredients/NPCs/Locations sub-tabs (`CritterDexTabController` deleted) and the family
+FILTER is gone (`CritterDexFamilyFilterUI` deleted). It is now a book: page 0 = the index grid, pages 1..N = one critter
+each. Bookmarks (`CritterDexBookmarksUI`) replaced the filter buttons - index + one per family, jumping to the
+family's first page.
+
+**Ordering lives in one place**: `CritterDexRegistry.GetOrderedSpecies()`, sorted by `familyOrder` (a serialized list on
+the registry, default Bug, Plant, Freaky, Warm, Cold) with a STABLE sort so registry order breaks ties. A family missing
+from `familyOrder` sorts last instead of breaking. `CritterDexUI` owns that list and hands it to the grid
+(`SetSpecies`) instead of the grid reading the registry itself - two readers of the same ordering could drift. Dex numbers
+are now the position in book order, not registry order.
+
+**Page flip**: squashing a container's X scale to 0, swapping content at the midpoint, opening back up (DOTween). Two
+things that matter: it MUST use unscaled time (`SetUpdate(true)`) because the tablet freezes the game with
+`Time.timeScale = 0`, and the swap reads `targetPage` at the midpoint so rapid arrow clicks retarget the in-flight flip
+rather than queueing several. `OnDisable` kills the tween and restores the scale so closing the tablet mid-flip can't
+leave the book squashed.
+
+**Detail is a page, not a pop-up**: `CritterDexDetailUI` lost its self-`SetActive`, `OnClosed` and the whole
+close/deselect cascade (grid selection no longer exists - selecting a critter just turns the page). The book toggles the
+page object and calls `Show`/`Clear`.
+
+**Locked icons**: `CreatureData.icons[4]` (`LockedIconIndex`, appended AFTER the four rarities so no existing index
+shifts) is the silhouette for a rarity you haven't caught of a species you HAVE. Species never caught draws a solid
+"undiscovered" look instead (no shape given away). Assets with only 4 icons fall back to the old dark tint until the
+art exists. All three consumers go through `CritterDexIcons.Apply`; the look is a `CritterDexIconStyle` serialized on
+each. Undiscovered with no `undiscoveredSprite` HIDES the icon (frame shows through, as in the reference screenshot)
+rather than drawing a bare gray rectangle - the icons sit in round frames with no mask, so a rect would poke out.
+
+**Ingredient pop-up** shows only for a caught rarity (an uncaught one would leak name/description/stats), closes on
+rarity change / page change.

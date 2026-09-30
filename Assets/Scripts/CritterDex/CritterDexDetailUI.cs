@@ -3,20 +3,26 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Detail panel for whichever species is selected in the grid. Two levels:
-/// SPECIES-level info (family, name, description, favorite/hated scent)
-/// never changes with the rarity buttons; RARITY-level info (portrait,
-/// ingredient drop) does, driven by the 4 CritterDexRarityBadgeUI buttons -
-/// clicking one shows THAT rarity's icon/ingredient, silhouetted if that
-/// specific rarity hasn't been caught yet (a species unlocked at Normal but
-/// never seen as Legendary still silhouettes the Legendary tab). A totally
-/// locked (never-caught-at-all) species shows "???" everywhere instead,
-/// matching the real Pokedex's "not yet discovered" behaviour.
+/// The content of one CRITTER PAGE in the book. It is no longer a pop-up that
+/// activates/deactivates itself - CritterDexUI (the book) shows and hides the
+/// whole page object and calls Show(species) when it turns to it.
+///
+/// Two levels: SPECIES-level info (family sticker, name, description,
+/// favorite/hated scent) is fixed for the page; RARITY-level info (portrait,
+/// ingredient drop) follows the 4 CritterDexRarityBadgeUI buttons. Icons use
+/// CritterDexIcons' three states (caught / locked silhouette / undiscovered).
+/// A never-caught species shows "???" for all text, matching the real
+/// Pokedex's "not yet discovered" behaviour.
+///
+/// Clicking the ingredient box opens a small pop-up (CritterDexIngredientPopupUI)
+/// with its name, description and scent stats - only for a rarity you've
+/// actually caught.
 /// </summary>
 public class CritterDexDetailUI : MonoBehaviour
 {
     [Header("Portrait (selected rarity)")]
     [SerializeField] private Image portraitImage;
+    [SerializeField] private CritterDexIconStyle portraitStyle = new CritterDexIconStyle();
 
     [Header("Species Info")]
     [SerializeField] private TMP_Text familyText;
@@ -30,27 +36,31 @@ public class CritterDexDetailUI : MonoBehaviour
     [Header("Ingredient Drop (selected rarity)")]
     [SerializeField] private Image resourceIcon;
     [SerializeField] private TMP_Text resourceNameText;
+    [Tooltip("The clickable ingredient box (usually the object holding Resource Icon). Clicking it opens the pop-up below. Optional - leave empty to disable the pop-up.")]
+    [SerializeField] private Button ingredientButton;
+    [SerializeField] private CritterDexIngredientPopupUI ingredientPopup;
+    [Tooltip("Tint for the ingredient icon of a rarity that hasn't been caught yet. (There's no locked ingredient art - only critters have a locked variant.)")]
+    [SerializeField] private Color ingredientLockedColor = new Color(0.12f, 0.12f, 0.12f, 1f);
 
     [Header("Rarity Select")]
     [Tooltip("Exactly 4, in CreatureData.Rarity enum order: Normal, Uncommon, Rare, Legendary.")]
     [SerializeField] private CritterDexRarityBadgeUI[] rarityBadges;
 
-    [Header("Silhouette")]
-    [SerializeField] private Color unlockedColor = Color.white;
-    [SerializeField] private Color lockedColor = new Color(0.12f, 0.12f, 0.12f, 1f);
-
     private CreatureData currentSpecies;
     private CreatureData.Rarity selectedRarity;
+    private ResourceData currentResource;
 
-    /// <summary>Fires whenever the popup closes (Hide()) - CritterDexUI wires this to CritterDexGridUI.ClearSelection so closing also drops the grid's highlight, rather than leaving the last-viewed entry looking selected.</summary>
-    public event System.Action OnClosed;
+    private void Awake()
+    {
+        if (ingredientButton != null) ingredientButton.onClick.AddListener(OnIngredientClicked);
+    }
 
-    /// <summary>Species-selection entry point - wired to CritterDexGridUI.OnSpeciesSelected by CritterDexUI. null = nothing selectable (empty/filtered-out grid).</summary>
+    /// <summary>Called by the book when it turns to this species' page.</summary>
     public void Show(CreatureData species)
     {
-        gameObject.SetActive(true);
         currentSpecies = species;
-        selectedRarity = CreatureData.Rarity.Normal; // always land back on Normal for a freshly-selected species
+        selectedRarity = CreatureData.Rarity.Normal; // every freshly-opened page starts on Normal
+        CloseIngredientPopup();
 
         if (species == null)
         {
@@ -58,15 +68,14 @@ public class CritterDexDetailUI : MonoBehaviour
             return;
         }
 
-        bool speciesUnlocked = InventoryManager.Instance.HasEverCaptured(species); // survives the species later being transformed away entirely
-        if (!speciesUnlocked)
+        SetFamilyFrame(species);
+
+        if (!CritterDexIcons.IsSpeciesDiscovered(species))
         {
-            ShowLockedPlaceholder(species);
+            ShowUndiscovered(species);
             return;
         }
 
-        // if (familyText != null) familyText.text = StewDisplayUtil.FormatFamily(species.family);
-        if (familyFrame != null) familyFrame.sprite = critterFrames != null ? critterFrames.familyFrames[(int)species.family] : null;
         if (nameText != null) nameText.text = species.creatureName;
         if (descriptionText != null) descriptionText.text = species.description;
         if (favoriteScentText != null) favoriteScentText.text = species.favoriteScent.ToString();
@@ -76,37 +85,19 @@ public class CritterDexDetailUI : MonoBehaviour
         ShowSelectedRarity();
     }
 
-    /// <summary>Wire to a close button's OnClick.</summary>
-    public void Hide()
-    {
-        gameObject.SetActive(false); // triggers OnDisable below, which does the actual cleanup
-    }
-
-    /// <summary>
-    /// Fires whenever this popup stops being active - not just from Hide()
-    /// explicitly, but also whenever an ANCESTOR is deactivated while this
-    /// was open: closing the whole tablet (J/Esc/re-pressing the CritterDex
-    /// shortcut) deactivates tabletUI, which cascades OnDisable down to every
-    /// active child, including this one if it happened to be open. That's
-    /// exactly the "closing the tablet should also close+deselect the
-    /// detail popup" behaviour - no extra wiring needed for it, since Unity
-    /// already calls this in that case. Only fires if this was actually
-    /// active (Unity doesn't call OnDisable from an already-inactive state),
-    /// so it's a no-op whenever the popup wasn't open to begin with.
-    /// </summary>
-    private void OnDisable()
+    /// <summary>Called by the book when it leaves for the index page, so nothing stale (or an open pop-up) is left on the hidden page.</summary>
+    public void Clear()
     {
         currentSpecies = null;
+        CloseIngredientPopup();
         ShowNothing();
-
-        OnClosed?.Invoke();
-        gameObject.SetActive(false);
     }
 
-    /// <summary>Called when a rarity button is clicked - only the rarity-level half of the panel changes.</summary>
+    /// <summary>Rarity button clicked - only the rarity-level half of the page changes.</summary>
     private void SelectRarity(CreatureData.Rarity rarity)
     {
         selectedRarity = rarity;
+        CloseIngredientPopup(); // the pop-up belongs to one specific ingredient
         ShowSelectedRarity();
         RefreshRarityBadges(); // re-highlight which badge is now selected
     }
@@ -115,38 +106,57 @@ public class CritterDexDetailUI : MonoBehaviour
     {
         if (currentSpecies == null) return;
 
-        bool rarityOwned = InventoryManager.Instance.HasEverCaptured(currentSpecies, selectedRarity);
+        bool rarityOwned = CritterDexIcons.IsRarityDiscovered(currentSpecies, selectedRarity);
+        CritterDexIcons.Apply(portraitImage, currentSpecies, selectedRarity, portraitStyle);
 
-        if (portraitImage != null)
-        {
-            portraitImage.sprite = currentSpecies.GetIcon(selectedRarity);
-            portraitImage.color = rarityOwned ? unlockedColor : lockedColor;
-            portraitImage.enabled = portraitImage.sprite != null;
-        }
-
-        var resource = currentSpecies.GetResource(selectedRarity);
+        currentResource = currentSpecies.GetResource(selectedRarity);
         if (resourceIcon != null)
         {
-            resourceIcon.sprite = resource != null ? resource.icon : null;
-            resourceIcon.color = rarityOwned ? unlockedColor : lockedColor;
+            resourceIcon.sprite = currentResource != null ? currentResource.icon : null;
+            resourceIcon.color = rarityOwned ? Color.white : ingredientLockedColor;
             resourceIcon.enabled = resourceIcon.sprite != null;
         }
-        if (resourceNameText != null) resourceNameText.text = resource != null ? (rarityOwned ? resource.resourceName : "???") : "-";
+        if (resourceNameText != null) resourceNameText.text = currentResource != null ? (rarityOwned ? currentResource.resourceName : "???") : "-";
+
+        // Only a caught rarity has an ingredient worth inspecting - an uncaught
+        // one would otherwise leak its name/description/stats.
+        if (ingredientButton != null) ingredientButton.interactable = rarityOwned && currentResource != null;
     }
 
     private void RefreshRarityBadges()
     {
-        if (rarityBadges == null || currentSpecies == null) return;
+        if (rarityBadges == null) return;
 
         for (int i = 0; i < rarityBadges.Length; i++)
         {
             var rarity = (CreatureData.Rarity)i;
-            bool owned = InventoryManager.Instance.HasEverCaptured(currentSpecies, rarity);
-            rarityBadges[i].Set(currentSpecies, rarity, owned, rarity == selectedRarity, SelectRarity);
+            rarityBadges[i].Set(currentSpecies, rarity, rarity == selectedRarity, SelectRarity);
         }
     }
 
-    public void ShowNothing()
+    private void OnIngredientClicked()
+    {
+        if (ingredientPopup == null || currentSpecies == null) return;
+        if (!CritterDexIcons.IsRarityDiscovered(currentSpecies, selectedRarity)) return;
+
+        ingredientPopup.Show(currentResource);
+    }
+
+    private void CloseIngredientPopup()
+    {
+        if (ingredientPopup != null) ingredientPopup.Hide();
+    }
+
+    private void SetFamilyFrame(CreatureData species)
+    {
+        if (familyFrame == null) return;
+
+        int index = (int)species.family;
+        bool valid = critterFrames != null && critterFrames.familyFrames != null && index >= 0 && index < critterFrames.familyFrames.Length;
+        familyFrame.sprite = valid ? critterFrames.familyFrames[index] : null;
+    }
+
+    private void ShowNothing()
     {
         if (portraitImage != null) portraitImage.enabled = false;
         if (familyText != null) familyText.text = "-";
@@ -156,30 +166,32 @@ public class CritterDexDetailUI : MonoBehaviour
         if (hatedScentText != null) hatedScentText.text = "-";
         if (resourceIcon != null) resourceIcon.enabled = false;
         if (resourceNameText != null) resourceNameText.text = "-";
+        if (ingredientButton != null) ingredientButton.interactable = false;
         ClearRarityBadges();
     }
 
-    private void ShowLockedPlaceholder(CreatureData species)
+    private void ShowUndiscovered(CreatureData species)
     {
-        if (portraitImage != null) portraitImage.enabled = false;
+        // Portrait + rarity buttons go through the same helper as everything
+        // else, which draws the solid "undiscovered" look for a never-caught species.
+        CritterDexIcons.Apply(portraitImage, species, selectedRarity, portraitStyle);
 
-        // if (familyText != null) familyText.text = "???";
-        if (familyFrame != null) familyFrame.sprite = critterFrames != null ? critterFrames.familyFrames[(int)species.family] : null;
         if (nameText != null) nameText.text = "???";
-        if (descriptionText != null) descriptionText.text = "Not yet discovered.";
+        if (descriptionText != null) descriptionText.text = "???";
         if (favoriteScentText != null) favoriteScentText.text = "???";
         if (hatedScentText != null) hatedScentText.text = "???";
 
         if (resourceIcon != null) resourceIcon.enabled = false;
         if (resourceNameText != null) resourceNameText.text = "???";
+        if (ingredientButton != null) ingredientButton.interactable = false;
 
-        ClearRarityBadges(); // fully locked - no rarity has been seen, so there's nothing to select yet
+        RefreshRarityBadges(); // not clickable while undiscovered - the badge checks that itself
     }
 
     private void ClearRarityBadges()
     {
         if (rarityBadges == null) return;
         foreach (var badge in rarityBadges)
-            badge.Set(null, CreatureData.Rarity.Normal, false, false, null);
+            badge.Set(null, CreatureData.Rarity.Normal, false, null);
     }
 }

@@ -3,62 +3,44 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Builds the scrollable grid from CritterDexRegistry. Fully rebuilds on
-/// every refresh (registry, entries all destroyed/reinstantiated) rather than
-/// diffing in place - same convention as every other grid UI in the project
-/// (see CLAUDE.md #8) - and subscribes to InventoryManager.OnInventoryChanged
-/// only while enabled, so it stays live while the dex is open AND is
-/// guaranteed fresh the next time it's opened, instead of showing whatever
-/// was true when it was last closed. Attach to the panel that HOLDS the grid
-/// (gridParent is the actual ScrollView Content object, so this component
-/// itself is free to also hold the family-filter row above the grid).
+/// The INDEX page of the book: a grid with one entry per species, in book
+/// order. Clicking an entry asks the book (CritterDexUI) to flip to that
+/// species' page - this component no longer tracks a "selected" entry at all,
+/// since selecting something now just turns the page.
 ///
-/// IMPORTANT: a refresh (inventory change, filter change, this panel being
-/// (re)enabled) never fires OnSpeciesSelected on its own - only an actual
-/// click does. The detail panel is a popup a player opens on purpose; it
-/// must not pop open just because a family filter was clicked or the dex was
-/// reopened. See decision log.
+/// The species list is handed in by the book (SetSpecies) rather than read
+/// from the registry here, so the book stays the single owner of the ordering.
+/// Fully rebuilds on every refresh (CLAUDE.md #8) and listens to
+/// InventoryManager.OnInventoryChanged only while enabled, so the discovered
+/// state is always fresh the moment the index page is shown.
 /// </summary>
 public class CritterDexGridUI : MonoBehaviour
 {
-    [SerializeField] private CritterDexRegistry registry;
     [SerializeField] private CritterDexEntryUI entryPrefab;
     [Tooltip("REQUIRED - the ScrollView's Content transform (the one with the Grid Layout Group), NOT this component's own object. Refresh() destroys every child of this transform on each rebuild, so it must point at the innermost Content object, never at a panel that also holds the ScrollView itself or anything else you don't want wiped.")]
     [SerializeField] private Transform gridParent;
 
-    private readonly List<CritterDexEntryUI> entries = new List<CritterDexEntryUI>();
-    private CritterDexEntryUI selectedEntry;
-    private CreatureData selectedSpecies;
-    private IngredientFamily? familyFilter;
+    private IReadOnlyList<CreatureData> species;
 
-    /// <summary>Fires ONLY when the player clicks an entry - see class docs.</summary>
-    public event Action<CreatureData> OnSpeciesSelected;
+    /// <summary>Fires ONLY when the player clicks an entry.</summary>
+    public event Action<CreatureData> OnSpeciesClicked;
+
+    /// <summary>Called by the book with the ordered species list. Rebuilds immediately if the index page is currently showing.</summary>
+    public void SetSpecies(IReadOnlyList<CreatureData> orderedSpecies)
+    {
+        species = orderedSpecies;
+        if (isActiveAndEnabled) Refresh();
+    }
 
     private void OnEnable()
     {
-        InventoryManager.Instance.OnInventoryChanged += Refresh;
+        if (InventoryManager.Instance != null) InventoryManager.Instance.OnInventoryChanged += Refresh;
         Refresh();
     }
 
     private void OnDisable()
     {
-        if (InventoryManager.Instance != null)
-            InventoryManager.Instance.OnInventoryChanged -= Refresh;
-
-        // Also cleared directly here (not just via CritterDexDetailUI.OnClosed,
-        // which CritterDexUI relays into ClearSelection) - this and the detail
-        // panel are separate objects both disabled by the same "tablet closed"
-        // cascade, and sibling OnDisable order isn't guaranteed, so relying on
-        // the event alone risks it firing after CritterDexUI already
-        // unsubscribed. Reopening the dex must never show a stale selection.
-        ClearSelection();
-    }
-
-    /// <summary>Null = show every species. Rebuilds immediately.</summary>
-    public void SetFamilyFilter(IngredientFamily? family)
-    {
-        familyFilter = family;
-        Refresh();
+        if (InventoryManager.Instance != null) InventoryManager.Instance.OnInventoryChanged -= Refresh;
     }
 
     private void Refresh()
@@ -75,60 +57,18 @@ public class CritterDexGridUI : MonoBehaviour
 
         foreach (Transform child in gridParent)
             Destroy(child.gameObject);
-        entries.Clear();
 
-        CritterDexEntryUI matchedEntry = null;
+        if (species == null || entryPrefab == null) return;
 
-        if (registry != null && registry.species != null)
+        for (int i = 0; i < species.Count; i++)
         {
-            for (int i = 0; i < registry.species.Count; i++)
-            {
-                var species = registry.species[i];
-                if (species == null) continue;
-                if (familyFilter.HasValue && species.family != familyFilter.Value) continue;
-
-                bool unlocked = InventoryManager.Instance.HasEverCaptured(species); // survives the species later being transformed away entirely - see decision log
-
-                var entry = Instantiate(entryPrefab, gridParent);
-                entry.Set(species, i + 1, unlocked, HandleEntryClicked); // dex number is the species' fixed registry position, unaffected by filtering
-                entries.Add(entry);
-
-                if (species == selectedSpecies) matchedEntry = entry;
-            }
+            var entry = Instantiate(entryPrefab, gridParent);
+            entry.Set(species[i], i + 1, HandleEntryClicked); // dex number = position in book order
         }
-
-        // Re-apply the existing highlight if that species is still visible
-        // under the current filter (entries are destroyed/recreated every
-        // refresh, so the OLD CritterDexEntryUI instance is gone even when
-        // the species itself is still "selected"). Deliberately does NOT
-        // fire OnSpeciesSelected and does NOT fall back to auto-selecting
-        // the first entry if the previous selection is gone - a refresh must
-        // never pop the detail panel open (or closed) on its own.
-        selectedEntry = matchedEntry;
-        if (selectedEntry != null) selectedEntry.SetSelected(true);
     }
 
-    /// <summary>
-    /// Drops the grid's highlight without touching anything else - wired to
-    /// CritterDexDetailUI.OnClosed by CritterDexUI, so closing the detail
-    /// popup doesn't leave the last-viewed entry looking selected. Does NOT
-    /// fire OnSpeciesSelected (closing isn't a new selection).
-    /// </summary>
-    public void ClearSelection()
+    private void HandleEntryClicked(CreatureData clicked)
     {
-        if (selectedEntry != null) selectedEntry.SetSelected(false);
-        selectedEntry = null;
-        selectedSpecies = null;
-    }
-
-    private void HandleEntryClicked(CreatureData species)
-    {
-        if (selectedEntry != null) selectedEntry.SetSelected(false);
-
-        selectedEntry = entries.Find(e => e.Species == species);
-        selectedSpecies = species;
-        if (selectedEntry != null) selectedEntry.SetSelected(true);
-
-        OnSpeciesSelected?.Invoke(species);
+        OnSpeciesClicked?.Invoke(clicked);
     }
 }

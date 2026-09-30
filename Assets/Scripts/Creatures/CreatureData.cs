@@ -34,8 +34,11 @@ public class CreatureData : ScriptableObject
     [Tooltip("Index 0=Normal, 1=Uncommon, 2=Rare, 3=Legendary. Each entry holds that variant's full set of named animations (Idle, Move, Flee, etc). Fine to leave states unauthored while art is still coming in - they simply won't play.")]
     public CreatureVariantVisuals[] variants = new CreatureVariantVisuals[4];
 
-    [Tooltip("Static thumbnails per rarity, for UI (inventory/bestiary) - separate from the in-world animation frames.")]
-    public Sprite[] icons = new Sprite[4];
+    [Tooltip("Static thumbnails for UI (inventory/bestiary) - separate from the in-world animation frames. Index 0=Normal, 1=Uncommon, 2=Rare, 3=Legendary, and index 4 (optional, add it at the END) = the LOCKED variant the CritterDex shows for a rarity of an already-discovered species that hasn't been caught yet. Arrays that only have 4 entries keep working - the dex falls back to a dark tint of the regular icon until the locked art exists.")]
+    public Sprite[] icons = new Sprite[5];
+
+    /// <summary>Index in icons[] of the locked/silhouette variant - always AFTER the four rarities, so adding it never shifts an existing entry.</summary>
+    public const int LockedIconIndex = 4;
 
     [Header("Physical")]
     [Tooltip("Applied to transform.localScale on spawn.")]
@@ -100,6 +103,12 @@ public class CreatureData : ScriptableObject
         if (icons == null || icons.Length == 0) return null;
         int index = (int)rarity;
         return index < icons.Length ? icons[index] : icons[0];
+    }
+
+    /// <summary>The locked/silhouette thumbnail (icons[LockedIconIndex]), or null if this species doesn't have one authored yet.</summary>
+    public Sprite GetLockedIcon()
+    {
+        return icons != null && icons.Length > LockedIconIndex ? icons[LockedIconIndex] : null;
     }
 
     /// <summary>The resource yielded by this species at a given rarity. Falls back to index 0 if the array is short.</summary>

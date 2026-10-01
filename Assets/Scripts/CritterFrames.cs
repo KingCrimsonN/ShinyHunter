@@ -7,4 +7,5 @@ public class CritterFrames : ScriptableObject
     public Sprite[] selectedFrames = new Sprite[4];
 
     public Sprite[] familyFrames = new Sprite[5];
+    public Sprite[] familyBadges = new Sprite[5];
 }

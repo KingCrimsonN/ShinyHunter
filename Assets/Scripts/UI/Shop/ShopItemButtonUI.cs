@@ -28,7 +28,7 @@ public class ShopItemButtonUI : MonoBehaviour, IPointerClickHandler, IPointerEnt
         if (icon != null) icon.sprite = entry.item.icon;
         if (nameText != null) nameText.text = entry.item.toolName;
         if (priceText != null) priceText.text = entry.pricePerUnit.ToString("N0");
-        if (onHandText != null) onHandText.text = ownedCount > 0 ? $"x{ownedCount}" : string.Empty;
+        if (onHandText != null) onHandText.text = ownedCount > 0 ? $"{ownedCount}" : string.Empty;
 
         if (hoverHighlight != null) hoverHighlight.SetActive(false);
         if (selectedHighlight != null) selectedHighlight.SetActive(false); // ShopCatalogUI re-applies this right after Set() if this entry is the one currently open

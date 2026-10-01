@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using DG.Tweening;
 
 /// <summary>
 /// Quantity-selection sub-panel shown after clicking an item in the shop
@@ -32,6 +33,8 @@ public class ShopPurchasePanelUI : MonoBehaviour
 
     [Header("Money display (shop screen total, shown top-right)")]
     [SerializeField] private ShopMoneyDisplayUI moneyDisplay;
+    [SerializeField] private Animator shopKeeperPortrait;
+    // [SerializeField] private Sprite shopKeeperHappy;
 
     private ShopItemEntry currentEntry;
     private int quantity = 1;
@@ -141,6 +144,14 @@ public class ShopPurchasePanelUI : MonoBehaviour
             MoneyManager.Instance.AddMoney(leftover * currentEntry.pricePerUnit);
             if (feedbackText != null) feedbackText.text = $"Inventory full - refunded {leftover}.";
         }
+
+        // Sprite temp = shopKeeperPortrait.sprite;
+        // DOTween.Sequence().SetUpdate(true)
+        //     .AppendCallback(() => shopKeeperPortrait.sprite = shopKeeperHappy)
+        //     .AppendCallback(() => shopKeeperPortrait.
+        //     .AppendInterval(0.5f)
+        //     .AppendCallback(() => shopKeeperPortrait.sprite = temp);
+        shopKeeperPortrait.SetTrigger("buy");
 
         if (moneyDisplay != null)
             moneyDisplay.AnimateFrom(moneyBeforePurchase);

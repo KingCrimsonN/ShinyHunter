@@ -32,6 +32,7 @@ public class CritterDexDetailUI : MonoBehaviour
     [SerializeField] private TMP_Text hatedScentText;
     [SerializeField] private CritterFrames critterFrames;
     [SerializeField] private Image familyFrame;
+    [SerializeField] private Image familyBadge;
 
     [Header("Ingredient Drop (selected rarity)")]
     [SerializeField] private Image resourceIcon;
@@ -154,6 +155,7 @@ public class CritterDexDetailUI : MonoBehaviour
         int index = (int)species.family;
         bool valid = critterFrames != null && critterFrames.familyFrames != null && index >= 0 && index < critterFrames.familyFrames.Length;
         familyFrame.sprite = valid ? critterFrames.familyFrames[index] : null;
+        familyBadge.sprite = valid ? critterFrames.familyBadges[index] : null;
     }
 
     private void ShowNothing()

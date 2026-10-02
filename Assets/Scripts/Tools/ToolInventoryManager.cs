@@ -32,6 +32,10 @@ public class ToolInventoryManager : MonoBehaviour
     [Tooltip("Filled into slots 0, 1, 2... at game start, useful for testing.")]
     [SerializeField] private List<ToolData> startingTools;
 
+    [Header("Default tools")]
+    [SerializeField] private ToolData defaultTool;
+    [SerializeField] private int defaultToolCount = 1;
+
     [Header("Debug (read-only at runtime)")]
     [SerializeField] private ToolSlot[] slots;
 
@@ -105,6 +109,14 @@ public class ToolInventoryManager : MonoBehaviour
         return amount;
     }
 
+    public void AddDefaultTools()
+    {
+        if (defaultTool != null && GetTotalOfAllTools() <= 0)
+        {
+            AddTool(defaultTool, defaultToolCount);
+        }
+    }
+
     public void RemoveFromSlot(int index, int amount = 1)
     {
         if (!IsValidIndex(index) || slots[index].data == null) return;
@@ -157,6 +169,16 @@ public class ToolInventoryManager : MonoBehaviour
         int total = 0;
         foreach (var slot in slots)
             if (slot.data == data) total += slot.count;
+        return total;
+    }
+
+    private int GetTotalOfAllTools()
+    {
+        if (slots == null) return 0;
+
+        int total = 0;
+        foreach (var slot in slots)
+            total += slot.count;
         return total;
     }
 

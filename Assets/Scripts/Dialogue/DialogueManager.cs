@@ -52,7 +52,18 @@ public class DialogueManager : MonoBehaviour
     private bool awaitingChoice;
     private Coroutine typingCoroutine;
 
+    /// <summary>Frame a choice was last selected on - Update ignores advance input on that same frame, so the click/Space that picked a choice can't also skip the first line of the node it leads to.</summary>
+    private int choiceFrame = -1;
+
     private readonly List<GameObject> spawnedChoiceButtons = new List<GameObject>();
+
+    /// <summary>
+    /// Every DialogueData the player has already started once this session -
+    /// decides startNode (first time) vs repeatNode (after). Kept here, not on
+    /// the shared DialogueData asset (CLAUDE.md #1). Not saved to disk: there
+    /// is no save system yet, so every new session replays introductions.
+    /// </summary>
+    private readonly HashSet<DialogueData> startedDialogues = new HashSet<DialogueData>();
 
     private void Awake()
     {
@@ -70,7 +81,7 @@ public class DialogueManager : MonoBehaviour
 
     private void Update()
     {
-        if (!IsActive || awaitingChoice) return;
+        if (!IsActive || awaitingChoice || Time.frameCount == choiceFrame) return;
 
         if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
         {
@@ -79,10 +90,29 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
+    /// <summary>True if this conversation has already been started once - the next StartDialogue will use its repeatNode (if it has one).</summary>
+    public bool HasStarted(DialogueData data) => data != null && startedDialogues.Contains(data);
+
+    /// <summary>Forgets that a conversation happened, so its startNode (the intro) plays again next time. For debugging / story resets.</summary>
+    public void ResetStarted(DialogueData data)
+    {
+        if (data != null) startedDialogues.Remove(data);
+    }
+
     /// <summary>Entry point - call from an IInteractable's Interact() (see NPCDialogueTrigger).</summary>
     public void StartDialogue(DialogueData data)
     {
-        if (data == null || data.startNode == null || IsActive) return;
+        if (data == null || IsActive) return;
+
+        // First time: startNode (the intro). Every time after: repeatNode, if
+        // one is set - otherwise startNode again, exactly as before this existed.
+        var entryNode = HasStarted(data) && data.repeatNode != null ? data.repeatNode : data.startNode;
+        if (entryNode == null) return;
+
+        // Marked as soon as it begins, not when it finishes: the player can't
+        // walk away mid-conversation (they're frozen), so there is no
+        // "started the intro but never saw it" case to protect against.
+        startedDialogues.Add(data);
 
         currentData = data;
         IsActive = true;
@@ -99,7 +129,7 @@ public class DialogueManager : MonoBehaviour
         if (popupRoot != null) popupRoot.SetActive(true);
 
         OnDialogueStarted?.Invoke();
-        SetNode(data.startNode);
+        SetNode(entryNode);
     }
 
     private void SetNode(DialogueNodeData node)
@@ -169,6 +199,7 @@ public class DialogueManager : MonoBehaviour
     {
         ClearChoiceButtons();
         awaitingChoice = false;
+        choiceFrame = Time.frameCount;
 
         // Resolve the dialogue's OWN state change (continue or end) BEFORE
         // firing the action event. If we fired the action first, an action
@@ -206,20 +237,39 @@ public class DialogueManager : MonoBehaviour
         spawnedChoiceButtons.Clear();
     }
 
+    /// <summary>
+    /// Typewriter via TMP's maxVisibleCharacters: the full line is assigned
+    /// ONCE and characters are revealed by raising the visible count. The old
+    /// version did `text += c` per character, which made TMP re-parse the
+    /// whole string and rebuild its mesh dozens of times a second - with a
+    /// dynamic font atlas that repeatedly triggered glyph population / sub-mesh
+    /// creation mid-rebuild (the TMP_SubMeshUI "Assertion failed" spam). As a
+    /// bonus the layout is final from the first frame, so words no longer
+    /// jump to the next line while a line is being typed.
+    /// </summary>
     private IEnumerator TypeLine(string line)
     {
         isTyping = true;
-        if (lineText != null) lineText.text = string.Empty;
+
+        int total = line.Length;
+        if (lineText != null)
+        {
+            lineText.text = line;
+            lineText.maxVisibleCharacters = 0;
+            lineText.ForceMeshUpdate();
+            total = lineText.textInfo.characterCount; // visible characters only - rich-text tags don't count
+        }
 
         float delay = charactersPerSecond > 0f ? 1f / charactersPerSecond : 0f;
 
-        foreach (char c in line)
+        for (int visible = 1; visible <= total; visible++)
         {
-            if (lineText != null) lineText.text += c;
+            if (lineText != null) lineText.maxVisibleCharacters = visible;
             if (delay > 0f) yield return new WaitForSeconds(delay);
             else yield return null;
         }
 
+        if (lineText != null) lineText.maxVisibleCharacters = int.MaxValue;
         isTyping = false;
         typingCoroutine = null;
 
@@ -235,7 +285,10 @@ public class DialogueManager : MonoBehaviour
         }
 
         if (lineText != null && currentNode != null && currentLineIndex < currentNode.lines.Length)
+        {
             lineText.text = currentNode.lines[currentLineIndex];
+            lineText.maxVisibleCharacters = int.MaxValue;
+        }
 
         isTyping = false;
         if (continueIndicator != null) continueIndicator.SetActive(true);

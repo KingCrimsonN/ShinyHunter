@@ -7316,8 +7316,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -60.236214}
-  m_SizeDelta: {x: 0, y: -120.4724}
+  m_AnchoredPosition: {x: 0, y: -40.524593}
+  m_SizeDelta: {x: 0, y: -81.0492}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7881784336617433072
 CanvasRenderer:
@@ -25673,6 +25673,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ResourceSlot
       objectReference: {fileID: 0}
+    - target: {fileID: 1305614292164118409, guid: f0253848236acd44eb32ef1cf201a314, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2050939175311882252, guid: f0253848236acd44eb32ef1cf201a314, type: 3}
       propertyPath: descriptionText
       value: 
@@ -28050,10 +28054,6 @@ PrefabInstance:
     - target: {fileID: 1210622862600422867, guid: 2112b0bfbad574e4b823fac6ef3de980, type: 3}
       propertyPath: m_Name
       value: ToolSlotPop
-      objectReference: {fileID: 0}
-    - target: {fileID: 1210622862600422867, guid: 2112b0bfbad574e4b823fac6ef3de980, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3859849338957524686, guid: 2112b0bfbad574e4b823fac6ef3de980, type: 3}
       propertyPath: m_Pivot.x

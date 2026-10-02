@@ -13,17 +13,26 @@ MonoBehaviour:
   m_Name: AuntieDialogue
   m_EditorClassIdentifier: Assembly-CSharp::DialogueNodeData
   lines:
-  - Hello fuckface
-  - Love your shirt
-  - What do you want from me?
+  - Morning, Lucia. You slept well?
+  - I was thinking... I have this book lying around...
+  - I want you to fill it in with information on critters roaming around these lands.
+  - You will have to catch them and all. Do not fret, I will teach you the basics!
+    And if you ever need help, just know I'm right here.
+  - Do you need any help?
   choices:
-  - label: Get Money
-    actionId: ClaimMoney
+  - label: How do I start?
+    actionId: 
+    nextNode: {fileID: 11400000, guid: efee9185cef8bdd458e27aa6e09489a8, type: 2}
+  - label: I don't have any tools!
+    actionId: 
     nextNode: {fileID: 0}
-  - label: Transform Creatures
-    actionId: OpenTransformStation
+  - label: Stews?
+    actionId: 
+    nextNode: {fileID: 11400000, guid: 45067fa25269bab4692e7a2a96caad2f, type: 2}
+  - label: How do I catch critters?
+    actionId: 
     nextNode: {fileID: 0}
-  - label: Nothing, thanks
+  - label: How do I make money?
     actionId: Nothing
     nextNode: {fileID: 0}
   defaultNextNode: {fileID: 0}

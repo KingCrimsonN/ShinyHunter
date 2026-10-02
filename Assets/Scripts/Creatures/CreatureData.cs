@@ -20,6 +20,7 @@ public class CreatureData : ScriptableObject
     public enum Rarity { Normal, Uncommon, Rare, Legendary }
 
     [TextArea] public string description;
+    [TextArea] public string note;
 
     [Tooltip("Biological family - drives which stew modifier this species' ingredient contributes toward, and Encounter Power's spawn-weight boost target.")]
     public IngredientFamily family;

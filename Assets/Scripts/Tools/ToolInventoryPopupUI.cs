@@ -68,6 +68,19 @@ public class ToolInventoryPopupUI : MonoBehaviour
                 var placed = child.GetComponent<DraggableToolSlot>();
                 if (placed == null) continue;
 
+                // A hand-placed tile that is switched off can never show its
+                // item, but it would still have been handed a slot index -
+                // the first items bought landed in these invisible tiles
+                // while the visible (spawned) ones were mapped to later,
+                // empty slots, so a full inventory looked empty. Skip it
+                // WITHOUT consuming an index; a visible tile is spawned for
+                // that slot below instead. Delete such tiles if unwanted.
+                if (!placed.gameObject.activeSelf)
+                {
+                    Debug.LogWarning($"ToolInventoryPopupUI: hand-placed slot tile '{placed.name}' is inactive - ignoring it (a visible tile is spawned in its place).", placed);
+                    continue;
+                }
+
                 placed.SlotIndex = nextIndex++;
                 placed.descriptionText = descriptionText;
                 AddTile(placed);
@@ -77,6 +90,7 @@ public class ToolInventoryPopupUI : MonoBehaviour
         for (; nextIndex < capacity; nextIndex++)
         {
             var slot = Instantiate(slotPrefab, slotParent);
+            slot.gameObject.SetActive(true); // a prefab saved with its root switched off would otherwise spawn invisible tiles
             slot.SlotIndex = nextIndex;
             slot.descriptionText = descriptionText;
             AddTile(slot);

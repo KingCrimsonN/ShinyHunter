@@ -10,9 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7580879a6c3ad34dac19f29f1c235e0, type: 3}
-  m_Name: AuntieDialogue 1
+  m_Name: AuntieStart
   m_EditorClassIdentifier: Assembly-CSharp::DialogueNodeData
   lines:
-  - Alrght, let's get going
+  - You will need to get some capturing dolls and then go outside and catch some
+    little bastards!
+  - Don't forget to have a stew on your way out. The air is toxic in this place.
+    The stews offer protection. For a time...
   choices: []
-  defaultNextNode: {fileID: 0}
+  defaultNextNode: {fileID: 11400000, guid: d25aba5dbbe0eb141a6ff2fafde883e9, type: 2}

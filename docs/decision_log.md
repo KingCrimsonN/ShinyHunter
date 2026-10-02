@@ -1161,3 +1161,16 @@ rather than drawing a bare gray rectangle - the icons sit in round frames with n
 
 **Ingredient pop-up** shows only for a caught rarity (an uncaught one would leak name/description/stats), closes on
 rarity change / page change.
+
+## Fixed: tool inventory grid looked empty (hand-placed tiles were switched off)
+
+`ToolInventoryPopupUI.Start` maps tiles to slots: equip tiles by their own `SlotIndex`, then every hand-placed tile
+under `slotParent` in hierarchy order from `equipCapacity` upward, then spawns the rest. The five hand-placed
+`ToolSlotPop` tiles in `Overlay.prefab`'s inventory `Content` all had their root GameObject switched off (instance
+override), but still received indices 3-7. Purchases fill the lowest free slot, so the first items bought went into slots
+3-7 - displayed by invisible tiles - while the visible spawned tiles showed slots 8+, which stayed empty. Equip slots
+(0-2) were unaffected, and the shop's "owned" count (summed from the slots) was correct, which is exactly the reported
+symptom. Fix: a switched-off hand-placed tile is now skipped without consuming a slot index (with a warning naming it),
+so a visible tile is spawned for that slot instead; spawned tiles are also forced active in case the slot prefab is saved
+with its root off. Not fixed in code: the inventory `Content` has a fixed 300px height and no ContentSizeFitter, so rows
+past the first couple can't be scrolled to - editor-side fix.

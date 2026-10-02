@@ -28,6 +28,7 @@ public class CritterDexDetailUI : MonoBehaviour
     [SerializeField] private TMP_Text familyText;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text descriptionText;
+    [SerializeField] private TMP_Text noteText;
     [SerializeField] private TMP_Text favoriteScentText;
     [SerializeField] private TMP_Text hatedScentText;
     [SerializeField] private CritterFrames critterFrames;
@@ -79,6 +80,7 @@ public class CritterDexDetailUI : MonoBehaviour
 
         if (nameText != null) nameText.text = species.creatureName;
         if (descriptionText != null) descriptionText.text = species.description;
+        if (noteText != null) noteText.text = species.note;
         if (favoriteScentText != null) favoriteScentText.text = species.favoriteScent.ToString();
         if (hatedScentText != null) hatedScentText.text = species.hatedScent.ToString();
 
@@ -164,6 +166,7 @@ public class CritterDexDetailUI : MonoBehaviour
         if (familyText != null) familyText.text = "-";
         if (nameText != null) nameText.text = "-";
         if (descriptionText != null) descriptionText.text = "";
+        if (noteText != null) noteText.text = "";
         if (favoriteScentText != null) favoriteScentText.text = "-";
         if (hatedScentText != null) hatedScentText.text = "-";
         if (resourceIcon != null) resourceIcon.enabled = false;

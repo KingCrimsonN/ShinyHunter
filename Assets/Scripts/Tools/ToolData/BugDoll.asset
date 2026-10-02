@@ -10,18 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6574813ce7d1661458c2997a38d46074, type: 3}
-  m_Name: Doll
+  m_Name: BugDoll
   m_EditorClassIdentifier: Assembly-CSharp::ToolData
-  toolName: Voovoo Doll
-  icon: {fileID: 21300000, guid: a8f614514a965034aab2ccf620324986, type: 3}
-  description: "Basic capture doll. Max stack - 50\t"
-  maxStack: 50
+  toolName: Bug Doll
+  icon: {fileID: 21300000, guid: 2311890c59c34d64db1b13f614ff7e81, type: 3}
+  description: A doll specialized in capturing bug critters. Cannot be stacked. More
+    difficult to operate.
+  maxStack: 1
   consumable: 1
-  toolPrefab: {fileID: 8391984615509240277, guid: cf7486a0cc447eb4b9d37c4319e78a6b, type: 3}
+  toolPrefab: {fileID: 8391984615509240277, guid: ac6de3cf78089434b82e031c9862db44, type: 3}
   useCooldown: 1
-  minigameTimeLimit: 10
-  minigameAttemptCount: 3
+  minigameTimeLimit: 5
+  minigameAttemptCount: 2
   barrierSpeedMultiplier: 1
   extraIngredientChance: 0
   bonusFamily: 0
-  bonusFamilyCaptureChance: 0
+  bonusFamilyCaptureChance: 0.259

@@ -11,6 +11,8 @@ public class BrewCauldronSlotUI : MonoBehaviour, IDropHandler, IPointerClickHand
     [SerializeField] private GameObject lockedOverlay;
     [SerializeField] private Button closeButton;
 
+    private bool isUnlocked;
+
     private int slotIndex;
     private BrewingStationUI station;
 
@@ -24,6 +26,7 @@ public class BrewCauldronSlotUI : MonoBehaviour, IDropHandler, IPointerClickHand
 
     public void Display(ResourceData resource, bool unlocked)
     {
+        this.isUnlocked = unlocked;
         if (lockedOverlay != null) lockedOverlay.SetActive(!unlocked);
 
         if (icon != null)
@@ -32,6 +35,7 @@ public class BrewCauldronSlotUI : MonoBehaviour, IDropHandler, IPointerClickHand
             icon.enabled = resource != null;
         }
         if (nameText != null) nameText.text = resource != null ? resource.resourceName : string.Empty;
+        closeButton.gameObject.SetActive(resource != null && unlocked);
     }
 
     public void OnDrop(PointerEventData eventData)
@@ -43,7 +47,7 @@ public class BrewCauldronSlotUI : MonoBehaviour, IDropHandler, IPointerClickHand
 
         station.PlaceIngredient(draggedEntry.Resource, slotIndex);
         BrewIngredientEntryUI.DragIcon.gameObject.SetActive(false);
-        closeButton.gameObject.SetActive(true);
+        closeButton.gameObject.SetActive(isUnlocked);
     }
 
     private void Close()

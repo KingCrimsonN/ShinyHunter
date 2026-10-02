@@ -24,7 +24,7 @@ public class DialogueActionRouter : MonoBehaviour
         print("HANDLE OPETION");
         switch (actionId)
         {
-            case "OpenTransformStation":
+            case "GetTools":
                 print("OPENING TRANSFORM");
                 CreatureTransformStationUI.Instance.Open();
                 break;

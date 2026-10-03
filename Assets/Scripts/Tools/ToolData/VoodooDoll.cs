@@ -112,8 +112,8 @@ public class VoodooDoll : ToolBehaviour
                 targetState = Classify(target);
         }
 
-        if (indicator != null)
-            indicator.Show(target, targetState);
+        // if (indicator != null)
+        //     indicator.Show(target, targetState);
     }
 
     private CaptureTargetState Classify(CreatureTarget t)

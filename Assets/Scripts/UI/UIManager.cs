@@ -30,6 +30,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject critterDexPage;
     [SerializeField] private GameObject dialogPanel;
     [SerializeField] private Image hurtScreen;
+    [SerializeField] private GameObject welcomeScreen;
 
     [SerializeField] private TMP_Text interactionText;
 
@@ -54,6 +55,12 @@ public class UIManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    public void HideWelcomeScreen()
+    {
+        welcomeScreen.SetActive(false);
+        PlayerStateManager.Instance.Unfreeze();
     }
 
     public void ShowHurtScreen()
@@ -93,6 +100,8 @@ public class UIManager : MonoBehaviour
         // Start only runs once for this persistent object, i.e. for whichever
         // scene loaded first - every later scene goes through OnSceneLoaded.
         ApplySceneVisibility(SceneManager.GetActiveScene().name);
+        welcomeScreen.SetActive(true);
+        PlayerStateManager.Instance.Freeze();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

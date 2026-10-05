@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7580879a6c3ad34dac19f29f1c235e0, type: 3}
+  m_Name: AuntieCatching
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueNodeData
+  lines:
+  - When you see a critter you want to catch you have to bash them on the head first.
+    Some critters might be tougher than others.
+  - Once they're stunned use a capturing doll! You will need to do a small ritual
+    to get them. I'm sure you will get the hang of it quickly.
+  choices: []
+  defaultNextNode: {fileID: 11400000, guid: d2ff601c1a5448fbb30ebc7fa551c5a6, type: 2}

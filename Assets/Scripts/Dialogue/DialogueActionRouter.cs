@@ -8,15 +8,31 @@ using UnityEngine;
 /// </summary>
 public class DialogueActionRouter : MonoBehaviour
 {
-    private void OnEnable()
-    {
-        DialogueManager.Instance.OnChoiceAction += HandleAction;
-    }
+    private DialogueManager subscribedTo;
+
+    // DialogueManager is persistent and its Awake may not have run yet when
+    // this OnEnable does (scene start order is undefined) - the old
+    // `Instance.OnChoiceAction += ...` here threw a NullReferenceException in
+    // that case and the router NEVER subscribed, so choice actions like
+    // GetTools silently did nothing. Start is guaranteed to run after every
+    // Awake, so it retries if OnEnable couldn't.
+    private void OnEnable() => Subscribe();
+
+    private void Start() => Subscribe();
 
     private void OnDisable()
     {
-        if (DialogueManager.Instance != null)
-            DialogueManager.Instance.OnChoiceAction -= HandleAction;
+        if (subscribedTo != null) subscribedTo.OnChoiceAction -= HandleAction;
+        subscribedTo = null;
+    }
+
+    private void Subscribe()
+    {
+        var manager = DialogueManager.Instance;
+        if (manager == null || subscribedTo == manager) return;
+
+        manager.OnChoiceAction += HandleAction;
+        subscribedTo = manager;
     }
 
     private void HandleAction(string actionId)
@@ -24,9 +40,9 @@ public class DialogueActionRouter : MonoBehaviour
         print("HANDLE OPETION");
         switch (actionId)
         {
-            case "OpenTransformStation":
-                print("OPENING TRANSFORM");
-                CreatureTransformStationUI.Instance.Open();
+            case "GetTools":
+                print("GIVING TOOLS");
+                ToolInventoryManager.Instance.AddDefaultTools();
                 break;
 
             case "ClaimMoney":

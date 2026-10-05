@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ToolData
   toolName: Voovoo Doll
   icon: {fileID: 21300000, guid: a8f614514a965034aab2ccf620324986, type: 3}
-  description: Basic capture doll
-  maxStack: 100
+  description: "Basic capture doll. Max stack - 50\t"
+  maxStack: 50
   consumable: 1
   toolPrefab: {fileID: 8391984615509240277, guid: cf7486a0cc447eb4b9d37c4319e78a6b, type: 3}
+  useCooldown: 1
   minigameTimeLimit: 10
   minigameAttemptCount: 3
   barrierSpeedMultiplier: 1

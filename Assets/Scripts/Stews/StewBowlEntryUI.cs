@@ -15,7 +15,7 @@ public class StewBowlEntryUI : MonoBehaviour
     {
         if (icon != null) icon.sprite = stew.icon;
         if (timeText != null) timeText.text = $"{stew.timeSeconds / 60f:0.#} min";
-        StewDisplayUtil.SetScentTexts(scentTexts, stew.scents);
+        StewDisplayUtil.SetScentNumbers(scentTexts, stew.scents);
         if (modifierText != null) modifierText.text = StewDisplayUtil.FormatModifier(stew);
     }
 }

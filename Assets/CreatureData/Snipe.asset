@@ -16,10 +16,10 @@ MonoBehaviour:
   description: "This is probably just a malformed chicken, but it has some unique
     characteristics like a dense layer of fur underneath all the feathers or a pretty
     long tongue it uses to catch small insects. Its eyesight isn\u2019t very good,
-    so it leaves marks on the forest trees from accidentally running into them.\n\nNote
-    from Luc\xEDa: This is the only critter I\u2019ve heard about before coming to
-    live with Auntie, but I always thought they weren\u2019t real. They are very
-    real and very funny when they run around smashing into everything."
+    so it leaves marks on the forest trees from accidentally running into them."
+  note: "Note from Luc\xEDa: This is the only critter I\u2019ve heard about before
+    coming to live with Auntie, but I always thought they weren\u2019t real. They
+    are very real and very funny when they run around smashing into everything."
   family: 3
   favoriteScent: 1
   hatedScent: 2
@@ -93,19 +93,6 @@ MonoBehaviour:
       - {fileID: 942475950, guid: 1d3df00e57ed1a64a9652d084b81d27f, type: 3}
       frameRate: 10
       loop: 1
-    - state: 1
-      frames:
-      - {fileID: -2128269291, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 1089613099, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 2122883169, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -1203361996, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -1203361996, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -637916582, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 1933204995, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -1859323180, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 1557466404, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      frameRate: 10
-      loop: 1
   - animations:
     - state: 0
       frames:
@@ -119,19 +106,6 @@ MonoBehaviour:
       - {fileID: 564065427, guid: 59000967816dfd048a86091dd506070c, type: 3}
       frameRate: 10
       loop: 1
-    - state: 1
-      frames:
-      - {fileID: -2128269291, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 1089613099, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 2122883169, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -1203361996, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -1203361996, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -637916582, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 1933204995, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -1859323180, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 1557466404, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      frameRate: 10
-      loop: 1
   - animations:
     - state: 0
       frames:
@@ -140,23 +114,11 @@ MonoBehaviour:
       - {fileID: 564065427, guid: 59000967816dfd048a86091dd506070c, type: 3}
       - {fileID: -1536838532, guid: 59000967816dfd048a86091dd506070c, type: 3}
       - {fileID: -1710927260, guid: 59000967816dfd048a86091dd506070c, type: 3}
+      - {fileID: 648136861, guid: eed1235bac79e5242bb1076c499c3416, type: 3}
       - {fileID: -1536838532, guid: 59000967816dfd048a86091dd506070c, type: 3}
       - {fileID: 564065427, guid: 59000967816dfd048a86091dd506070c, type: 3}
       frameRate: 10
-      loop: 0
-    - state: 1
-      frames:
-      - {fileID: -2128269291, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 1089613099, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 2122883169, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -1203361996, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -1203361996, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -637916582, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 1933204995, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: -1859323180, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      - {fileID: 1557466404, guid: 7f11e983efafe9041bb51bbf718e3ac8, type: 3}
-      frameRate: 10
-      loop: 0
+      loop: 1
   icons:
   - {fileID: 21300000, guid: 6c391bc3cef0d0743aeb11632b1b222d, type: 3}
   - {fileID: 21300000, guid: 6077f4aa5b12eac4bba7ee832d9a21a8, type: 3}

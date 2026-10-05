@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: Candy
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: Sweetmeat
-  description: "It appears to be a slimier variant of some kind of lichen capable
+  description: It appears to be a slimier variant of some kind of lichen capable
     of simple thought. It has a special taste for sweets and is probably the cause
     of many kids disappearing in the forest, maybe attracted by the candy it drops
-    or maybe because it eats the candy trail some kids leave to know their way back.\r\n\nNote
-    from Luc\xEDa: Its eyes are funny and it skips around the forest. One time I
-    tried to feed it some candy but it was so full it dropped another one trying
-    to eat the one I gave it.\r\n"
+    or maybe because it eats the candy trail some kids leave to know their way back.
+  note: "Note from Luc\xEDa: Its eyes are funny and it skips around the forest. One
+    time I tried to feed it some candy but it was so full it dropped another one
+    trying to eat the one I gave it.\r\n"
   family: 2
   favoriteScent: 0
   hatedScent: 1
@@ -73,6 +73,14 @@ MonoBehaviour:
       - {fileID: -362264083, guid: fec55e8619dc0b14e87a0f1c9e965382, type: 3}
       frameRate: 16
       loop: 1
+    - state: 3
+      frames:
+      - {fileID: -298747881, guid: db05bda8232c86347b13ec4f2e894dfb, type: 3}
+      - {fileID: 264395717, guid: db05bda8232c86347b13ec4f2e894dfb, type: 3}
+      - {fileID: -1061251162, guid: db05bda8232c86347b13ec4f2e894dfb, type: 3}
+      - {fileID: 1173702071, guid: db05bda8232c86347b13ec4f2e894dfb, type: 3}
+      frameRate: 12
+      loop: 0
   - animations:
     - state: 0
       frames:

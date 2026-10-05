@@ -1161,3 +1161,44 @@ rather than drawing a bare gray rectangle - the icons sit in round frames with n
 
 **Ingredient pop-up** shows only for a caught rarity (an uncaught one would leak name/description/stats), closes on
 rarity change / page change.
+
+## Fixed: tool inventory grid looked empty (hand-placed tiles were switched off)
+
+`ToolInventoryPopupUI.Start` maps tiles to slots: equip tiles by their own `SlotIndex`, then every hand-placed tile
+under `slotParent` in hierarchy order from `equipCapacity` upward, then spawns the rest. The five hand-placed
+`ToolSlotPop` tiles in `Overlay.prefab`'s inventory `Content` all had their root GameObject switched off (instance
+override), but still received indices 3-7. Purchases fill the lowest free slot, so the first items bought went into slots
+3-7 - displayed by invisible tiles - while the visible spawned tiles showed slots 8+, which stayed empty. Equip slots
+(0-2) were unaffected, and the shop's "owned" count (summed from the slots) was correct, which is exactly the reported
+symptom. Fix: a switched-off hand-placed tile is now skipped without consuming a slot index (with a warning naming it),
+so a visible tile is spawned for that slot instead; spawned tiles are also forced active in case the slot prefab is saved
+with its root off. Not fixed in code: the inventory `Content` has a fixed 300px height and no ContentSizeFitter, so rows
+past the first couple can't be scrolled to - editor-side fix.
+
+## Dialogue: first-time intro vs. repeat entry node
+
+`DialogueData` gained an optional `repeatNode`. The first `StartDialogue(data)` begins at `startNode`; every later one
+begins at `repeatNode` (or `startNode` again if none is set, so existing NPCs behave exactly as before). "Already talked
+to" lives in `DialogueManager` (`startedDialogues`, keyed by the `DialogueData` asset), NOT on the asset - dialogue
+assets are shared ScriptableObjects (#1), and writing runtime state to one persists across Play sessions in the editor.
+It is marked when the conversation STARTS, not when it ends: the player is frozen mid-conversation with no way to
+leave, so there's no "started the intro but never saw it" case worth the extra bookkeeping. Session-only like
+`everCapturedSpecies` (no save system yet); `HasStarted` / `ResetStarted` exist for conditions and debugging.
+Auntie: `AuntieData.repeatNode` -> new `AuntieQuestions` node (the "Do you need any help?" menu without the intro).
+
+## Dialogue: TMP sub-mesh assertion, silent router, choices that end the conversation
+
+**`Assertion failed ... TMP_SubMeshUI.AddSubTextObject`**: the typewriter did `lineText.text += c` per character, forcing
+TMP to re-parse the whole string and rebuild its mesh dozens of times a second. Both UI fonts are *Dynamic* atlases with
+tiny glyph tables (47 / 74 glyphs - apostrophes, digits and several capitals aren't pre-baked), so those rebuilds kept
+hitting glyph population / sub-mesh creation mid-`SendWillRenderCanvases`. Now the line is assigned once and revealed via
+`maxVisibleCharacters` (also stops words jumping lines while typing). The real long-term fix is a font asset that already
+contains the characters (static atlas) - see chat.
+
+**`DialogueActionRouter.OnEnable` NRE** (6x in the editor log): it subscribed to `DialogueManager.Instance` in OnEnable,
+which can run before the persistent manager's Awake. The throw meant it never subscribed, so choice actions (GetTools)
+silently did nothing on some loads. Now subscribes in OnEnable if it can, retries in Start, tracks what it subscribed to.
+
+**Choices "closing the dialogue"**: (1) Auntie's intro "How do I make money?" had `actionId: Nothing` and no next node, so
+it ended the conversation - now points at AuntieMoney. (2) `DialogueManager.Update` now ignores advance input on the frame
+a choice was selected, so the press that picked a choice can't also skip a line of the node it leads to.

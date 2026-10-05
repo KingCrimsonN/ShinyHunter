@@ -17,6 +17,7 @@ public class ShopPurchasePanelUI : MonoBehaviour
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text quantityText;
     [SerializeField] private TMP_Text totalCostText;
+    [SerializeField] private TMP_Text descriptionText;
 
     [Header("Quantity buttons (hold-to-accelerate)")]
     [SerializeField] private HoldButtonUI increaseHold;
@@ -67,6 +68,7 @@ public class ShopPurchasePanelUI : MonoBehaviour
 
         if (icon != null) icon.sprite = entry.item.icon;
         if (nameText != null) nameText.text = entry.item.toolName;
+        if (descriptionText != null) descriptionText.text = entry.item.description;
         if (feedbackText != null) feedbackText.text = string.Empty;
 
         RefreshDisplay();

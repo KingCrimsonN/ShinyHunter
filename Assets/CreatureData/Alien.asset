@@ -17,9 +17,10 @@ MonoBehaviour:
     yet identified the origin of this critter or how its anatomy works. So far I
     only know that it\u2019s probably trying to communicate with something beyond
     the stars with some kind of an unknown language that uses finger movements and
-    high-pitched sounds.\n\nNote from Luc\xEDa: This guy is funny. It just dances
-    around outside looking at the sky and wiggles its shining finger around making
-    cute shapes with the light."
+    high-pitched sounds."
+  note: "Note from Luc\xEDa: This guy is funny. It just dances around outside looking
+    at the sky and wiggles its shining finger around making cute shapes with the
+    light."
   family: 2
   favoriteScent: 4
   hatedScent: 3
@@ -35,6 +36,14 @@ MonoBehaviour:
       - {fileID: 943273806, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
       frameRate: 8
       loop: 1
+    - state: 3
+      frames:
+      - {fileID: -712389968, guid: 00f71c66253e1f74c9744b14433a4423, type: 3}
+      - {fileID: 1056073007, guid: 00f71c66253e1f74c9744b14433a4423, type: 3}
+      - {fileID: 1056073007, guid: 00f71c66253e1f74c9744b14433a4423, type: 3}
+      - {fileID: -712389968, guid: 00f71c66253e1f74c9744b14433a4423, type: 3}
+      frameRate: 12
+      loop: 0
   - animations:
     - state: 0
       frames:

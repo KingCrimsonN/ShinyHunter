@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7580879a6c3ad34dac19f29f1c235e0, type: 3}
+  m_Name: AuntieTools
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueNodeData
+  lines:
+  - Let's see... I have a few dolls lying around... They should be good enough for
+    you.
+  - 'If you really are empty - these are yours. But if you have any of your own,
+    I will not give them to you! '
+  - Don't forget you can buy more from the shopkeeper.
+  - Yes, that caged thing is our shopkeeper.
+  - Also double check if you have any in your inventory! You might've forgotten to
+    equip them (Press I to open inventory)
+  choices: []
+  defaultNextNode: {fileID: 11400000, guid: d2ff601c1a5448fbb30ebc7fa551c5a6, type: 2}

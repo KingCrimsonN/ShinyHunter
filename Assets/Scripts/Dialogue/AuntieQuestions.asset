@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7580879a6c3ad34dac19f29f1c235e0, type: 3}
+  m_Name: AuntieQuestions
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueNodeData
+  lines:
+  - Do you need any help?
+  choices:
+  - label: How do I start?
+    actionId: 
+    nextNode: {fileID: 11400000, guid: efee9185cef8bdd458e27aa6e09489a8, type: 2}
+  - label: I don't have any tools!
+    actionId: GetTools
+    nextNode: {fileID: 11400000, guid: 5e150a3d8477e8844ae8bc75d0f3b01a, type: 2}
+  - label: Stews?
+    actionId: 
+    nextNode: {fileID: 11400000, guid: 45067fa25269bab4692e7a2a96caad2f, type: 2}
+  - label: How do I catch critters?
+    actionId: 
+    nextNode: {fileID: 11400000, guid: 3becfdcc8a65ed145b0f536b176c4d8f, type: 2}
+  - label: How do I make money?
+    actionId: 
+    nextNode: {fileID: 11400000, guid: 4b2fb4eb229912a4b8e3aee8534e3d9a, type: 2}
+  - label: Thank you, see you soon!
+    actionId: 
+    nextNode: {fileID: 11400000, guid: d25aba5dbbe0eb141a6ff2fafde883e9, type: 2}
+  defaultNextNode: {fileID: 0}

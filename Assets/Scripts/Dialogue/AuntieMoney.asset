@@ -10,9 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7580879a6c3ad34dac19f29f1c235e0, type: 3}
-  m_Name: AuntieDialogue 1
+  m_Name: AuntieMoney
   m_EditorClassIdentifier: Assembly-CSharp::DialogueNodeData
   lines:
-  - Alrght, let's get going
+  - That's the fun part. You don't.
+  - 'Joking of course. You''ll get some coins for each critter you catch whenever
+    you come home. The more and rarer - the better. '
   choices: []
-  defaultNextNode: {fileID: 0}
+  defaultNextNode: {fileID: 11400000, guid: d2ff601c1a5448fbb30ebc7fa551c5a6, type: 2}

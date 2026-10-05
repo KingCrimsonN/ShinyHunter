@@ -16,10 +16,10 @@ MonoBehaviour:
   description: "I don\u2019t yet know if this is a bee-shaped fairy or just a mutated,
     magical kind of bee. Either way, its sweet tooth knows no limits and its body
     transforms the honey and sugar it eats into a very potent jelly. The sting is
-    very hurtful and can leave a mark for months.\r\n\nNote from Luc\xEDa: At first
-    I thought it was cute because of its pink cheeks and big eyes, but the more I
-    look at it the less I like it. It looks like a human girl and it\u2019s always
-    happy, so it\u2019s a bit creepy."
+    very hurtful and can leave a mark for months."
+  note: "Note from Luc\xEDa: At first I thought it was cute because of its pink cheeks
+    and big eyes, but the more I look at it the less I like it. It looks like a human
+    girl and it\u2019s always happy, so it\u2019s a bit creepy."
   family: 0
   favoriteScent: 0
   hatedScent: 3
@@ -35,6 +35,24 @@ MonoBehaviour:
       - {fileID: 1392709366, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
       - {fileID: -282644427, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
       - {fileID: -1858309244, guid: 4fc3c49e6f64c1a49ab57e991753b2aa, type: 3}
+      frameRate: 10
+      loop: 1
+    - state: 3
+      frames:
+      - {fileID: -1292693153, guid: 8c33962a8db61c94fb9d2692eaef8cc2, type: 3}
+      - {fileID: 198909922, guid: 8c33962a8db61c94fb9d2692eaef8cc2, type: 3}
+      - {fileID: 198909922, guid: 8c33962a8db61c94fb9d2692eaef8cc2, type: 3}
+      - {fileID: -1292693153, guid: 8c33962a8db61c94fb9d2692eaef8cc2, type: 3}
+      frameRate: 14
+      loop: 0
+    - state: 4
+      frames:
+      - {fileID: 1807423737, guid: 893dbcddd20112a4cb8d65443fca02d6, type: 3}
+      - {fileID: -1967559276, guid: 893dbcddd20112a4cb8d65443fca02d6, type: 3}
+      - {fileID: 1736479279, guid: 893dbcddd20112a4cb8d65443fca02d6, type: 3}
+      - {fileID: -879065515, guid: 893dbcddd20112a4cb8d65443fca02d6, type: 3}
+      - {fileID: 2092505639, guid: 893dbcddd20112a4cb8d65443fca02d6, type: 3}
+      - {fileID: 1277370128, guid: 893dbcddd20112a4cb8d65443fca02d6, type: 3}
       frameRate: 10
       loop: 1
   - animations:

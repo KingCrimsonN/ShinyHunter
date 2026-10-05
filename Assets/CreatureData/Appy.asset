@@ -15,9 +15,10 @@ MonoBehaviour:
   creatureName: Appy
   description: "This critter is hidden inside of the foul-smelling, rotting apple,
     but every time I try to get one out, it scuddles away. I haven\u2019t yet discovered
-    its true anatomy or the origin of the drawing on the apple.\r\n\nNote from Luc\xEDa:
-    I don\u2019t like this one. The drawing on the apple scares me and its so annoying!
-    It\u2019s always chasing me and poking me with its creepy legs. Yuck!"
+    its true anatomy or the origin of the drawing on the apple."
+  note: "Note from Luc\xEDa: I don\u2019t like this one. The drawing on the apple
+    scares me and its so annoying! It\u2019s always chasing me and poking me with
+    its creepy legs. Yuck!"
   family: 0
   favoriteScent: 0
   hatedScent: 4
@@ -51,6 +52,14 @@ MonoBehaviour:
       - {fileID: 699202049, guid: 0cd29d0fef931d548967424cc4ce1d70, type: 3}
       frameRate: 15
       loop: 1
+    - state: 3
+      frames:
+      - {fileID: 1323877596, guid: ef441694f42d82a4595fd6ac92cc2aa4, type: 3}
+      - {fileID: 853071241, guid: ef441694f42d82a4595fd6ac92cc2aa4, type: 3}
+      - {fileID: 808992824, guid: ef441694f42d82a4595fd6ac92cc2aa4, type: 3}
+      - {fileID: -1876994972, guid: ef441694f42d82a4595fd6ac92cc2aa4, type: 3}
+      frameRate: 10
+      loop: 0
   - animations:
     - state: 0
       frames:

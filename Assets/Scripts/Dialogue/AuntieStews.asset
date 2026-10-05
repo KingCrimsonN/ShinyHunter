@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7580879a6c3ad34dac19f29f1c235e0, type: 3}
+  m_Name: AuntieStews
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueNodeData
+  lines:
+  - Stews are important. Not only do they offer protection, they also give off smells
+    that can attract certain critters. Or scare them away...
+  - In order to make stews you will need to bring me some critters. Then I can butcher
+    them into ingredients at the table.
+  - With some ingredients you can cook at the cauldron. Each variation is unique.
+    You'll see when you experiment with it.
+  choices: []
+  defaultNextNode: {fileID: 11400000, guid: d2ff601c1a5448fbb30ebc7fa551c5a6, type: 2}

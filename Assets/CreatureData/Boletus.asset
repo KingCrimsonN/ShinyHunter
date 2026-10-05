@@ -16,9 +16,9 @@ MonoBehaviour:
   description: "A colony of sentient fungi that buries itself into the soil and scares
     passerbies by jumping out of the dirt. I still don\u2019t know if it does this
     as a defense mechanism or because it finds it amusing, either way, this habit
-    makes its \u201Clegs\u201D very strong and with a pungent odor.\n\nNote from
-    Luc\xEDa: I hate these guys. They\u2019re not dangerous or even scary-looking,
-    but they constantly jump-scare me while looking for other critters!"
+    makes its \u201Clegs\u201D very strong and with a pungent odor."
+  note: "Note from Luc\xEDa: I hate these guys. They\u2019re not dangerous or even
+    scary-looking, but they constantly jump-scare me while looking for other critters!"
   family: 1
   favoriteScent: 2
   hatedScent: 4
@@ -34,6 +34,24 @@ MonoBehaviour:
       - {fileID: -254270314, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
       - {fileID: -1442780887, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
       - {fileID: 1091610612, guid: 7b26626afefe9db4cba0fcb0c021f119, type: 3}
+      frameRate: 10
+      loop: 1
+    - state: 3
+      frames:
+      - {fileID: -369083617, guid: c00ea9aa15f6acb4aa2f0457401eed2e, type: 3}
+      - {fileID: 897361397, guid: c00ea9aa15f6acb4aa2f0457401eed2e, type: 3}
+      - {fileID: 897361397, guid: c00ea9aa15f6acb4aa2f0457401eed2e, type: 3}
+      - {fileID: -369083617, guid: c00ea9aa15f6acb4aa2f0457401eed2e, type: 3}
+      frameRate: 10
+      loop: 0
+    - state: 4
+      frames:
+      - {fileID: 204578736, guid: 5e794f1ebea72164e99cea48083ed8a1, type: 3}
+      - {fileID: -1436674935, guid: 5e794f1ebea72164e99cea48083ed8a1, type: 3}
+      - {fileID: 760933249, guid: 5e794f1ebea72164e99cea48083ed8a1, type: 3}
+      - {fileID: 1352004282, guid: 5e794f1ebea72164e99cea48083ed8a1, type: 3}
+      - {fileID: -1540481798, guid: 5e794f1ebea72164e99cea48083ed8a1, type: 3}
+      - {fileID: 275351198, guid: 5e794f1ebea72164e99cea48083ed8a1, type: 3}
       frameRate: 10
       loop: 1
   - animations:

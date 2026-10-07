@@ -33,6 +33,8 @@ public class BrewingStationUI : MonoBehaviour
 
     [Header("Sub-panels")]
     [SerializeField] private StewResultPopupUI resultPopup;
+    [Tooltip("Live preview of the stew the current cauldron contents would make. Optional.")]
+    [SerializeField] private StewPreviewUI preview;
     [SerializeField] private StewInventoryPanelUI stewInventoryPanel;
     [SerializeField] private Button viewStewInventoryButton;
 
@@ -109,6 +111,29 @@ public class BrewingStationUI : MonoBehaviour
         RefreshIngredientGrid();
         RefreshCauldronSlots();
         RefreshBrewButton();
+        RefreshPreview();
+    }
+
+    /// <summary>
+    /// Recomputes the preview from what's in the cauldron right now - same
+    /// StewCalculator call the real brew uses (preview: true only skips the
+    /// random affected-family roll), so the numbers shown are the numbers you get.
+    /// </summary>
+    private void RefreshPreview()
+    {
+        if (preview == null) return;
+
+        var ingredients = new List<ResourceData>();
+        foreach (var r in slotContents) if (r != null) ingredients.Add(r);
+
+        if (ingredients.Count == 0 || calculationConfig == null)
+        {
+            preview.ShowEmpty();
+            return;
+        }
+
+        var stew = StewCalculator.Calculate(ingredients, cauldronSlots.Length, calculationConfig, preview: true);
+        preview.Show(stew, visualConfig != null ? visualConfig.GetFamilyIcon(stew.dominantFamily) : null);
     }
 
     private void RefreshIngredientGrid()
@@ -180,6 +205,7 @@ public class BrewingStationUI : MonoBehaviour
         RefreshIngredientGrid();
         RefreshCauldronSlots();
         RefreshBrewButton();
+        RefreshPreview();
     }
 
     /// <summary>Called by BrewCauldronSlotUI.OnPointerClick.</summary>
@@ -191,6 +217,7 @@ public class BrewingStationUI : MonoBehaviour
         RefreshIngredientGrid();
         RefreshCauldronSlots();
         RefreshBrewButton();
+        RefreshPreview();
     }
 
     private void OnBrewPressed()

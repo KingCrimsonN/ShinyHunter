@@ -8,23 +8,17 @@ using UnityEngine;
 /// </summary>
 public static class StewCalculator
 {
-    /// <summary>
-    /// Scent axes are reported on a 0-100 scale for now (was 1-5), so raw
-    /// calculation output is easy to read while tuning - a later pass will
-    /// remap this to whatever's actually shown to the player. See decision log.
-    /// </summary>
-    private const float ScentMaxValue = 100f;
-
-    /// <param name="totalCapacity">The cauldron's TOTAL slot count (e.g. BrewingStationUI.cauldronSlots.Length) - NOT how many are currently unlocked, and NOT how many are actually filled. See CalculateScents.</param>
-    public static StewInstance Calculate(List<ResourceData> ingredients, int totalCapacity, StewCalculationConfig config)
+    /// <param name="totalCapacity">The cauldron's TOTAL slot count (e.g. BrewingStationUI.cauldronSlots.Length) - NOT how many are currently unlocked, and NOT how many are actually filled. Used by the modifier ratios (CalculateModifier); scents are a plain sum and ignore it.</param>
+    /// <param name="preview">True for the brewing panel's live preview: identical numbers, but the modifier's random affected family is NOT rolled (it's decided at brew time, so a preview can't know it) and the result is flagged isPreview.</param>
+    public static StewInstance Calculate(List<ResourceData> ingredients, int totalCapacity, StewCalculationConfig config, bool preview = false)
     {
-        var stew = new StewInstance { ingredients = new List<ResourceData>(ingredients) };
+        var stew = new StewInstance { ingredients = new List<ResourceData>(ingredients), isPreview = preview };
         if (ingredients.Count == 0) return stew;
 
         stew.timeSeconds = CalculateTime(ingredients, config);
-        stew.scents = CalculateScents(ingredients, totalCapacity, config);
+        stew.scents = CalculateScents(ingredients, config);
 
-        var (modifier, power, dominantFamily, affectedFamily) = CalculateModifier(ingredients, totalCapacity, config);
+        var (modifier, power, dominantFamily, affectedFamily) = CalculateModifier(ingredients, totalCapacity, config, preview);
         stew.modifierType = modifier;
         stew.modifierPower = power;
         stew.dominantFamily = dominantFamily;
@@ -35,7 +29,7 @@ public static class StewCalculator
 
     private static float CalculateTime(List<ResourceData> ingredients, StewCalculationConfig config)
     {
-        float total = 0f;
+        float total = config.baseTimeSeconds; // every stew starts here, ingredients add on top
         foreach (var ingredient in ingredients)
         {
             int rarityIndex = (int)ingredient.rarity;
@@ -45,34 +39,30 @@ public static class StewCalculator
     }
 
     /// <summary>
-    /// Raw scent points are summed across ingredients, then divided by the
-    /// CAULDRON'S TOTAL capacity (not by how many ingredients were actually
-    /// used, and not by a fixed constant) - so 1-2 strong ingredients out of
-    /// many possible slots can only ever reach a small fraction of the scale;
-    /// reaching a high value needs filling most/all of the cauldron. See
-    /// decision log for why (this replaced a fixed-divisor formula that let a
-    /// couple of ingredients reach near-max on their own).
+    /// A stew's scents are simply the SUM of its ingredients' scent values,
+    /// per axis, clamped to StewCalculationConfig.scentMaxValue. No division
+    /// by the cauldron's capacity and no scaling - an ingredient with 15
+    /// Sweet adds exactly 15 Sweet. (This replaced "sum / (scentPerPoint x
+    /// slots) x max"; modifiers still use the capacity-based ratios, see
+    /// CalculateModifier.) See decision log.
     /// </summary>
-    private static float[] CalculateScents(List<ResourceData> ingredients, int totalCapacity, StewCalculationConfig config)
+    private static float[] CalculateScents(List<ResourceData> ingredients, StewCalculationConfig config)
     {
-        float[] raw = new float[5];
+        float[] sum = new float[5];
         foreach (var ingredient in ingredients)
         {
-            raw[0] += ingredient.sweetScent;
-            raw[1] += ingredient.freshScent;
-            raw[2] += ingredient.putridScent;
-            raw[3] += ingredient.metallicScent;
-            raw[4] += ingredient.marineScent;
+            sum[0] += ingredient.sweetScent;
+            sum[1] += ingredient.freshScent;
+            sum[2] += ingredient.putridScent;
+            sum[3] += ingredient.metallicScent;
+            sum[4] += ingredient.marineScent;
         }
 
-        float slots = Mathf.Max(1, totalCapacity);
-        float divisor = Mathf.Max(0.01f, config.scentPerPoint) * slots;
-
-        float[] scaled = new float[5];
+        float max = Mathf.Max(1f, config.scentMaxValue);
         for (int i = 0; i < 5; i++)
-            scaled[i] = Mathf.Clamp(raw[i] / divisor * ScentMaxValue, 0f, ScentMaxValue);
+            sum[i] = Mathf.Clamp(sum[i], 0f, max);
 
-        return scaled;
+        return sum;
     }
 
     /// <summary>
@@ -84,14 +74,14 @@ public static class StewCalculator
     /// re-rolled independent of dominantFamily). Each family-count /
     /// rarity-sum ratio is divided by the CAULDRON'S TOTAL capacity (not by
     /// how many ingredients were actually used) - same fix as
-    /// CalculateScents, for the same reason: a single matching ingredient
+    /// the earlier scent formula, for the same reason: a single matching ingredient
     /// used to hit ratio=1.0 (100% power) outright, however small the
     /// cauldron. Reaching full power on a modifier now needs filling the
     /// ENTIRE cauldron with ingredients of one family / at max rarity - a
     /// deliberately rare, top-tier outcome. See decision log.
     /// </summary>
     private static (StewModifierType type, float power, IngredientFamily dominantFamily, IngredientFamily affectedFamily) CalculateModifier(
-        List<ResourceData> ingredients, int totalCapacity, StewCalculationConfig config)
+        List<ResourceData> ingredients, int totalCapacity, StewCalculationConfig config, bool preview)
     {
         var familyCounts = new Dictionary<IngredientFamily, int>();
         foreach (IngredientFamily family in System.Enum.GetValues(typeof(IngredientFamily)))
@@ -133,7 +123,7 @@ public static class StewCalculator
         if (bestRatio < config.modifierActivationThreshold)
             return (StewModifierType.None, 0f, dominantFamily, IngredientFamily.Bug); // no modifier - affectedFamily is meaningless
 
-        return (best, bestRatio, dominantFamily, RollRandomFamily());
+        return (best, bestRatio, dominantFamily, preview ? IngredientFamily.Bug : RollRandomFamily()); // a preview must not "use up" a roll the real brew would then re-roll differently
     }
 
     private static IngredientFamily GetDominantFamily(Dictionary<IngredientFamily, int> familyCounts)

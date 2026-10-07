@@ -24,7 +24,7 @@ public class StewInstance
 
     public float timeSeconds;
 
-    /// <summary>Sweet, Fresh, Putrid, Metallic, Marine - each 1-5.</summary>
+    /// <summary>Sweet, Fresh, Putrid, Metallic, Marine - each 0 to StewCalculationConfig.scentMaxValue.</summary>
     public float[] scents = new float[5];
 
     public StewModifierType modifierType = StewModifierType.None;
@@ -41,4 +41,11 @@ public class StewInstance
     /// </summary>
     public IngredientFamily affectedFamily;
     public Sprite icon;
+
+    /// <summary>
+    /// True for the live recipe preview in the brewing panel only (never
+    /// stored). A preview can't show affectedFamily because that is rolled at
+    /// the moment of brewing - see StewCalculator.Calculate / StewDisplayUtil.FormatModifier.
+    /// </summary>
+    [NonSerialized] public bool isPreview;
 }

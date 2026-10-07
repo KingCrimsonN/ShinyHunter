@@ -60,11 +60,12 @@ public static class StewDisplayUtil
         }
     }
 
-    /// <summary>e.g. "Shiny Power: Bugs (73%)". Every active modifier is now family-scoped - see StewInstance.affectedFamily.</summary>
+    /// <summary>e.g. "Shiny Power: Bugs (73%)". Every active modifier is family-scoped - see StewInstance.affectedFamily. A preview shows "???" for the family: it's rolled when the stew is actually brewed.</summary>
     public static string FormatModifier(StewInstance stew)
     {
-        return stew.modifierType == StewModifierType.None
-            ? "No modifier"
-            : $"{FormatModifierName(stew.modifierType)}: {FormatFamily(stew.affectedFamily)} ({stew.modifierPower * 100f:0}%)";
+        if (stew.modifierType == StewModifierType.None) return "No modifier";
+
+        string family = stew.isPreview ? "???" : FormatFamily(stew.affectedFamily);
+        return $"{FormatModifierName(stew.modifierType)}: {family} ({stew.modifierPower * 100f:0}%)";
     }
 }

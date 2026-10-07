@@ -65,8 +65,8 @@ public class CreatureData : ScriptableObject
     public float detectionRadius = 6f;
     [Tooltip("Player distance the creature must reach before it feels safe/loses interest again (fleeing OR aggressive - see isAggressive).")]
     public float fleeDistance = 10f;
-    [Tooltip("How much a fully-matching hated scent (see hatedScent above) stretches detectionRadius. 1 = doubles it when the stew is maxed out on the hated axis; 0 = hated scents don't affect detection at all.")]
-    public float detectionAversionScale = 1f;
+    [Tooltip("World units added to the detection radius at a full-strength FAVORITE scent, and subtracted at a full-strength HATED one (scaled by how strong the stew's scent is on that axis, 0 to 1). Negative flips both. The radius never drops below a small minimum. See CreatureAI.EffectiveDetectionRadius.")]
+    public float scentDistanceAtMax = 3f;
 
     [Header("Aggression")]
     [Tooltip("If true, this species moves TOWARD the player and attacks once it notices them, instead of fleeing. Everything else (detectionRadius, fleeDistance as the \"give up\" distance, fleeSpeed as the chase speed) is reused as-is - see CreatureAI.CheckPlayerProximity.")]
@@ -123,17 +123,18 @@ public class CreatureData : ScriptableObject
     /// <summary>
     /// How drawn to (lovedScore) vs. repelled by (hatedScore) this species is
     /// by the given scent profile - each axis on ExpeditionStewManager
-    /// .GetScents()'s 0-100 scale (0 = that scent isn't present at all),
-    /// normalized here to 0-1. Only favoriteScent/hatedScent's own single axis
+    /// .GetScents()'s 0-scentMax scale (0 = that scent isn't present at all),
+    /// normalized here to 0-1 by dividing by scentMax (pass ExpeditionStewManager.ScentMax). Only favoriteScent/hatedScent's own single axis
     /// is ever read - a stew that's maxed out on every OTHER axis still scores
     /// 0 here if none of them is this species' favorite or hated scent. Shared
     /// by Spawner (spawn-weight bias) and CreatureAI (detection-range bias) so
     /// both read the EXACT same match, just apply it differently.
     /// </summary>
-    public void GetScentAffinity(float[] currentScents, out float lovedScore, out float hatedScore)
+    public void GetScentAffinity(float[] currentScents, float scentMax, out float lovedScore, out float hatedScore)
     {
-        lovedScore = GetScentValue(currentScents, favoriteScent) / 100f;
-        hatedScore = GetScentValue(currentScents, hatedScent) / 100f;
+        scentMax = Mathf.Max(1f, scentMax);
+        lovedScore = GetScentValue(currentScents, favoriteScent) / scentMax;
+        hatedScore = GetScentValue(currentScents, hatedScent) / scentMax;
     }
 
     private static float GetScentValue(float[] scents, ScentType scent)

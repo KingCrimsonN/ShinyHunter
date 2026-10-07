@@ -35,6 +35,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
     [SerializeField] private GameObject stunParticles;
     [SerializeField] private GameObject captureParticles;
     [SerializeField] private GameObject hitParticles;
+    [SerializeField] private GameObject shinyParticles;
     [SerializeField] private ParticleSystem playerSpottedParticles;
 
     [Header("Debug (read-only)")]
@@ -114,13 +115,15 @@ public class CreatureAI : MonoBehaviour, ICapturable
         active.Remove(this);
     }
 
+    /// <summary>Floor for the detection radius - a hated scent subtracting distance must not shrink it to nothing, or the creature would never notice the player at all.</summary>
+    private const float MinDetectionRadius = 0.5f;
+
     /// <summary>
-    /// data.detectionRadius scaled by Soothing Power (less than 1 = notices
+    /// data.detectionRadius, shifted by the stew's scent (favorite adds, hated
+    /// subtracts - see scentDistanceAtMax) and scaled by Soothing Power (less than 1 = notices
     /// the player from closer, ONLY for creatures of the stew's affected
-    /// family - see ExpeditionStewManager.GetSoothingMultiplier) AND by how
-    /// strongly this species hates the active stew's scent (greater than 1 =
-    /// notices/flees from farther away the more it hates the smell - see
-    /// CreatureData.GetScentAffinity).
+    /// family - see ExpeditionStewManager.GetSoothingMultiplier). See
+    /// CreatureData.GetScentAffinity for how scent strength is scored.
     /// </summary>
     private float EffectiveDetectionRadius
     {
@@ -130,10 +133,13 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
             float soothing = ExpeditionStewManager.Instance.GetSoothingMultiplier(data.family);
 
-            data.GetScentAffinity(ExpeditionStewManager.Instance.GetScents(), out _, out float hatedScore);
-            float aversion = 1f + hatedScore * data.detectionAversionScale;
+            // Scent is ADDITIVE now: a favorite scent adds distance, a hated one
+            // subtracts it (scentDistanceAtMax units at full strength), instead
+            // of the old multiplier that only a hated scent used.
+            data.GetScentAffinity(ExpeditionStewManager.Instance.GetScents(), ExpeditionStewManager.Instance.ScentMax, out float lovedScore, out float hatedScore);
+            float scentShift = (lovedScore - hatedScore) * data.scentDistanceAtMax;
 
-            return data.detectionRadius * soothing * aversion;
+            return Mathf.Max(MinDetectionRadius, (data.detectionRadius + scentShift) * soothing);
         }
     }
 
@@ -162,6 +168,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
             rolledRarity = RollRarity();
             if (animator != null)
                 animator.Initialize(data.GetVariant(rolledRarity));
+            shinyParticles.SetActive(rolledRarity != CreatureData.Rarity.Normal);
         }
 
         if (data.movementMode != CreatureMovementMode.Flying)

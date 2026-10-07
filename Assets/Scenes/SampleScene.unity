@@ -15,7 +15,7 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
   m_Fog: 1
-  m_FogColor: {r: 0.23268458, g: 0.37803265, b: 0.408805, a: 1}
+  m_FogColor: {r: 0.23120122, g: 0.43101594, b: 0.44025147, a: 1}
   m_FogMode: 3
   m_FogDensity: 0.028
   m_LinearFogStart: 0
@@ -25,8 +25,8 @@ RenderSettings:
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1.34
   m_AmbientMode: 0
-  m_SubtractiveShadowColor: {r: 0.45427385, g: 0.50904495, b: 0.64779866, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SubtractiveShadowColor: {r: 0.2963688, g: 0.40534055, b: 0.509434, a: 1}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 9896791bf9d879744896b9737915f3ae, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -595,6 +595,10 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 22334053097860963, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 142895206667668883, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -794,6 +798,10 @@ PrefabInstance:
     - target: {fileID: 1174397316929167644, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_Size
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1282531917015971074, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -40.524536
       objectReference: {fileID: 0}
     - target: {fileID: 1550310094211288141, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_AnchorMax.x
@@ -1083,6 +1091,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -118.890686
       objectReference: {fileID: 0}
+    - target: {fileID: 3075094707498469158, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 54.891113
+      objectReference: {fileID: 0}
     - target: {fileID: 3085297579902407282, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1162,6 +1174,14 @@ PrefabInstance:
     - target: {fileID: 3531348899048756317, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3537379950840530313, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 60.69873
+      objectReference: {fileID: 0}
+    - target: {fileID: 3537379950840530313, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -28.178223
       objectReference: {fileID: 0}
     - target: {fileID: 3767145793115862654, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_AnchorMax.y
@@ -1555,6 +1575,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6256296698586422480, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -0.013916016
+      objectReference: {fileID: 0}
     - target: {fileID: 6273852989903468003, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1919,6 +1943,18 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8670472839312857593, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8670472839312857593, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8670472839312857593, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8693373611028388311, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1985,6 +2021,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8797073333237279160, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8927624488518561251, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8927624488518561251, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8927624488518561251, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
+      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9016890414337609219, guid: aaf9ade364c62254ab8cb842884ef839, type: 3}
@@ -3774,8 +3822,8 @@ Transform:
   m_GameObject: {fileID: 530206630}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: -0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: -0.84542847, z: -15.14265}
-  m_LocalScale: {x: 12.122333, y: 1, z: 9.4824}
+  m_LocalPosition: {x: 0, y: -13, z: -15.14265}
+  m_LocalScale: {x: 16.153221, y: 1.2885835, z: 3.226884}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1925522898}
@@ -4552,19 +4600,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Spawner
   spawnableCreatures:
   - prefab: {fileID: 389122531314925588, guid: eecc0ae29b372744cbe752994d05017e, type: 3}
-    weight: 1
+    weight: 0.1
   - prefab: {fileID: 389122531314925588, guid: a35c43ab4d68aec4bb3615af27892ab7, type: 3}
-    weight: 1
+    weight: 0.1
   - prefab: {fileID: 4887625026067394377, guid: a8bcc9bd6017cb24398c2b9325539e95, type: 3}
-    weight: 1
+    weight: 0.6
   - prefab: {fileID: 1706621603144406033, guid: 58cdff24c91c2834dbb0a2f427fadda9, type: 3}
-    weight: 1
+    weight: 0.4
   - prefab: {fileID: 1706621603144406033, guid: 530b34518ff5ff3409f536794e6f4538, type: 3}
-    weight: 1
+    weight: 0.1
   - prefab: {fileID: 389122531314925588, guid: 5289da56553872c44b65ce03f1851651, type: 3}
-    weight: 1
+    weight: 0.3
   - prefab: {fileID: 389122531314925588, guid: 31da36cdb2d3ca944a64731eaba92b03, type: 3}
-    weight: 1
+    weight: 0.3
   areaRadius: 20
   snapToNavMesh: 1
   populationCap: 25
@@ -5343,19 +5391,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Spawner
   spawnableCreatures:
   - prefab: {fileID: 389122531314925588, guid: eecc0ae29b372744cbe752994d05017e, type: 3}
-    weight: 1
+    weight: 0.7
   - prefab: {fileID: 389122531314925588, guid: a35c43ab4d68aec4bb3615af27892ab7, type: 3}
-    weight: 1
+    weight: 0.2
   - prefab: {fileID: 4887625026067394377, guid: a8bcc9bd6017cb24398c2b9325539e95, type: 3}
-    weight: 1
+    weight: 0.1
   - prefab: {fileID: 1706621603144406033, guid: 58cdff24c91c2834dbb0a2f427fadda9, type: 3}
-    weight: 1
+    weight: 0.4
   - prefab: {fileID: 1706621603144406033, guid: 530b34518ff5ff3409f536794e6f4538, type: 3}
-    weight: 1
+    weight: 0.3
   - prefab: {fileID: 389122531314925588, guid: 5289da56553872c44b65ce03f1851651, type: 3}
-    weight: 1
+    weight: 0.7
   - prefab: {fileID: 389122531314925588, guid: 31da36cdb2d3ca944a64731eaba92b03, type: 3}
-    weight: 1
+    weight: 0.3
   areaRadius: 20
   snapToNavMesh: 1
   populationCap: 25
@@ -5791,19 +5839,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Spawner
   spawnableCreatures:
   - prefab: {fileID: 389122531314925588, guid: eecc0ae29b372744cbe752994d05017e, type: 3}
-    weight: 1
+    weight: 0.5
   - prefab: {fileID: 389122531314925588, guid: a35c43ab4d68aec4bb3615af27892ab7, type: 3}
-    weight: 1
+    weight: 0.5
   - prefab: {fileID: 4887625026067394377, guid: a8bcc9bd6017cb24398c2b9325539e95, type: 3}
-    weight: 1
+    weight: 0.1
   - prefab: {fileID: 1706621603144406033, guid: 58cdff24c91c2834dbb0a2f427fadda9, type: 3}
-    weight: 1
+    weight: 0.01
   - prefab: {fileID: 1706621603144406033, guid: 530b34518ff5ff3409f536794e6f4538, type: 3}
-    weight: 1
+    weight: 0.5
   - prefab: {fileID: 389122531314925588, guid: 5289da56553872c44b65ce03f1851651, type: 3}
-    weight: 1
+    weight: 0
   - prefab: {fileID: 389122531314925588, guid: 31da36cdb2d3ca944a64731eaba92b03, type: 3}
-    weight: 1
+    weight: 0
   areaRadius: 20
   snapToNavMesh: 1
   populationCap: 25
@@ -6123,8 +6171,8 @@ Transform:
   m_GameObject: {fileID: 1317337944}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -60.0857, y: -0.85232925, z: -75.71305}
-  m_LocalScale: {x: 12.076701, y: 1, z: 9.482398}
+  m_LocalPosition: {x: -60.0857, y: -13.03, z: -75.71305}
+  m_LocalScale: {x: 16.153221, y: 1.2885835, z: 3.226884}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1925522898}
@@ -6284,8 +6332,8 @@ Transform:
   m_GameObject: {fileID: 1506189360}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.7071068, z: 0.7071068, w: 0}
-  m_LocalPosition: {x: -60.4271, y: -0.84542847, z: 44.28695}
-  m_LocalScale: {x: 12.008248, y: 1, z: 9.482398}
+  m_LocalPosition: {x: -60.4271, y: -13, z: 44.28695}
+  m_LocalScale: {x: 16.153221, y: 1.2885835, z: 3.226884}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1925522898}
@@ -6445,8 +6493,8 @@ Transform:
   m_GameObject: {fileID: 1548132160}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.5, z: -0.5, w: 0.5}
-  m_LocalPosition: {x: -120, y: -0.84542847, z: -15.71305}
-  m_LocalScale: {x: 12.008254, y: 1, z: 9.4824}
+  m_LocalPosition: {x: -120, y: -13, z: -15.71305}
+  m_LocalScale: {x: 16.153221, y: 1.2885835, z: 3.226884}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1925522898}
@@ -7167,19 +7215,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Spawner
   spawnableCreatures:
   - prefab: {fileID: 389122531314925588, guid: eecc0ae29b372744cbe752994d05017e, type: 3}
-    weight: 1
+    weight: 0.1
   - prefab: {fileID: 389122531314925588, guid: a35c43ab4d68aec4bb3615af27892ab7, type: 3}
-    weight: 1
+    weight: 0.5
   - prefab: {fileID: 4887625026067394377, guid: a8bcc9bd6017cb24398c2b9325539e95, type: 3}
-    weight: 1
+    weight: 0.3
   - prefab: {fileID: 1706621603144406033, guid: 58cdff24c91c2834dbb0a2f427fadda9, type: 3}
-    weight: 1
+    weight: 0.25
   - prefab: {fileID: 1706621603144406033, guid: 530b34518ff5ff3409f536794e6f4538, type: 3}
-    weight: 1
+    weight: 0
   - prefab: {fileID: 389122531314925588, guid: 5289da56553872c44b65ce03f1851651, type: 3}
-    weight: 1
+    weight: 0.6
   - prefab: {fileID: 389122531314925588, guid: 31da36cdb2d3ca944a64731eaba92b03, type: 3}
-    weight: 1
+    weight: 0.6
   areaRadius: 20
   snapToNavMesh: 1
   populationCap: 25

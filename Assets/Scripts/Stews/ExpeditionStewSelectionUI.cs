@@ -4,19 +4,22 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Exit-door popup: horizontal carousel of the player's bowls plus the
-/// always-available default stew (Auntie's Stew, last in the row), pick the
-/// centered one, see its stats below, confirm to consume it (the default is
-/// never consumed) and begin the expedition. Opened externally (call
-/// Instance.Open()) from the door's IInteractable.
+/// Exit-door popup: a carousel of the player's bowls - or, only if they have
+/// none, the default stew (Auntie's Stew) as the single choice. Pick the
+/// centred one, see its stats below, confirm to consume it (the default is
+/// never consumed) and begin the expedition. Escape closes it. Opened
+/// externally (Instance.Open()) from the door.
 ///
-/// The selected bowl always sits in the middle of the carousel panel. Next /
-/// Previous slide the whole row of bowls one step (eased, not looped: the
-/// buttons disable at either end). To do that the bowls live inside a
-/// runtime-created "track" under carouselParent, which copies the panel's
-/// HorizontalLayoutGroup settings (spacing, top/bottom padding, alignment) so
-/// the look stays whatever is set up on the panel - and the panel itself (with
-/// its background image) never moves, only the track does.
+/// There is NO layout group involved. Each bowl's position is computed by code
+/// from one number - `position`, the (fractional) index currently in the
+/// middle: x = (index - position) * spacing. Next/Previous just change the
+/// target index and `position` eases toward it, so the row slides and each
+/// bowl's focus (scale/highlight) follows its distance from the centre.
+/// The previous version built a runtime layout "track" and MEASURED where the
+/// layout put each bowl; since Destroy() only takes effect at the end of the
+/// frame, reopening the popup measured the new bowls alongside the old,
+/// not-yet-destroyed ones and everything came out offset. Nothing here
+/// measures anything, so it can't go stale. See decision log.
 /// </summary>
 public class ExpeditionStewSelectionUI : MonoBehaviour
 {
@@ -24,7 +27,7 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
 
     [Header("Popup")]
     [SerializeField] private GameObject popupRoot;
-    [Tooltip("The carousel panel. Any StewCarouselEntryUI placed here at design time is treated as a layout preview and hidden at runtime; bowls are spawned into a track inside it.")]
+    [Tooltip("The carousel panel - bowls are spawned straight into it and positioned around its centre. Any StewCarouselEntryUI placed here at design time is only a preview and is hidden at runtime.")]
     [SerializeField] private Transform carouselParent;
     [SerializeField] private StewCarouselEntryUI entryPrefab;
     [SerializeField] private Button previousButton;
@@ -32,7 +35,9 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
     [SerializeField] private Button confirmButton;
     [SerializeField] private Button cancelButton;
 
-    [Header("Carousel Motion")]
+    [Header("Carousel")]
+    [Tooltip("Distance in pixels between neighbouring bowls' centres. 0 = automatic: one bowl's width plus the panel's HorizontalLayoutGroup spacing (if it still has one).")]
+    [SerializeField] private float entrySpacing = 0f;
     [Tooltip("Roughly how many seconds the row takes to slide one step.")]
     [SerializeField] private float shiftTime = 0.2f;
 
@@ -46,24 +51,20 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
 
     [SerializeField] private string expeditionSceneName = "Forest";
 
-    /// <summary>What's on offer, in carousel order: the player's bowls, then the always-available default stew. Parallel to <see cref="spawned"/>.</summary>
+    /// <summary>What's on offer, in carousel order (the player's bowls, or just the default stew if they have none). Parallel to <see cref="spawned"/>.</summary>
     private readonly List<StewInstance> choices = new List<StewInstance>();
     private readonly List<StewCarouselEntryUI> spawned = new List<StewCarouselEntryUI>();
-    private readonly List<float> entryCenters = new List<float>(); // each entry's centre X in track space, measured once per build
-    private int selectedIndex;
 
-    private RectTransform carouselRect;
-    private RectTransform track;
-    private float targetTrackX;
-    private float trackVelocity;
-    private float focusDistance = 1f; // how far (px) an entry can be from the centre and still count as partly focused
+    private int selectedIndex;
+    private float position;          // fractional index currently in the middle of the panel
+    private float positionVelocity;
+    private float spacing;
 
     private void Awake()
     {
         Instance = this;
         if (popupRoot != null) popupRoot.SetActive(false);
 
-        carouselRect = carouselParent as RectTransform;
         HideDesignTimeEntries();
 
         if (previousButton != null) previousButton.onClick.AddListener(() => Move(-1));
@@ -74,15 +75,18 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
 
     public void Open()
     {
-        // Active BEFORE building: the layout only computes for active objects,
-        // and the carousel measures where each entry ended up.
         if (popupRoot != null) popupRoot.SetActive(true);
-        PlayerStateManager.Instance.Freeze();
+        // Close is registered as the Escape callback (UIManager's centralized
+        // Escape handling -> PlayerStateManager.TryCloseCurrentPopup).
+        PlayerStateManager.Instance.Freeze(Close);
 
         BuildCarousel();
         selectedIndex = 0;
+        position = 0f;
+        positionVelocity = 0f;
 
-        RefreshSelection(snap: true);
+        RefreshSelection();
+        PositionEntries();
     }
 
     public void Close()
@@ -93,17 +97,14 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
 
     private void Update()
     {
-        if (track == null || spawned.Count == 0) return;
+        if (spawned.Count == 0) return;
 
-        // Ease the whole track toward the selected entry; unscaled time so it
-        // still animates if something ever pauses the game while this is open.
-        float x = Mathf.SmoothDamp(track.anchoredPosition.x, targetTrackX, ref trackVelocity, shiftTime, Mathf.Infinity, Time.unscaledDeltaTime);
-        track.anchoredPosition = new Vector2(x, track.anchoredPosition.y);
-
-        UpdateFocus();
+        // Unscaled time so it still animates if something pauses the game while this is open.
+        position = Mathf.SmoothDamp(position, selectedIndex, ref positionVelocity, shiftTime, Mathf.Infinity, Time.unscaledDeltaTime);
+        PositionEntries();
     }
 
-    /// <summary>Entries dropped into the panel in the editor are only there to preview the layout - hide them, the real ones live in the track.</summary>
+    /// <summary>Entries dropped into the panel in the editor are only there to preview the look - hide them, the real ones are spawned.</summary>
     private void HideDesignTimeEntries()
     {
         if (carouselParent == null) return;
@@ -115,104 +116,74 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
         }
     }
 
-    private RectTransform EnsureTrack()
-    {
-        if (track != null) return track;
-
-        var go = new GameObject("CarouselTrack", typeof(RectTransform), typeof(LayoutElement), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
-        track = (RectTransform)go.transform;
-        track.SetParent(carouselParent, false);
-
-        // Centred horizontally on the panel, full height. Its own width is set
-        // by the size fitter, so the entries fill it exactly.
-        track.anchorMin = new Vector2(0.5f, 0f);
-        track.anchorMax = new Vector2(0.5f, 1f);
-        track.pivot = new Vector2(0.5f, 0.5f);
-        track.anchoredPosition = Vector2.zero;
-        track.sizeDelta = Vector2.zero;
-
-        // The panel has its own layout group - keep it from also arranging the track.
-        go.GetComponent<LayoutElement>().ignoreLayout = true;
-
-        var layout = go.GetComponent<HorizontalLayoutGroup>();
-        var panelLayout = carouselParent.GetComponent<HorizontalLayoutGroup>();
-        if (panelLayout != null)
-        {
-            layout.spacing = panelLayout.spacing;
-            // Left/right padding is dropped on purpose: it would offset the row's centre.
-            layout.padding = new RectOffset(0, 0, panelLayout.padding.top, panelLayout.padding.bottom);
-            layout.childAlignment = panelLayout.childAlignment;
-            layout.childControlWidth = panelLayout.childControlWidth;
-            layout.childControlHeight = panelLayout.childControlHeight;
-            layout.childForceExpandWidth = panelLayout.childForceExpandWidth;
-            layout.childForceExpandHeight = panelLayout.childForceExpandHeight;
-            layout.childScaleWidth = panelLayout.childScaleWidth;
-            layout.childScaleHeight = panelLayout.childScaleHeight;
-        }
-        else
-        {
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.childControlWidth = false;
-            layout.childControlHeight = false;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
-        }
-
-        go.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        return track;
-    }
-
     private void BuildCarousel()
     {
         foreach (var entry in spawned)
-            if (entry != null) Destroy(entry.gameObject);
+            if (entry != null) Destroy(entry.gameObject); // deferred - harmless now, nothing below depends on the old ones being gone
         spawned.Clear();
-        entryCenters.Clear();
 
-        // The player's bowls first, then the default stew LAST - so with any
-        // bowls the first thing selected is a real one, and with none the
-        // default is the only (and so selected) choice. The default isn't a
-        // bowl: it takes no bowl capacity and is never used up.
+        // The player's bowls - and ONLY when they have none, the default stew
+        // as the single fallback so an expedition is always possible. Once
+        // they own any real stew the default isn't offered at all. The
+        // default isn't a bowl: it takes no bowl capacity and is never used up.
         choices.Clear();
         choices.AddRange(StewInventoryManager.Instance.Bowls);
-        if (ExpeditionStewManager.Instance != null)
+        if (choices.Count == 0 && ExpeditionStewManager.Instance != null)
             choices.Add(ExpeditionStewManager.Instance.GetDefaultStew());
-
-        RectTransform trackRect = EnsureTrack();
 
         foreach (var stew in choices)
         {
-            var entry = Instantiate(entryPrefab, trackRect);
-            // entryPrefab is wired (in the Hub scene) to the StewExit instance
-            // sitting under carouselParent - the very object HideDesignTimeEntries
-            // disables as a design-time preview - so Instantiate() was cloning
-            // that DISABLED state onto every spawned entry, making every stew's
-            // icon (and everything else about it) invisible. Force it active
-            // regardless of whatever state the source happened to be in - a
-            // spawned carousel entry must always be visible. See decision log.
+            var entry = Instantiate(entryPrefab, carouselParent);
+            // entryPrefab is wired to the design-time preview sitting under
+            // carouselParent, which HideDesignTimeEntries disabled - and
+            // Instantiate clones that disabled state. A spawned entry must
+            // always be visible, so force it on.
             entry.gameObject.SetActive(true);
             entry.Set(stew);
+
+            var rt = (RectTransform)entry.transform;
+
+            // We position every entry ourselves, so any layout group still on
+            // the panel must leave them alone.
+            if (!entry.TryGetComponent(out LayoutElement layoutElement))
+                layoutElement = entry.gameObject.AddComponent<LayoutElement>();
+            layoutElement.ignoreLayout = true;
+
+            // Centre-anchored at the panel's middle, keeping whatever size the
+            // entry has now - from here on only anchoredPosition changes.
+            Vector2 size = rt.rect.size;
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = size;
+
             spawned.Add(entry);
         }
 
-        if (spawned.Count == 0) return;
+        spacing = ResolveSpacing();
+    }
 
-        // Let the layout place the entries now, then remember where each one is.
-        Canvas.ForceUpdateCanvases();
-        LayoutRebuilder.ForceRebuildLayoutImmediate(trackRect);
+    private float ResolveSpacing()
+    {
+        if (entrySpacing > 0f) return entrySpacing;
+        if (spawned.Count == 0) return 1f;
 
-        foreach (var entry in spawned)
+        float width = ((RectTransform)spawned[0].transform).rect.width;
+        if (width <= 0f) width = 200f;
+
+        var panelLayout = carouselParent != null ? carouselParent.GetComponent<HorizontalLayoutGroup>() : null;
+        return width + (panelLayout != null ? panelLayout.spacing : 0f);
+    }
+
+    /// <summary>Slide each bowl to (index - position) * spacing, and focus (scale/highlight) it by how close that is to the centre.</summary>
+    private void PositionEntries()
+    {
+        for (int i = 0; i < spawned.Count; i++)
         {
-            var rt = (RectTransform)entry.transform;
-            entryCenters.Add(trackRect.InverseTransformPoint(rt.TransformPoint(rt.rect.center)).x);
-        }
+            if (spawned[i] == null) continue;
 
-        // "One step" = the distance between neighbouring entries (or an entry's width if there's just one).
-        var firstRect = (RectTransform)spawned[0].transform;
-        focusDistance = entryCenters.Count > 1
-            ? Mathf.Abs(entryCenters[1] - entryCenters[0])
-            : firstRect.rect.width;
-        focusDistance = Mathf.Max(1f, focusDistance);
+            float offset = i - position;
+            ((RectTransform)spawned[i].transform).anchoredPosition = new Vector2(offset * spacing, 0f);
+            spawned[i].SetFocus(1f - Mathf.Clamp01(Mathf.Abs(offset)));
+        }
     }
 
     /// <summary>Steps the selection by one. Not looped - stops at either end.</summary>
@@ -224,10 +195,10 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
         if (newIndex == selectedIndex) return;
 
         selectedIndex = newIndex;
-        RefreshSelection(snap: false);
+        RefreshSelection();
     }
 
-    private void RefreshSelection(bool snap)
+    private void RefreshSelection()
     {
         if (confirmButton != null) confirmButton.interactable = spawned.Count > 0;
         if (previousButton != null) previousButton.interactable = selectedIndex > 0;
@@ -242,36 +213,11 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
             return;
         }
 
-        // The track is pivoted on the panel's centre, so moving it by minus an
-        // entry's X puts that entry in the middle.
-        targetTrackX = -entryCenters[selectedIndex];
-        if (snap)
-        {
-            trackVelocity = 0f;
-            track.anchoredPosition = new Vector2(targetTrackX, track.anchoredPosition.y);
-            UpdateFocus();
-        }
-
         var stew = choices[selectedIndex];
         if (nameText != null) nameText.text = StewDisplayUtil.FormatName(stew);
         if (timeText != null) timeText.text = $"{stew.timeSeconds / 60f:0.#} min";
         StewDisplayUtil.SetScentTexts(scentTexts, stew.scents);
         if (modifierText != null) modifierText.text = StewDisplayUtil.FormatModifier(stew);
-    }
-
-    /// <summary>Scale/highlight each entry by how close it currently is to the centre of the panel, so it eases with the slide.</summary>
-    private void UpdateFocus()
-    {
-        var panel = carouselRect != null ? carouselRect : (RectTransform)track.parent;
-
-        foreach (var entry in spawned)
-        {
-            if (entry == null) continue;
-
-            var rt = (RectTransform)entry.transform;
-            float fromCentre = Mathf.Abs(panel.InverseTransformPoint(rt.TransformPoint(rt.rect.center)).x);
-            entry.SetFocus(1f - Mathf.Clamp01(fromCentre / focusDistance));
-        }
     }
 
     private void Confirm()
@@ -298,6 +244,10 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
         // Hide the popup but do NOT unfreeze: SceneTransitionManager keeps
         // the player frozen through the fade (so the door can't be used a
         // second time) and releases it once the expedition scene has loaded.
+        // Re-freezing with NO close callback drops the one Open registered -
+        // otherwise Escape during the fade would call Close() and unfreeze
+        // the player mid-transition.
         if (popupRoot != null) popupRoot.SetActive(false);
+        PlayerStateManager.Instance.Freeze();
     }
 }

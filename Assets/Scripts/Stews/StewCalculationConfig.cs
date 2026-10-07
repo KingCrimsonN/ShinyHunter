@@ -8,15 +8,19 @@ using UnityEngine;
 public class StewCalculationConfig : ScriptableObject
 {
     [Header("Time")]
-    [Tooltip("Seconds contributed per ingredient, indexed by CreatureData.Rarity (Normal..Legendary).")]
+    [Tooltip("Every brewed stew starts from this many seconds, before ingredients add theirs - so even a single weak ingredient gives a usable stew. (The default stew has its own fixed time, see below.)")]
+    public float baseTimeSeconds = 60f;
+    [Tooltip("Seconds contributed per ingredient, ON TOP of Base Time Seconds, indexed by CreatureData.Rarity (Normal..Legendary).")]
     public float[] timePerRarity = { 60f, 90f, 150f, 240f };
-    [Tooltip("Hard cap on total stew time - \"capped by the bowl\".")]
+    [Tooltip("Hard cap on total stew time (base + ingredients) - \"capped by the bowl\".")]
     public float maxTimeSeconds = 600f;
 
     [Header("Scents")]
-    [Tooltip("Raw scent points needed PER CAULDRON SLOT for an axis to reach its max (100) if every slot were filled with ingredients this strong - e.g. with 8 total cauldron slots and this at 5, hitting 100 on one axis needs 40 raw points there (~8 ingredients averaging 5 each). Using fewer ingredients than the cauldron's total capacity always gives proportionally less, however strong they are. See decision log.")]
-    public float scentPerPoint = 5f;
-    [Tooltip("Population-cap fraction (0-1) a Spawner uses when the active stew's scent is at its weakest (every axis at 0, e.g. no stew at all). Scales up to the full populationCap as the loudest single scent axis approaches 100 - a weak-smelling stew draws fewer creatures. 1 = scent strength doesn't affect population at all.")]
+    [Tooltip("The most any scent axis can reach. A stew's scents are the plain SUM of its ingredients' scent values, clamped to this. It's also the scale everything else normalizes against (creature spawn/detection bias, spawner population) via ExpeditionStewManager.ScentMax - so a stew only has full effect when an axis actually reaches this number; tune ingredient scent values (ResourceData) with that in mind.")]
+    public float scentMaxValue = 1000f;
+    [Tooltip("Spawn-WEIGHT multiplier a species gets when the stew's scent on its FAVORITE axis is at the cap (Scent Max Value). The curve is exponential, so half the cap gives the square root of this: with 4, half = x2 and full = x4, and each extra 100 compounds (100 of 1000 is about +15%). A HATED axis does the exact opposite - full = x1/4, half = x1/2 - and never reaches zero. This multiplies the species' WEIGHT, not its final probability: probability is weight / total weight of every species the spawner can pick.")]
+    [Min(1f)] public float scentSpawnMultiplierAtMax = 4f;
+    [Tooltip("Population-cap fraction (0-1) a Spawner uses when the active stew's scent is at its weakest (every axis at 0, e.g. no stew at all). Scales up to the full populationCap as the loudest single scent axis approaches Scent Max Value - a weak-smelling stew draws fewer creatures. 1 = scent strength doesn't affect population at all.")]
     [Range(0f, 1f)]
     public float scentPopulationMinFraction = 0.4f;
 
@@ -29,7 +33,7 @@ public class StewCalculationConfig : ScriptableObject
     public string defaultStewName = "Auntie's Stew";
     [Tooltip("Expedition time this stew gives, in seconds. Keep it modest so brewing a real stew is worth it.")]
     public float defaultStewTimeSeconds = 120f;
-    [Tooltip("Sweet, Fresh, Putrid, Metallic, Marine - each 0-100. All 0 = neutral (same as taking no stew).")]
+    [Tooltip("Sweet, Fresh, Putrid, Metallic, Marine - each 0 to Scent Max Value. All 0 = neutral (same as taking no stew).")]
     public float[] defaultStewScents = { 0f, 0f, 0f, 0f, 0f };
     [Tooltip("Icon shown in the carousel. If left empty, the carousel entry keeps whatever sprite its prefab has.")]
     public Sprite defaultStewIcon;

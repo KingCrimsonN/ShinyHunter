@@ -1202,3 +1202,85 @@ silently did nothing on some loads. Now subscribes in OnEnable if it can, retrie
 **Choices "closing the dialogue"**: (1) Auntie's intro "How do I make money?" had `actionId: Nothing` and no next node, so
 it ended the conversation - now points at AuntieMoney. (2) `DialogueManager.Update` now ignores advance input on the frame
 a choice was selected, so the press that picked a choice can't also skip a line of the node it leads to.
+
+## Playtest pass: stew carousel rewrite, affordable shop quantity, dialogue camera focus
+
+**Stew carousel offset on reopen.** `ExpeditionStewSelectionUI` built a runtime layout "track" and MEASURED where the
+HorizontalLayoutGroup put each bowl. On reopen it `Destroy()`ed the old bowls - which only takes effect at the end of the
+frame - then immediately force-rebuilt the layout and measured, so the old (still present) bowls sat in the layout and
+shifted every new bowl's measured centre. Rewritten with no layout and no measuring: one float, `position` (the fractional
+index in the middle), eased with SmoothDamp toward the selected index; each bowl is placed at `(index - position) * spacing`
+and focused by its distance from the middle. Entries get `LayoutElement.ignoreLayout` and centre anchors in code, so a
+leftover HorizontalLayoutGroup on the panel can't fight it. `entrySpacing` (0 = one bowl's width + the panel group's
+spacing) replaces the copied layout settings. The "entryPrefab points at the hidden design-time object" workaround
+(force-active after Instantiate) is kept. Escape is still NOT registered as the popup's close callback: after Confirm the
+popup is hidden but the player stays frozen for the transition, and a registered closer would let Escape unfreeze them
+mid-fade.
+
+**Shop quantity.** The selector is now capped at `min(stack size, floor(money / price))` (never below 1), recomputed on
+every change, so the total can't exceed money and the red tint (and its two serialized colours) is gone. If even one
+isn't affordable the purchase button is disabled and the feedback line says so. The stack-size cap is unchanged - note
+that it limits non-stackable items to buying one at a time.
+
+**Dialogue camera.** `FirstPersonController.FocusOn(point, duration)` smoothly turns body yaw + camera pitch to a world
+point (smoothstep, unscaled time). It lives on the controller because that's what owns `pitch`; it keeps `pitch` updated
+each step so mouse look resumes from the new angle instead of snapping back, and mouse look is skipped while a turn is
+running. It works while the controller is DISABLED (dialogue freezes the player by disabling it - a coroutine on a
+disabled component keeps running). `DialogueManager.StartDialogue(data, Vector3? focusPoint)` triggers it;
+`NPCDialogueTrigger` and `Auntie` pass `DialogueManager.GetHeadPoint(transform, lookTarget)` - an optional `lookTarget`
+child at the head, else 75% up the NPC's collider bounds (the root transform sits at the feet, which is why the camera
+was left staring at the floor). The camera is not restored when the dialogue ends.
+
+## Stew revamp: base time, 1000 scent cap, brewing preview, default stew only as a fallback, Esc on the exit panel
+
+**Base time.** `StewCalculationConfig.baseTimeSeconds` (60): every brewed stew's time = base + ingredients' per-rarity
+seconds, still capped by `maxTimeSeconds`. An empty cauldron still makes no stew. The default stew keeps its own fixed time.
+
+**Scent cap 1000.** The 0-100 scale was a `const` inside `StewCalculator` and a literal `/100f` in three consumers (creature
+affinity, spawner population, default-stew clamp). It's now `StewCalculationConfig.scentMaxValue` (1000), read through
+`ExpeditionStewManager.ScentMax`; `CreatureData.GetScentAffinity` takes the max as a parameter. The formula is unchanged -
+`raw / (scentPerPoint * slots) * max` - so `scentPerPoint` now means "raw points per slot to reach the CAP": the same recipe
+reads 10x higher, and every gameplay effect (which normalizes by the max) is unchanged. To let strong ingredients push
+past what they used to reach, raise their raw scents or lower `scentPerPoint`; I did neither.
+
+**Brewing preview.** `StewPreviewUI`, refreshed by `BrewingStationUI.RefreshPreview` on every place/clear/brew, using the
+SAME `StewCalculator.Calculate` as the real brew. Caveat: a modifier's affected family is rolled randomly at brew time, so
+`Calculate(..., preview: true)` skips the roll and `StewInstance.isPreview` makes `FormatModifier` print "???" for the
+family (type and power are real). Showing a rolled family would be wrong half the time.
+
+**Default stew = fallback only.** The exit panel offers the player's bowls; the default stew is added only when they have
+none (it used to always be appended last).
+
+**Esc closes the exit panel** via `Freeze(Close)`. `Confirm` re-freezes with no callback so Escape during the scene-fade
+can't unfreeze the player mid-transition.
+
+## Scents are now a plain sum
+
+`StewCalculator.CalculateScents` is just the per-axis SUM of the ingredients' scent values, clamped to
+`scentMaxValue` (1000) - no division by the cauldron's capacity, no scaling. This replaces `sum / (scentPerPoint x slots)
+x max` (which made the result depend on how many cauldron slots exist and let a half-empty cauldron only reach a fraction
+of the scale); `scentPerPoint` was removed from the config as dead. Modifiers are untouched: their power is still
+family-count / rarity-sum divided by the cauldron's total capacity.
+
+Consequence worth knowing: everything that reads scents normalizes by the cap (`ExpeditionStewManager.ScentMax`) -
+creature spawn/detection bias and spawner population. With a plain sum, an axis only reaches the cap if ingredient scent
+values are large (today's are single/double digits), so until `ResourceData` scent values are rebalanced for the
+0-1000 scale those effects will be close to zero and population will sit at its minimum fraction.
+
+## Scent effects: additive distance, exponential spawn weight
+
+**Detection distance** (`CreatureAI.EffectiveDetectionRadius`): was `radius * (1 + hated * aversionScale)` - only a HATED
+scent had any effect, and it made creatures notice you from FARTHER. Now additive: `(radius + (loved - hated) *
+scentDistanceAtMax) * soothing`, floored at 0.5 so a hated scent can't shrink it to nothing (a creature that never notices
+you). `CreatureData.detectionAversionScale` was replaced by `scentDistanceAtMax` (world units, default 3; negative flips
+both signs). Note the direction: liked = larger radius, hated = smaller - for a FLEEING species that means a liked scent
+makes it spot (and flee from) you from farther away; for an AGGRESSIVE one it extends its aggro range. Set negative on
+fleeing species if the intent is "liked = easier to approach".
+
+**Spawn weight** (`ExpeditionStewManager.GetScentSpawnMultiplier`): was `max(0.05, 1 + loved - hated)` (linear, x2 at the
+cap). Now `atMax ^ (loved - hated)` with `StewCalculationConfig.scentSpawnMultiplierAtMax = 4`: x2 at half the cap, x4 at
+the full cap, and hated mirrors it (x0.25 at the cap, never zero, so the old 0.05 floor is gone). Exponential is the only
+simple curve satisfying "half the cap doubles, full cap quadruples"; it gives about +15% at 100 of 1000, not 10%.
+This scales the species' WEIGHT, not its final probability, which also depends on the other species the spawner can pick
+(2 equal species: x4 weight = 80% not 200%; 8 equal species: 12.5% -> 36%). Population (how many creatures exist) is
+unchanged: still `lerp(minFraction, 1, loudestAxis / cap)`.

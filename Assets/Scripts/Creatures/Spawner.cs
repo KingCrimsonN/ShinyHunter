@@ -11,9 +11,6 @@ using UnityEngine.AI;
 /// </summary>
 public class Spawner : MonoBehaviour
 {
-    /// <summary>Floor for the scent weight multiplier - a stew a species maximally hates only ever makes it rare, never literally unspawnable (avoids permanently blocking bestiary completion for a whole run).</summary>
-    private const float MinScentWeightMultiplier = 0.05f;
-
     [System.Serializable]
     public struct SpawnableCreature
     {
@@ -46,7 +43,7 @@ public class Spawner : MonoBehaviour
     /// populationCap, scaled down by how weak the active stew's scent
     /// currently is - a weak/neutral smell (or no stew at all) draws fewer
     /// creatures to the area; a strong one draws up to the full populationCap.
-    /// "Strength" is the loudest single scent axis (0-100), not an average -
+    /// "Strength" is the loudest single scent axis (0-ScentMax), not an average -
     /// one dominant note is what a stew "smells like". Recomputed on every
     /// use rather than cached: cheap (a 5-element scan), and the active stew
     /// never changes mid-expedition anyway, so it's always consistent without
@@ -62,7 +59,7 @@ public class Spawner : MonoBehaviour
             float strength = 0f;
             if (scents != null)
                 foreach (float s in scents) strength = Mathf.Max(strength, s);
-            strength = Mathf.Clamp01(strength / 100f);
+            strength = Mathf.Clamp01(strength / ExpeditionStewManager.Instance.ScentMax);
 
             float minFraction = ExpeditionStewManager.Instance.GetScentPopulationMinFraction();
             float fraction = Mathf.Lerp(minFraction, 1f, strength);
@@ -142,7 +139,8 @@ public class Spawner : MonoBehaviour
     /// <summary>
     /// Base weight, scaled by how well this species' scent preference/aversion
     /// matches the player's current stew scent profile (loved scents boost
-    /// weight, hated scents suppress it - see decision log), and by Encounter
+    /// weight, hated scents suppress it, exponentially - see
+    /// ExpeditionStewManager.GetScentSpawnMultiplier), and by Encounter
     /// Power's spawn-weight boost if this species' family is the boosted one.
     /// </summary>
     private float GetEffectiveWeight(SpawnableCreature entry)
@@ -156,8 +154,8 @@ public class Spawner : MonoBehaviour
         if (data == null || ExpeditionStewManager.Instance == null) return weight;
 
         float[] scents = ExpeditionStewManager.Instance.GetScents();
-        data.GetScentAffinity(scents, out float lovedScore, out float hatedScore);
-        weight *= Mathf.Max(MinScentWeightMultiplier, 1f + lovedScore - hatedScore);
+        data.GetScentAffinity(scents, ExpeditionStewManager.Instance.ScentMax, out float lovedScore, out float hatedScore);
+        weight *= ExpeditionStewManager.Instance.GetScentSpawnMultiplier(lovedScore, hatedScore); // exponential, and bounded away from zero by construction - see that method
 
         if (ExpeditionStewManager.Instance.TryGetEncounterBoostFamily(out var boostedFamily, out float boostMultiplier)
             && data.family == boostedFamily)

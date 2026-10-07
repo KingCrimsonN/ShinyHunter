@@ -79,7 +79,7 @@ public class ExpeditionStewManager : MonoBehaviour
         if (config.defaultStewScents != null)
         {
             for (int i = 0; i < stew.scents.Length && i < config.defaultStewScents.Length; i++)
-                stew.scents[i] = Mathf.Clamp(config.defaultStewScents[i], 0f, 100f);
+                stew.scents[i] = Mathf.Clamp(config.defaultStewScents[i], 0f, config.scentMaxValue);
         }
 
         return stew;
@@ -192,10 +192,27 @@ public class ExpeditionStewManager : MonoBehaviour
         PlayerHealth.Instance.AddTemporaryMaxHealth(bonus);
     }
 
-    /// <summary>Player's current scent profile (Sweet, Fresh, Putrid, Metallic, Marine, each 0-100) - neutral (all 0, i.e. "not present") with no active stew.</summary>
+    /// <summary>The scent scale's ceiling (StewCalculationConfig.scentMaxValue) - divide a scent value by this to get 0-1. Everything that normalizes a scent goes through here instead of hardcoding a number.</summary>
+    public float ScentMax => config != null ? Mathf.Max(1f, config.scentMaxValue) : 1000f;
+
+    /// <summary>Player's current scent profile (Sweet, Fresh, Putrid, Metallic, Marine, each 0 to ScentMax) - neutral (all 0, i.e. "not present") with no active stew.</summary>
     public float[] GetScents()
     {
         return ActiveStew != null ? ActiveStew.scents : new float[] { 0f, 0f, 0f, 0f, 0f };
+    }
+
+    /// <summary>
+    /// Spawn-weight multiplier for one species given how strongly the stew hits
+    /// its favorite (lovedScore) and hated (hatedScore) scent axes, both 0-1:
+    /// atMax ^ (loved - hated). So with atMax = 4: half the cap on the favorite
+    /// axis = x2, the full cap = x4, nothing = x1; the hated axis is the exact
+    /// mirror (full = x0.25). Exponential on purpose - "every half of the max
+    /// doubles it".
+    /// </summary>
+    public float GetScentSpawnMultiplier(float lovedScore, float hatedScore)
+    {
+        float atMax = config != null ? Mathf.Max(1f, config.scentSpawnMultiplierAtMax) : 4f;
+        return Mathf.Pow(atMax, Mathf.Clamp01(lovedScore) - Mathf.Clamp01(hatedScore));
     }
 
     /// <summary>Population-cap fraction (0-1) Spawner uses when the active stew's scent is at its weakest - see StewCalculationConfig.scentPopulationMinFraction.</summary>

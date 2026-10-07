@@ -36,6 +36,10 @@ public class DialogueManager : MonoBehaviour
     [Header("Typewriter")]
     [SerializeField] private float charactersPerSecond = 40f;
 
+    [Header("Camera")]
+    [Tooltip("Seconds the camera takes to turn toward the NPC when a dialogue starts (only for NPCs that pass a focus point - see StartDialogue).")]
+    [SerializeField] private float cameraFocusDuration = 0.6f;
+
     /// <summary>Fired when a dialogue opens.</summary>
     public event Action OnDialogueStarted;
     /// <summary>Fired when a dialogue closes, for any reason.</summary>
@@ -77,6 +81,7 @@ public class DialogueManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         if (popupRoot != null) popupRoot.SetActive(false);
+        choiceButtonParent.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -99,8 +104,33 @@ public class DialogueManager : MonoBehaviour
         if (data != null) startedDialogues.Remove(data);
     }
 
-    /// <summary>Entry point - call from an IInteractable's Interact() (see NPCDialogueTrigger).</summary>
-    public void StartDialogue(DialogueData data)
+    /// <summary>
+    /// Where to aim the camera for an NPC: an explicitly placed head transform
+    /// if it has one, otherwise roughly head height from its collider (the
+    /// root transform usually sits at the feet, which is what left the camera
+    /// staring at the floor).
+    /// </summary>
+    public static Vector3 GetHeadPoint(Transform npc, Transform explicitHead)
+    {
+        if (explicitHead != null) return explicitHead.position;
+
+        var collider = npc.GetComponentInChildren<Collider>();
+        if (collider != null)
+        {
+            Bounds b = collider.bounds;
+            return b.center + Vector3.up * (b.extents.y * 0.75f);
+        }
+
+        return npc.position + Vector3.up * 1.6f;
+    }
+
+    /// <summary>
+    /// Entry point - call from an IInteractable's Interact() (see NPCDialogueTrigger).
+    /// If focusPoint is given, the player's camera smoothly turns to look at it
+    /// (see FirstPersonController.FocusOn); leave it null for dialogues that
+    /// shouldn't move the camera.
+    /// </summary>
+    public void StartDialogue(DialogueData data, Vector3? focusPoint = null)
     {
         if (data == null || IsActive) return;
 
@@ -125,6 +155,13 @@ public class DialogueManager : MonoBehaviour
         if (npcNameText != null) npcNameText.text = data.npcName;
 
         PlayerStateManager.Instance.Freeze();
+
+        if (focusPoint.HasValue)
+        {
+            // Looked up fresh like the rest of the player state - the player object isn't persistent.
+            var player = FindFirstObjectByType<FirstPersonController>();
+            if (player != null) player.FocusOn(focusPoint.Value, cameraFocusDuration);
+        }
 
         if (popupRoot != null) popupRoot.SetActive(true);
 
@@ -182,6 +219,7 @@ public class DialogueManager : MonoBehaviour
     {
         awaitingChoice = true;
         if (continueIndicator != null) continueIndicator.SetActive(false);
+        choiceButtonParent.gameObject.SetActive(true);
 
         foreach (var choice in choices)
         {

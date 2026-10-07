@@ -28,10 +28,6 @@ public class ShopPurchasePanelUI : MonoBehaviour
     [Tooltip("Shown briefly for purchase feedback (not enough money, partial refund, etc).")]
     [SerializeField] private TMP_Text feedbackText;
 
-    [Header("Affordability")]
-    [SerializeField] private Color affordableColor = Color.white;
-    [SerializeField] private Color unaffordableColor = Color.red;
-
     [Header("Money display (shop screen total, shown top-right)")]
     [SerializeField] private ShopMoneyDisplayUI moneyDisplay;
     [SerializeField] private Animator shopKeeperPortrait;
@@ -69,7 +65,7 @@ public class ShopPurchasePanelUI : MonoBehaviour
         if (icon != null) icon.sprite = entry.item.icon;
         if (nameText != null) nameText.text = entry.item.toolName;
         if (descriptionText != null) descriptionText.text = entry.item.description;
-        if (feedbackText != null) feedbackText.text = string.Empty;
+        if (feedbackText != null) feedbackText.text = CanAffordOne() ? string.Empty : "Not enough money!";
 
         RefreshDisplay();
 
@@ -104,26 +100,40 @@ public class ShopPurchasePanelUI : MonoBehaviour
     {
         if (currentEntry == null) return;
 
-        int maxQuantity = Mathf.Max(1, currentEntry.item.maxStack);
-        quantity = Mathf.Clamp(quantity + delta, 1, maxQuantity);
-
+        quantity = Mathf.Clamp(quantity + delta, 1, MaxQuantity());
         RefreshDisplay();
+    }
+
+    /// <summary>
+    /// The most the player can pick: the item's stack size, but never more
+    /// than they can pay for - the selector simply stops at the affordable
+    /// amount, so the total can never exceed their money. Never below 1 (the
+    /// selector has no 0); if they can't afford even one, the purchase button
+    /// is disabled instead (see RefreshDisplay).
+    /// </summary>
+    private int MaxQuantity()
+    {
+        int stackLimit = Mathf.Max(1, currentEntry.item.maxStack);
+        if (currentEntry.pricePerUnit <= 0) return stackLimit; // free item - nothing to afford
+
+        int affordable = MoneyManager.Instance.GetCurrentMoney() / currentEntry.pricePerUnit;
+        return Mathf.Clamp(affordable, 1, stackLimit);
+    }
+
+    private bool CanAffordOne()
+    {
+        return currentEntry != null && MoneyManager.Instance.GetCurrentMoney() >= currentEntry.pricePerUnit;
     }
 
     private void RefreshDisplay()
     {
         if (currentEntry == null) return;
 
-        int totalCost = quantity * currentEntry.pricePerUnit;
+        quantity = Mathf.Clamp(quantity, 1, MaxQuantity()); // money can change while the panel is open
 
         if (quantityText != null) quantityText.text = quantity.ToString();
-
-        if (totalCostText != null)
-        {
-            totalCostText.text = totalCost.ToString("N0");
-            bool canAfford = MoneyManager.Instance.GetCurrentMoney() >= totalCost;
-            totalCostText.color = canAfford ? affordableColor : unaffordableColor;
-        }
+        if (totalCostText != null) totalCostText.text = (quantity * currentEntry.pricePerUnit).ToString("N0");
+        if (purchaseButton != null) purchaseButton.interactable = CanAffordOne();
     }
 
     private void Purchase()

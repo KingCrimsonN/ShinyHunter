@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -67,9 +68,62 @@ public class FirstPersonController : MonoBehaviour
 
     private void Update()
     {
-        HandleLook();
+        if (focusRoutine == null) HandleLook(); // mouse look would fight an in-progress FocusOn turn
         HandleMove();
         HandleBob();
+    }
+
+    // ---------------- Scripted look (dialogue) ----------------
+
+    private Coroutine focusRoutine;
+
+    /// <summary>
+    /// Smoothly turns the body (yaw) and camera (pitch) to face a world point -
+    /// used when a dialogue starts so the player is actually looking at the NPC
+    /// (they may have been staring at the floor when they pressed E). Works
+    /// while this component is DISABLED, which it is during dialogue: freezing
+    /// the player only sets enabled = false, and a coroutine started on a
+    /// disabled component keeps running. `pitch` is updated every step, so
+    /// when mouse look resumes it continues from where the turn ended rather
+    /// than snapping back to the old angle.
+    /// </summary>
+    public void FocusOn(Vector3 worldPoint, float duration)
+    {
+        if (cameraPivot == null) return;
+
+        if (focusRoutine != null) StopCoroutine(focusRoutine);
+        focusRoutine = StartCoroutine(FocusRoutine(worldPoint, duration));
+    }
+
+    private IEnumerator FocusRoutine(Vector3 worldPoint, float duration)
+    {
+        Vector3 toTarget = worldPoint - cameraPivot.position;
+        float horizontal = new Vector2(toTarget.x, toTarget.z).magnitude;
+
+        float startYaw = transform.eulerAngles.y;
+        float targetYaw = horizontal > 0.001f ? Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg : startYaw; // standing right on top of it: keep facing where we are
+        float startPitch = pitch;
+        // Positive pitch looks DOWN (see HandleLook), so a target above the camera needs a negative one.
+        float targetPitch = Mathf.Clamp(-Mathf.Atan2(toTarget.y, horizontal) * Mathf.Rad2Deg, minPitch, maxPitch);
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            ApplyLook(Mathf.LerpAngle(startYaw, targetYaw, Mathf.SmoothStep(0f, 1f, elapsed / duration)),
+                      Mathf.Lerp(startPitch, targetPitch, Mathf.SmoothStep(0f, 1f, elapsed / duration)));
+            yield return null;
+        }
+
+        ApplyLook(targetYaw, targetPitch);
+        focusRoutine = null;
+    }
+
+    private void ApplyLook(float yaw, float newPitch)
+    {
+        transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+        pitch = newPitch;
+        cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
     }
 
     private void HandleLook()

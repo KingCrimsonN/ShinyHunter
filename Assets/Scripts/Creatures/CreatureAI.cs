@@ -66,6 +66,17 @@ public class CreatureAI : MonoBehaviour, ICapturable
     /// <summary>Counts down after an aggressive creature lands an attack - it can't attack again until this reaches 0, regardless of how close it stays to the player.</summary>
     private float attackCooldownTimer;
 
+    /// <summary>Counts down after an aggressive creature is hit without being stunned - it holds still until it reaches 0. See TickAggressive.</summary>
+    private float staggerTimer;
+    /// <summary>True while the stagger's "frozen + hit animation" visuals are active, so they're undone exactly once when it ends.</summary>
+    private bool staggered;
+
+    /// <summary>Counts down after an aggressive creature recovers from a stun - while above 0 it neither chases nor re-notices the player. See CheckPlayerProximity.</summary>
+    private float aggroBlockedTimer;
+
+    /// <summary>True while the player is inside the capture minigame - aggressive creatures must not attack then (the player can't react or even move).</summary>
+    private static bool PlayerInCaptureMinigame => CaptureMinigameController.Instance != null && CaptureMinigameController.Instance.IsRunning;
+
     private CreatureSpriteAnimator animator;
 
     public bool IsStunned => currentState == State.Stunned;
@@ -224,6 +235,8 @@ public class CreatureAI : MonoBehaviour, ICapturable
         // because e.g. a stun briefly interrupted the chase.
         if (dashTimer > 0f) dashTimer -= Time.deltaTime;
         if (attackCooldownTimer > 0f) attackCooldownTimer -= Time.deltaTime;
+        if (staggerTimer > 0f) staggerTimer -= Time.deltaTime;
+        if (aggroBlockedTimer > 0f) aggroBlockedTimer -= Time.deltaTime;
 
         CheckPlayerProximity();
 
@@ -255,6 +268,25 @@ public class CreatureAI : MonoBehaviour, ICapturable
                 ? CaptureMinigameController.Instance.GetFailedCaptureHealthRestoreFraction()
                 : 0.5f;
             CurrentHealth = MaxHealth * restoreFraction;
+
+            // An aggressive creature that comes out of a stun loses aggro: it
+            // goes idle (not "struggles free and flees" - fleeing makes no
+            // sense for a species that never flees) and ignores the player for
+            // aggroLossDuration, since the player is right next to it and it
+            // would otherwise re-aggro the very next frame.
+            if (data.isAggressive)
+            {
+                aggroBlockedTimer = data.aggroLossDuration;
+                if (newState == State.Flee) newState = State.Idle;
+            }
+        }
+
+        // The flinch only lives inside the chase; leaving it (stun, lost
+        // interest...) cancels it so it can't leak into a later chase.
+        if (newState != State.Aggressive && newState != State.Attacking)
+        {
+            staggerTimer = 0f;
+            staggered = false;
         }
 
         currentState = newState;
@@ -346,6 +378,14 @@ public class CreatureAI : MonoBehaviour, ICapturable
         {
             bool isChasingOrAttacking = currentState == State.Aggressive || currentState == State.Attacking;
 
+            // Lost aggro (just recovered from a stun): drop any chase and don't
+            // re-notice the player until the timer runs out.
+            if (aggroBlockedTimer > 0f)
+            {
+                if (isChasingOrAttacking) EnterState(State.Idle);
+                return;
+            }
+
             if (dist <= EffectiveDetectionRadius && !isChasingOrAttacking)
             {
                 playerSpottedParticles?.Play();
@@ -427,6 +467,26 @@ public class CreatureAI : MonoBehaviour, ICapturable
     {
         if (player == null) return;
 
+        // Flinching after a hit: frozen in place - no chasing, no attacking -
+        // until the stagger runs out, then the chase resumes.
+        if (staggerTimer > 0f)
+        {
+            if (!staggered)
+            {
+                staggered = true;
+                animator?.Play(CreatureAnimState.Hit);
+            }
+            if (agent != null) agent.isStopped = true; // flying creatures hold by simply not moving below
+
+            return;
+        }
+        if (staggered)
+        {
+            staggered = false;
+            if (agent != null) agent.isStopped = false;
+            animator?.Play(CreatureAnimState.Move);
+        }
+
         Vector3 toPlayer = player.position - transform.position;
         toPlayer.y = 0f;
 
@@ -434,7 +494,10 @@ public class CreatureAI : MonoBehaviour, ICapturable
         {
             if (agent != null) agent.isStopped = true; // flying creatures "hold" simply by not calling MoveTowardsFlyTarget below
 
-            if (attackCooldownTimer <= 0f)
+            // No attacks while the player is in the capture minigame - it holds
+            // position at range and strikes once the minigame is over (the
+            // cooldown keeps ticking, so it can hit right away).
+            if (attackCooldownTimer <= 0f && !PlayerInCaptureMinigame)
                 EnterState(State.Attacking);
 
             return;
@@ -555,9 +618,14 @@ public class CreatureAI : MonoBehaviour, ICapturable
         }
 
         // Aggressive creatures don't flee or dash when damaged-but-not-stunned
-        // - they keep pressing the attack, unaffected. Only non-aggressive
-        // (fleeing) species dash.
-        if (data.isAggressive) return;
+        // - they flinch (hold still for hitStaggerDuration, see TickAggressive)
+        // and then keep pressing the attack. Only non-aggressive (fleeing)
+        // species dash.
+        if (data.isAggressive)
+        {
+            staggerTimer = data.hitStaggerDuration;
+            return;
+        }
 
         if (CaptureMinigameController.Instance != null)
         {

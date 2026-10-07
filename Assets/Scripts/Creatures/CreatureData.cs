@@ -79,6 +79,10 @@ public class CreatureData : ScriptableObject
     public float attackDamage = 15f;
     [Tooltip("How long the attack animation holds the creature in place before it resumes chasing. Damage is applied immediately on landing the attack, not at the end of this window - this is purely how long the recovery/animation hold lasts.")]
     public float attackWindupDuration = 0.5f;
+    [Tooltip("Seconds an aggressive creature freezes in place (no chasing, no attacking) after being hit without being stunned, before it resumes the chase. 0 = unaffected by hits.")]
+    public float hitStaggerDuration = 0.6f;
+    [Tooltip("Seconds an aggressive creature stays calm after a stun ends - it drops the chase and won't re-notice the player until this runs out. Without it, it would re-aggro the instant it recovers, since the player is standing right there.")]
+    public float aggroLossDuration = 5f;
 
     [Header("Capture")]
     [Tooltip("NOT currently used - capture chance now comes from the capture minigame's hit ratio (see CaptureMinigameController). Left in place in case you want to fold it back in as a per-species multiplier later.")]

@@ -193,7 +193,7 @@ public class ExpeditionStewManager : MonoBehaviour
     }
 
     /// <summary>The scent scale's ceiling (StewCalculationConfig.scentMaxValue) - divide a scent value by this to get 0-1. Everything that normalizes a scent goes through here instead of hardcoding a number.</summary>
-    public float ScentMax => config != null ? Mathf.Max(1f, config.scentMaxValue) : 1000f;
+    public float ScentMax => config != null ? Mathf.Max(1f, config.scentMaxValue) : 500f;
 
     /// <summary>Player's current scent profile (Sweet, Fresh, Putrid, Metallic, Marine, each 0 to ScentMax) - neutral (all 0, i.e. "not present") with no active stew.</summary>
     public float[] GetScents()

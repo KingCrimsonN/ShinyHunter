@@ -5,6 +5,7 @@
 public static class SceneNames
 {
     public const string Hub = "Hub";
+    public const string MainMenu = "MainMenu";
 
     public static bool IsHub(string sceneName) => sceneName == Hub;
 }

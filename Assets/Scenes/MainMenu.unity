@@ -493,10 +493,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1342782566}
-        m_TargetAssemblyTypeName: SceneTransitionManager, Assembly-CSharp
-        m_MethodName: TransitionToSceneImmediate
-        m_Mode: 5
+      - m_Target: {fileID: 1986849874}
+        m_TargetAssemblyTypeName: MainMenuController, Assembly-CSharp
+        m_MethodName: StartGame
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -505,7 +505,7 @@ MonoBehaviour:
           m_StringArgument: Hub
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1342782565}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
@@ -896,9 +896,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1342782566}
-        m_TargetAssemblyTypeName: SceneTransitionManager, Assembly-CSharp
-        m_MethodName: CloseGame
+      - m_Target: {fileID: 1986849874}
+        m_TargetAssemblyTypeName: MainMenuController, Assembly-CSharp
+        m_MethodName: QuitGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1357,87 +1357,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1157552002}
   m_CullTransparentMesh: 1
---- !u!1001 &1185673661
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4849510073749518910, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_Name
-      value: GameManagers
-      objectReference: {fileID: 0}
-    - target: {fileID: 7844182965552872555, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: baseMaxHealth
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8380460777264418142, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: blackoutCanvasGroup
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8670404275170498310, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.36772
-      objectReference: {fileID: 0}
-    - target: {fileID: 8670404275170498310, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.75624
-      objectReference: {fileID: 0}
-    - target: {fileID: 8670404275170498310, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 7.80054
-      objectReference: {fileID: 0}
-    - target: {fileID: 8670404275170498310, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8670404275170498310, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8670404275170498310, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8670404275170498310, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8670404275170498310, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8670404275170498310, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8670404275170498310, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
---- !u!1 &1342782565 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4849510073749518910, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-  m_PrefabInstance: {fileID: 1185673661}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1342782566 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8380460777264418142, guid: 482bfd5a27ceffa459ce44ade04c1b1d, type: 3}
-  m_PrefabInstance: {fileID: 1185673661}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1342782565}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e7d20be72deb13a4692ca66f7d4c2395, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SceneTransitionManager
 --- !u!1 &1467072805
 GameObject:
   m_ObjectHideFlags: 0
@@ -1820,6 +1739,7 @@ GameObject:
   - component: {fileID: 1986849872}
   - component: {fileID: 1986849871}
   - component: {fileID: 1986849870}
+  - component: {fileID: 1986849874}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1912,6 +1832,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1986849874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1986849869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf0e0889e84be504ea3483ce7a55ac7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MainMenuController
+  gameSceneName: Hub
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1920,4 +1853,3 @@ SceneRoots:
   - {fileID: 1467072807}
   - {fileID: 1986849873}
   - {fileID: 72525956}
-  - {fileID: 1185673661}

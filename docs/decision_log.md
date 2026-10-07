@@ -1284,3 +1284,52 @@ simple curve satisfying "half the cap doubles, full cap quadruples"; it gives ab
 This scales the species' WEIGHT, not its final probability, which also depends on the other species the spawner can pick
 (2 equal species: x4 weight = 80% not 200%; 8 equal species: 12.5% -> 36%). Population (how many creatures exist) is
 unchanged: still `lerp(minFraction, 1, loudestAxis / cap)`.
+
+## Scent cap 1000 -> 500 (ingredient values untouched)
+
+Ingredient scents stay as authored (28 `ResourceData`; strongest per axis 95 Sweet / 65 Fresh / 65 Putrid / 55 Metallic /
+65 Marine, most others far lower). Every scent consumer already reads the cap through `StewCalculationConfig.scentMaxValue`
+(calculator clamp, creature distance + spawn-weight fractions, spawner population, default-stew clamp), so halving it
+scales all of them together with no code change beyond the default/fallback. The live asset's dead `scentPerPoint` line
+was replaced with `scentMaxValue: 500`. Why 500: with the default 4 unlocked cauldron slots the strongest single-axis
+stew is ~380 Sweet (4 Honey Jelly) / ~260 on the other axes, so a 1000 cap left even a perfect stew at 26-38% of the
+scale (spawn weight x1.4-1.7); at 500 it's 52-76% (x2.0-2.9), while 8 slots can saturate the Sweet axis. My earlier
+claim that ingredient values were "single/double digits, ~1% of the cap" was wrong - they run up to 95.
+
+## Aggressive critters: hit flinch, lose aggro after a stun, no attacks during the capture minigame
+
+**Flinch** (`CreatureData.hitStaggerDuration`, 0.6s): a hit that damages but doesn't stun an aggressive creature sets
+`staggerTimer`; `TickAggressive` holds it still (agent stopped, Hit animation) until it runs out, then resumes the chase
+(Move animation). If the hit lands mid-attack-recovery the flinch simply applies once it's back in the chase. Cleared
+whenever the creature leaves the chase states.
+
+**Lose aggro after a stun** (`aggroLossDuration`, 5s): when an aggressive creature leaves Stunned without being captured,
+`aggroBlockedTimer` starts; while it runs `CheckPlayerProximity` drops any chase and refuses to re-notice the player.
+Needed because the player is standing right next to it at that moment - without the timer it would re-aggro the next
+frame. Also: an aggressive creature that "struggles free" from a failed capture now goes to Idle instead of Flee (it used
+to enter Flee, which the aggressive branch of CheckPlayerProximity never exits - it would have fled forever).
+
+**No attacks during the minigame**: `TickAggressive` won't enter Attacking while `CaptureMinigameController.IsRunning`.
+It still closes in and holds at attack range, so it strikes as soon as the minigame ends (cooldown keeps ticking).
+Deliberately the minigame only, not "any frozen player" - other freezes (tablet, dialogue) either pause time or don't
+happen on expeditions.
+
+## Main menu: ending the session properly (no more persistent UI on top of the menu)
+
+**Cause.** "Back to main menu" called `SceneTransitionManager.TransitionToSceneImmediate("MainMenu")`, which loads the scene
+and destroys the manager's own GameObject (the GameManagers root). The OVERLAY (HUD + tablet, persistent via UIManager)
+was never destroyed, so it rendered and blocked raycasts over the menu, and `UIManager.ApplySceneVisibility` even switched
+its expedition HUD on there. Separately, the Overlay's menu/quit buttons had `m_Target: {fileID: 0}` in the prefab - a
+prefab can't hold a persistent OnClick reference to a scene object - so they only worked in scenes that overrode them by
+hand (SampleScene did; Hub did not).
+
+**Fix.** `GameSession.ReturnToMainMenu()` resets `timeScale` (the tablet leaves it at 0), destroys the roots of our
+singletons (GameManagers via PlayerStateManager/InventoryManager/SceneTransitionManager, the Overlay via UIManager,
+DialogueManager's root), then loads the menu. Destroying rather than resetting means the next session is rebuilt by the
+same Awakes as a first launch, with no per-field reset list to keep in sync. It does NOT sweep the whole
+DontDestroyOnLoad scene: that holds other packages' objects (DOTween's driver) that must survive.
+`GameSessionButton` hooks a Button's own onClick in code (ReturnToMainMenu / QuitGame) so prefab buttons need no OnClick
+target. `MainMenuController` is the menu scene's own non-persistent script (Start -> `SceneManager.LoadScene(Hub)`, Quit),
+replacing the menu's use of SceneTransitionManager; the menu scene then needs no GameManagers instance - the Hub brings its
+own, which become the persistent ones. `SceneTransitionManager.TransitionToSceneImmediate` is now unused by design and can
+be deleted once no scene/prefab references it.

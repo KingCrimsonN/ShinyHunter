@@ -17,8 +17,8 @@ public class StewCalculationConfig : ScriptableObject
 
     [Header("Scents")]
     [Tooltip("The most any scent axis can reach. A stew's scents are the plain SUM of its ingredients' scent values, clamped to this. It's also the scale everything else normalizes against (creature spawn/detection bias, spawner population) via ExpeditionStewManager.ScentMax - so a stew only has full effect when an axis actually reaches this number; tune ingredient scent values (ResourceData) with that in mind.")]
-    public float scentMaxValue = 1000f;
-    [Tooltip("Spawn-WEIGHT multiplier a species gets when the stew's scent on its FAVORITE axis is at the cap (Scent Max Value). The curve is exponential, so half the cap gives the square root of this: with 4, half = x2 and full = x4, and each extra 100 compounds (100 of 1000 is about +15%). A HATED axis does the exact opposite - full = x1/4, half = x1/2 - and never reaches zero. This multiplies the species' WEIGHT, not its final probability: probability is weight / total weight of every species the spawner can pick.")]
+    public float scentMaxValue = 500f;
+    [Tooltip("Spawn-WEIGHT multiplier a species gets when the stew's scent on its FAVORITE axis is at the cap (Scent Max Value). The curve is exponential, so half the cap gives the square root of this: with 4, half = x2 and full = x4, and each extra 100 compounds (100 of 500 is about +32%). A HATED axis does the exact opposite - full = x1/4, half = x1/2 - and never reaches zero. This multiplies the species' WEIGHT, not its final probability: probability is weight / total weight of every species the spawner can pick.")]
     [Min(1f)] public float scentSpawnMultiplierAtMax = 4f;
     [Tooltip("Population-cap fraction (0-1) a Spawner uses when the active stew's scent is at its weakest (every axis at 0, e.g. no stew at all). Scales up to the full populationCap as the loudest single scent axis approaches Scent Max Value - a weak-smelling stew draws fewer creatures. 1 = scent strength doesn't affect population at all.")]
     [Range(0f, 1f)]

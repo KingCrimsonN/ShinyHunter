@@ -4892,6 +4892,7 @@ GameObject:
   - component: {fileID: 5899104588163858569}
   - component: {fileID: 8032808858083989478}
   - component: {fileID: 8751994129098946021}
+  - component: {fileID: 5443075690176371028}
   m_Layer: 5
   m_Name: Button (1)
   m_TagString: Untagged
@@ -5001,9 +5002,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 11500000, guid: c0108f0b5066cbd498e97046733fd461, type: 3}
         m_TargetAssemblyTypeName: SceneTransitionManager, Assembly-CSharp
-        m_MethodName: TransitionToSceneImmediate
+        m_MethodName: 
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5013,6 +5014,19 @@ MonoBehaviour:
           m_StringArgument: MainMenu
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &5443075690176371028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1812503503179177634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0108f0b5066cbd498e97046733fd461, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSessionButton
+  action: 0
 --- !u!1 &1975847961532264943
 GameObject:
   m_ObjectHideFlags: 0
@@ -11792,6 +11806,7 @@ GameObject:
   - component: {fileID: 5980125863171909550}
   - component: {fileID: 27557934143996045}
   - component: {fileID: 3801582122729025133}
+  - component: {fileID: 217607715795110215}
   m_Layer: 5
   m_Name: Button (2)
   m_TagString: Untagged
@@ -11913,6 +11928,19 @@ MonoBehaviour:
           m_StringArgument: MainMenu
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &217607715795110215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4902544315387926752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0108f0b5066cbd498e97046733fd461, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSessionButton
+  action: 1
 --- !u!1 &4903455247480114510
 GameObject:
   m_ObjectHideFlags: 0

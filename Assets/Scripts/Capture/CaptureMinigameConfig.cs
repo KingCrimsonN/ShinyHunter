@@ -9,7 +9,7 @@ using UnityEngine;
 /// CaptureMinigameController.Instance (see its Get* methods) so CreatureAI
 /// doesn't need its own reference - see decision log.
 ///
-/// Tool-driven minigame numbers (time limit, attempt count, barrier speed
+/// Tool-driven minigame numbers (time limit, attempt count, needle speed, barrier speed
 /// multiplier, extra-ingredient/family-bonus chances) live on ToolData
 /// instead, since those vary per equipped tool, not per creature rarity.
 /// Per-SPECIES combat numbers (aggression, attack stats, flee/chase speed)

@@ -75,7 +75,7 @@ public class CaptureMinigameController : MonoBehaviour
     [SerializeField] private int defaultHitAreaCount = 3;
     [Tooltip("Fallback barrier width, used only if config is unassigned.")]
     [SerializeField] private float defaultHitAreaWidthDegrees = 30f;
-    [Tooltip("Degrees per second the NEEDLE spins - unaffected by rarity/tool, unlike the barriers themselves.")]
+    [Tooltip("Base degrees per second the NEEDLE spins. The equipped tool scales it (ToolData.needleSpeedMultiplier); the creature's rarity does not.")]
     [SerializeField] private float defaultNeedleSpeed = 180f;
     [Tooltip("Fallback time limit, used only if the equipped tool is unassigned.")]
     [SerializeField] private float defaultTimeLimit = 5f;
@@ -231,7 +231,7 @@ public class CaptureMinigameController : MonoBehaviour
         barrierOrbitDirection = UnityEngine.Random.value < 0.5f ? 1f : -1f; // not always clockwise
         barrierOrbitOffset = 0f;
 
-        needleSpeed = defaultNeedleSpeed;
+        needleSpeed = defaultNeedleSpeed * (equippedToolForThisRun != null ? equippedToolForThisRun.needleSpeedMultiplier : 1f);
 
         float toolTimeLimit = equippedToolForThisRun != null ? equippedToolForThisRun.minigameTimeLimit : defaultTimeLimit;
         float captureTimeBonus = ExpeditionStewManager.Instance != null && creatureData != null

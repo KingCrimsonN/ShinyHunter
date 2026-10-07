@@ -35,6 +35,8 @@ public class ToolData : ScriptableObject
     public float minigameTimeLimit = 5f;
     [Tooltip("Number of hit attempts (needle/nail marks) the minigame gives when using this tool - independent of how many barriers there are (CaptureMinigameConfig.barrierCountPerRarity), so a generous tool can give more swings than there are barriers to hit.")]
     [Min(1)] public int minigameAttemptCount = 3;
+    [Tooltip("Multiplies how fast the NEEDLE spins around the wheel when using this tool: below 1 = slower and easier to time, above 1 = faster and harder. 1 = the controller's base needle speed.")]
+    [Min(0.1f)] public float needleSpeedMultiplier = 1f;
     [Tooltip("Multiplies moving barriers' orbit speed (only relevant for rarities where they move at all - CaptureMinigameConfig.barriersMovePerRarity) when using this tool. 1 = no change.")]
     public float barrierSpeedMultiplier = 1f;
 

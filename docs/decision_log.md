@@ -1371,3 +1371,10 @@ silently skipped. `CaptureMinigameController` already remembers the tool from wh
 `ICapturable.TryCapture(captureChance, extraDoubleYieldChance = 0)`. The creature no longer reads the tool inventory at
 all. General rule: anything the capture outcome needs from the tool must be captured at BeginCapture, never looked up
 at resolve time.
+
+## Tools scale the minigame needle's speed
+
+`ToolData.needleSpeedMultiplier` (default 1, min 0.1) scales the controller's base `defaultNeedleSpeed` (180 deg/s), read
+from the tool remembered at `BeginCapture` like every other tool-driven minigame value. A multiplier (not an absolute
+speed) to match `barrierSpeedMultiplier` and so retuning the base needle speed still moves every tool together. Rarity
+still doesn't affect the needle - rarity drives barriers, tools drive the needle.

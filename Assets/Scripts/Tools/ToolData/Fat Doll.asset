@@ -15,13 +15,14 @@ MonoBehaviour:
   toolName: Fat Doll
   icon: {fileID: 21300000, guid: 30e9d8375ff6b9442a63dd412d208580, type: 3}
   description: Has a chance of making critters yield more ingredients when butchered.
-    Max stack - 5. More difficult to operate.
-  maxStack: 5
+    Max stack - 20. More difficult to operate.
+  maxStack: 20
   consumable: 1
   toolPrefab: {fileID: 8391984615509240277, guid: 97eb36d610d2e10469e16980ed0c773a, type: 3}
   useCooldown: 1
   minigameTimeLimit: 5
   minigameAttemptCount: 2
+  needleSpeedMultiplier: 1.1
   barrierSpeedMultiplier: 1
   extraIngredientChance: 1
   bonusFamily: 0

@@ -6,14 +6,22 @@ using UnityEngine.UI;
 /// <summary>
 /// Creature-to-resource transform station. Opened externally (call
 /// Instance.Open() from your interactable object's script - no toggle key
-/// of its own). Holds a local, transient "selection" of creatures staged
-/// for transformation; nothing is actually consumed until CompleteTransform().
+/// of its own). Holds a local, transient selection of the SPECIFIC critters
+/// staged for transformation; nothing is actually consumed until
+/// CompleteTransform().
+///
+/// Works on individual critters (CapturedCritter), not counts: staging the
+/// sparkly one stages THAT one. Both grids show CritterStacks - one tile per
+/// critter in individual view (default), one per species+rarity in grouped
+/// view (CritterInventoryView, shared with the inventory). Moving N out of a
+/// group picks which critters go: double-yield ones first into the selection
+/// (so transforming gets the most out of them), plain ones first back out.
 ///
 /// Two-phase transform, to leave room for your animation:
-///   1. BeginTransform() - validates selection, snapshots it, closes the
-///      popup, fires OnTransformInitiated(snapshot). Nothing is consumed yet.
+///   1. BeginTransform() - validates selection, snapshots it, fires
+///      OnTransformInitiated(snapshot). Nothing is consumed yet.
 ///   2. CompleteTransform() - call this once your animation finishes. THIS
-///      is what actually removes the creatures from InventoryManager and
+///      is what actually removes the critters from InventoryManager and
 ///      grants resources via ResourceInventoryManager.
 /// </summary>
 public class CreatureTransformStationUI : MonoBehaviour
@@ -32,12 +40,12 @@ public class CreatureTransformStationUI : MonoBehaviour
     [Tooltip("Shared floating icon shown while dragging. UI Image under this popup's Canvas, Raycast Target OFF, inactive by default.")]
     [SerializeField] private Image dragIconTemplate;
 
-    private readonly Dictionary<(CreatureData species, CreatureData.Rarity rarity), int> selection =
-        new Dictionary<(CreatureData, CreatureData.Rarity), int>();
+    /// <summary>The critters staged for transformation, in the order they were staged.</summary>
+    private readonly List<CapturedCritter> staged = new List<CapturedCritter>();
 
     public event Action OnSelectionChanged;
-    /// <summary>Fired when Transform is pressed, with a snapshot of what was staged. Start your animation here.</summary>
-    public event Action<IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int>> OnTransformInitiated;
+    /// <summary>Fired when Transform is pressed, with a snapshot of the staged critters. Start your animation here.</summary>
+    public event Action<IReadOnlyList<CapturedCritter>> OnTransformInitiated;
     /// <summary>Fired once CompleteTransform() has actually granted resources.</summary>
     public event Action OnTransformCompleted;
 
@@ -50,24 +58,31 @@ public class CreatureTransformStationUI : MonoBehaviour
         if (popupRoot != null) popupRoot.SetActive(false);
     }
 
+    private void OnDestroy()
+    {
+        // Scene-scoped object: if the scene unloads while the popup is open,
+        // don't leave the persistent inventory / static view setting calling
+        // into a destroyed object.
+        Unsubscribe();
+    }
+
     // ---------------- Open / Close ----------------
 
     public void Open()
     {
-        selection.Clear(); // starts fresh each time - remove this line if you'd rather staged items persist between opens
+        staged.Clear(); // starts fresh each time - remove this line if you'd rather staged critters persist between opens
 
         if (popupRoot != null) popupRoot.SetActive(true);
         // Freezes movement, Interactor, the stick and tool use together
         // (and frees the cursor) - see PlayerStateManager. Registers Close
         // as the Escape callback (see PlayerStateManager.TryCloseCurrentPopup
-        // / UIManager's centralized Escape handling) - this popup had NO
-        // Escape handling at all before, so Escape did nothing while it was
-        // open. See decision log.
+        // / UIManager's centralized Escape handling). See decision log.
         PlayerStateManager.Instance.Freeze(Close);
 
-        // -= first so an Open() without a matching Close() can't double-subscribe
-        InventoryManager.Instance.OnInventoryChanged -= RefreshGrids;
+        // Unsubscribe first so an Open() without a matching Close() can't double-subscribe.
+        Unsubscribe();
         InventoryManager.Instance.OnInventoryChanged += RefreshGrids;
+        CritterInventoryView.Changed += RefreshGrids;
         RefreshGrids();
     }
 
@@ -75,109 +90,95 @@ public class CreatureTransformStationUI : MonoBehaviour
     {
         if (popupRoot != null) popupRoot.SetActive(false);
         PlayerStateManager.Instance.Unfreeze();
+        Unsubscribe();
+    }
 
+    private void Unsubscribe()
+    {
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.OnInventoryChanged -= RefreshGrids;
+        CritterInventoryView.Changed -= RefreshGrids;
     }
 
     // ---------------- Queries ----------------
 
-    public int GetAvailableCount(CreatureData species, CreatureData.Rarity rarity)
-    {
-        int owned = InventoryManager.Instance.GetCount(species, rarity);
-        int staged = GetSelectedCount(species, rarity);
-        return Mathf.Max(0, owned - staged);
-    }
+    public IReadOnlyList<CapturedCritter> GetSelection() => staged;
 
-    public int GetSelectedCount(CreatureData species, CreatureData.Rarity rarity)
-    {
-        return selection.TryGetValue((species, rarity), out int c) ? c : 0;
-    }
+    public bool IsStaged(CapturedCritter critter) => staged.Contains(critter);
 
-    /// <summary>
-    /// How many of the AVAILABLE (not-yet-staged) units of this species+rarity
-    /// are sparkle-flagged - drives the sparkle badge on the inventory side.
-    /// Sparkle-flagged units are treated as "claimed" by staging FIRST
-    /// (matching InventoryManager.RemoveCreatures' actual consumption order),
-    /// so this is whatever's left over: total sparkle minus however many are
-    /// already staged. See CreatureTransformEntryUI.
-    /// </summary>
-    public int GetAvailableSparkleCount(CreatureData species, CreatureData.Rarity rarity)
+    /// <summary>Held critters that aren't staged, in capture order - the source side of the table.</summary>
+    private List<CapturedCritter> GetAvailable()
     {
-        int total = InventoryManager.Instance.GetSparkleCount(species, rarity);
-        int staged = GetSelectedCount(species, rarity);
-        return Mathf.Max(0, total - staged);
+        var available = new List<CapturedCritter>();
+        foreach (var critter in InventoryManager.Instance.Critters)
+            if (!staged.Contains(critter)) available.Add(critter);
+        return available;
     }
-
-    /// <summary>How many of the STAGED units of this species+rarity are sparkle-flagged - drives the sparkle badge on the selection side. See GetAvailableSparkleCount.</summary>
-    public int GetStagedSparkleCount(CreatureData species, CreatureData.Rarity rarity)
-    {
-        int total = InventoryManager.Instance.GetSparkleCount(species, rarity);
-        int staged = GetSelectedCount(species, rarity);
-        return Mathf.Min(total, staged);
-    }
-
-    public IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int> GetSelection() => selection;
 
     // ---------------- Move actions (called by CreatureTransformEntryUI / TransformDropZoneUI) ----------------
 
-    public void MoveToSelection(CreatureData species, CreatureData.Rarity rarity, int amount)
+    /// <summary>Stages up to `amount` of the critters on this tile. From a group, double-yield critters go first - they're the ones worth transforming.</summary>
+    public void MoveToSelection(CritterStack stack, int amount)
     {
-        amount = Mathf.Min(amount, GetAvailableCount(species, rarity));
-        if (amount <= 0) return;
+        int moved = 0;
+        foreach (var critter in Ordered(stack, doubleYieldFirst: true))
+        {
+            if (moved >= amount) break;
+            if (staged.Contains(critter) || !IsHeld(critter)) continue;
 
-        ApplyMoveToSelection(species, rarity, amount);
-        NotifyChanged();
+            staged.Add(critter);
+            moved++;
+        }
+
+        if (moved > 0) NotifyChanged();
     }
 
-    public void MoveFromSelection(CreatureData species, CreatureData.Rarity rarity, int amount)
+    /// <summary>Un-stages up to `amount` of the critters on this tile. From a group, plain critters go back first, so the double-yield ones stay selected.</summary>
+    public void MoveFromSelection(CritterStack stack, int amount)
     {
-        amount = Mathf.Min(amount, GetSelectedCount(species, rarity));
-        if (amount <= 0) return;
+        int moved = 0;
+        foreach (var critter in Ordered(stack, doubleYieldFirst: false))
+        {
+            if (moved >= amount) break;
+            if (staged.Remove(critter)) moved++;
+        }
 
-        ApplyMoveFromSelection(species, rarity, amount);
-        NotifyChanged();
+        if (moved > 0) NotifyChanged();
     }
 
     /// <summary>Wire to the "Put All" button.</summary>
     public void PutAllInSelection()
     {
-        bool changed = false;
+        var available = GetAvailable();
+        if (available.Count == 0) return;
 
-        foreach (var kvp in InventoryManager.Instance.GetAll())
-        {
-            int available = GetAvailableCount(kvp.Key.species, kvp.Key.rarity);
-            if (available <= 0) continue;
-
-            ApplyMoveToSelection(kvp.Key.species, kvp.Key.rarity, available);
-            changed = true;
-        }
-
-        if (changed) NotifyChanged();
+        staged.AddRange(available);
+        NotifyChanged();
     }
 
     /// <summary>Wire to the "Take All Back" button.</summary>
     public void TakeAllBackFromSelection()
     {
-        if (selection.Count == 0) return;
+        if (staged.Count == 0) return;
 
-        selection.Clear();
+        staged.Clear();
         NotifyChanged();
     }
 
-    private void ApplyMoveToSelection(CreatureData species, CreatureData.Rarity rarity, int amount)
+    /// <summary>The stack's critters with double-yield ones first (or last), otherwise in their existing order.</summary>
+    private static IEnumerable<CapturedCritter> Ordered(CritterStack stack, bool doubleYieldFirst)
     {
-        var key = (species, rarity);
-        selection[key] = GetSelectedCount(species, rarity) + amount;
+        foreach (var critter in stack.Critters)
+            if (critter.doubleYield == doubleYieldFirst) yield return critter;
+        foreach (var critter in stack.Critters)
+            if (critter.doubleYield != doubleYieldFirst) yield return critter;
     }
 
-    private void ApplyMoveFromSelection(CreatureData species, CreatureData.Rarity rarity, int amount)
+    private static bool IsHeld(CapturedCritter critter)
     {
-        var key = (species, rarity);
-        int remaining = GetSelectedCount(species, rarity) - amount;
-
-        if (remaining <= 0) selection.Remove(key);
-        else selection[key] = remaining;
+        foreach (var held in InventoryManager.Instance.Critters)
+            if (held == critter) return true;
+        return false;
     }
 
     private void NotifyChanged()
@@ -191,11 +192,11 @@ public class CreatureTransformStationUI : MonoBehaviour
     /// <summary>Wire to the "Transform" button.</summary>
     public void BeginTransform()
     {
-        if (selection.Count == 0) return;
+        if (staged.Count == 0) return;
 
         // Snapshot so the animation hook has stable data even though the
         // popup (and therefore this selection) may change before CompleteTransform runs.
-        var snapshot = new Dictionary<(CreatureData, CreatureData.Rarity), int>(selection);
+        var snapshot = new List<CapturedCritter>(staged);
 
         CompleteTransform();
 
@@ -204,36 +205,36 @@ public class CreatureTransformStationUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Call once your transformation animation finishes. Consumes the staged
-    /// creatures and grants resources. Ingredient Power is NOT rolled here
-    /// any more - it resolves at CAPTURE time now (CreatureAI.TryCapture),
-    /// and each unit's result is already tagged on InventoryManager's
-    /// sparkle count. This just reads how many of the units being consumed
-    /// were flagged (sparkle-flagged units are removed FIRST - see
-    /// InventoryManager.RemoveCreatures - so this is exact, not a guess).
-    /// See decision log.
+    /// Call once your transformation animation finishes. Consumes exactly the
+    /// staged critters and grants each one's resource - two of it if that
+    /// critter is flagged double-yield (decided at capture, see
+    /// CreatureAI.TryCapture). No more "assume the flagged ones are consumed
+    /// first": every critter carries its own flag. See decision log.
     /// </summary>
     public void CompleteTransform()
     {
-        foreach (var kvp in selection)
+        var grants = new Dictionary<ResourceData, int>();
+        var consumed = new List<CapturedCritter>();
+
+        foreach (var critter in staged)
         {
-            var species = kvp.Key.species;
-            var rarity = kvp.Key.rarity;
-            int amount = kvp.Value;
+            if (!IsHeld(critter)) continue; // left the inventory some other way while staged
 
-            int sparkleAvailable = InventoryManager.Instance.GetSparkleCount(species, rarity);
-            int sparkleUsed = Mathf.Min(sparkleAvailable, amount);
+            consumed.Add(critter);
 
-            InventoryManager.Instance.RemoveCreatures(species, rarity, amount);
-
-            var resource = species.GetResource(rarity);
+            var resource = critter.species.GetResource(critter.rarity);
             if (resource == null) continue;
 
-            int totalGranted = sparkleUsed * 2 + (amount - sparkleUsed);
-            ResourceInventoryManager.Instance.AddResource(resource, totalGranted);
+            int amount = critter.doubleYield ? 2 : 1;
+            grants[resource] = grants.TryGetValue(resource, out int n) ? n + amount : amount;
         }
 
-        selection.Clear();
+        staged.Clear();
+        InventoryManager.Instance.RemoveCritters(consumed);
+
+        foreach (var grant in grants)
+            ResourceInventoryManager.Instance.AddResource(grant.Key, grant.Value);
+
         OnTransformCompleted?.Invoke();
     }
 
@@ -241,22 +242,24 @@ public class CreatureTransformStationUI : MonoBehaviour
 
     private void RefreshGrids()
     {
+        // Drop anything staged that's no longer held (e.g. removed elsewhere while open).
+        staged.RemoveAll(c => !IsHeld(c));
+
         ClearChildren(inventoryGridParent);
         ClearChildren(selectionGridParent);
 
-        foreach (var kvp in InventoryManager.Instance.GetAll())
-        {
-            int available = GetAvailableCount(kvp.Key.species, kvp.Key.rarity);
-            if (available <= 0) continue; // fully staged - nothing left to show on the source side
+        bool grouped = CritterInventoryView.Grouped;
 
+        foreach (var stack in CritterStack.Build(GetAvailable(), grouped))
+        {
             var entry = Instantiate(entryPrefab, inventoryGridParent);
-            entry.Setup(kvp.Key.species, kvp.Key.rarity, available, TransformEntrySide.Inventory, this);
+            entry.Setup(stack, TransformEntrySide.Inventory, this);
         }
 
-        foreach (var kvp in selection)
+        foreach (var stack in CritterStack.Build(staged, grouped))
         {
             var entry = Instantiate(entryPrefab, selectionGridParent);
-            entry.Setup(kvp.Key.species, kvp.Key.rarity, kvp.Value, TransformEntrySide.Selection, this);
+            entry.Setup(stack, TransformEntrySide.Selection, this);
         }
     }
 

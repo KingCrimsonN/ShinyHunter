@@ -4,12 +4,15 @@ using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// One entry, shown on EITHER side of the transform station (inventory or
+/// One tile, shown on EITHER side of the transform station (inventory or
 /// selection) - same prefab, same script, just configured with a different
-/// TransformEntrySide. Handles all three move interactions:
-///   - Drag: moves the WHOLE stack shown on this entry.
+/// TransformEntrySide. It shows a CritterStack: ONE critter in individual
+/// view (the default - no count, its own sparkle), or a whole species+rarity
+/// group in grouped view ("xN", sparkle if any in it is double-yield).
+/// Handles all three move interactions:
+///   - Drag: moves everything on this tile (just the one critter, individually).
 ///   - Double-click: moves exactly one.
-///   - Shift+click: moves the whole stack (same result as drag, click-triggered).
+///   - Shift+click: moves everything on this tile (same as drag, click-triggered).
 /// Also acts as its own drop target, so dropping onto an existing entry on
 /// the opposite side works - see TransformDropZoneUI for the empty-space case.
 /// </summary>
@@ -21,15 +24,15 @@ public class CreatureTransformEntryUI : MonoBehaviour,
     [SerializeField] private TMP_Text nameText;
     // [SerializeField] private TMP_Text rarityText;
     [SerializeField] private TMP_Text countText;
-    [Tooltip("Shown when any of this entry's units will yield double resources (Ingredient Power, flagged at capture time) - e.g. a sparkle graphic layered on top of the icon.")]
-    [SerializeField] private GameObject sparkleOverlay;
+    [Tooltip("Shown when this critter yields double resources (or, for a grouped tile, when any in the group does) - flagged at capture time. E.g. a sparkle graphic layered on top of the icon.")]
+    [SerializeField] private GameObject ExtraIngredientOverlay;
 
     /// <summary>Shared floating drag ghost, set once by CreatureTransformStationUI.Awake().</summary>
     public static Image DragIcon;
 
     public TransformEntrySide Side { get; private set; }
 
-    private CreatureData species;
+    private CritterStack stack;
     private CreatureData.Rarity rarity;
     private CreatureTransformStationUI station;
 
@@ -37,31 +40,24 @@ public class CreatureTransformEntryUI : MonoBehaviour,
     // [SerializeField] private Sprite[] rarityFrames; // normal, uncommon, rare, legendary
     [SerializeField] private CritterFrames critterFrames;
 
-    public void Setup(CreatureData species, CreatureData.Rarity rarity, int count, TransformEntrySide side, CreatureTransformStationUI station)
+    public void Setup(CritterStack stack, TransformEntrySide side, CreatureTransformStationUI station)
     {
-        this.species = species;
-        this.rarity = rarity;
+        this.stack = stack;
+        this.rarity = stack.Rarity;
         this.Side = side;
         this.station = station;
 
+        var species = stack.Species;
         if (icon != null) icon.sprite = species.GetIcon(rarity);
         if (nameText != null) nameText.text = species.creatureName;
-        // if (rarityText != null) rarityText.text = rarity.ToString();
-        if (countText != null) countText.text = "x" + count;
+        // Individual tiles are always exactly one critter - no "x1" on every tile.
+        if (countText != null) countText.text = stack.IsGroup ? "x" + stack.Count : string.Empty;
 
-        // nameText.color = GetRarityColor(rarity);
-        if (frame != null) frame.sprite = critterFrames.rarityFrames[(int)rarity];
+        if (frame != null && critterFrames != null) frame.sprite = critterFrames.rarityFrames[(int)rarity];
 
-        if (sparkleOverlay != null)
-        {
-            // Side-specific: how many of the units THIS ENTRY is showing
-            // (available on the inventory side, staged on the selection side)
-            // are sparkle-flagged - see CreatureTransformStationUI.
-            int sparkleShown = side == TransformEntrySide.Inventory
-                ? station.GetAvailableSparkleCount(species, rarity)
-                : station.GetStagedSparkleCount(species, rarity);
-            sparkleOverlay.SetActive(sparkleShown > 0);
-        }
+        // The stack only holds the critters on THIS side (the station builds
+        // each side's tiles separately), so this is exactly what's shown here.
+        if (ExtraIngredientOverlay != null) ExtraIngredientOverlay.SetActive(stack.DoubleYieldCount > 0);
     }
 
     /// <summary>Moves up to `amount` from this entry's side to the other side. Station clamps to what's actually available.</summary>
@@ -69,12 +65,12 @@ public class CreatureTransformEntryUI : MonoBehaviour,
     {
         if (DragIcon != null)
             DragIcon.gameObject.SetActive(false);
-        if (station == null) return;
+        if (station == null || stack == null) return;
 
         if (Side == TransformEntrySide.Inventory)
-            station.MoveToSelection(species, rarity, amount);
+            station.MoveToSelection(stack, amount);
         else
-            station.MoveFromSelection(species, rarity, amount);
+            station.MoveFromSelection(stack, amount);
     }
 
     public void OnPointerClick(PointerEventData eventData)

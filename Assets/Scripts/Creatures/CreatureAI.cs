@@ -686,7 +686,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
         return success;
     }
 
-    public bool TryCapture(float captureChance)
+    public bool TryCapture(float captureChance, float extraDoubleYieldChance = 0f)
     {
         if (currentState != State.Stunned) return false;
 
@@ -707,13 +707,12 @@ public class CreatureAI : MonoBehaviour, ICapturable
             // A tool can ALSO grant an independent chance at the same flag
             // (ToolData.extraIngredientChance) - either roll succeeding is
             // enough, so only bother rolling this one if the stew didn't
-            // already get there first.
-            if (!doubleYield)
-            {
-                var equippedTool = ToolInventoryManager.Instance != null ? ToolInventoryManager.Instance.EquippedSlot?.data : null;
-                if (equippedTool != null && Random.value <= equippedTool.extraIngredientChance)
-                    doubleYield = true;
-            }
+            // already get there first. The chance is handed in by whoever
+            // resolved the capture (CaptureMinigameController remembers the
+            // tool from when the wheel started) - it can't be read from the
+            // inventory here, the tool may already have been consumed.
+            if (!doubleYield && extraDoubleYieldChance > 0f && Random.value <= extraDoubleYieldChance)
+                doubleYield = true;
 
             InventoryManager.Instance.AddCreature(data, rolledRarity, 1, doubleYield);
 

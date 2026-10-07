@@ -4,33 +4,30 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Central store of how many of each (species, rarity) combo the player has
-/// captured, plus how many of each stack are flagged double-yield (Ingredient
-/// Power - see sparkleCounts). Fires OnInventoryChanged so UI (and later, the
-/// bestiary/stew system) can react without polling.
+/// Central store of every critter the player currently holds - ONE
+/// CapturedCritter record per critter caught, each with its own state
+/// (double-yield flag). Grouping by species+rarity is purely a display choice
+/// made by the UI (CritterStack / CritterInventoryView); the count-style
+/// queries below (GetCount, GetSparkleCount, GetAll...) are computed from the
+/// list for the systems that only care about totals. Also tracks per-run
+/// captures and "ever caught" for the run summary and CritterDex. Fires
+/// OnInventoryChanged so UI can react without polling.
 /// </summary>
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
-    /// <summary>Key = species + rarity. A captured Rare rabbit and a Normal rabbit are separate entries.</summary>
-    private readonly Dictionary<(CreatureData species, CreatureData.Rarity rarity), int> counts =
-        new Dictionary<(CreatureData, CreatureData.Rarity), int>();
-
     /// <summary>
-    /// How many of each stack's CURRENT stock are flagged to yield double
-    /// resources when eventually transformed (Ingredient Power, rolled once
-    /// PER CAPTURED UNIT - see CreatureAI.TryCapture). Always &lt;= the
-    /// matching entry in counts. Not truly per-instance (individual captured
-    /// creatures aren't distinguishable, only counted) - flagged units within
-    /// a stack are interchangeable, and RemoveCreatures always consumes
-    /// flagged ones FIRST, so "which n are sparkly" is well-defined without
-    /// needing real per-instance identity. See decision log.
+    /// Every critter currently held, in the order they were caught. Replaces the
+    /// old count-per-(species, rarity) + separate double-yield sub-count: with
+    /// those, critters were interchangeable numbers, so the transform table had
+    /// to assume "double-yield ones are consumed first" - it could never honour
+    /// the player picking one particular critter. See decision log.
     /// </summary>
-    private readonly Dictionary<(CreatureData species, CreatureData.Rarity rarity), int> sparkleCounts =
-        new Dictionary<(CreatureData, CreatureData.Rarity), int>();
+    private readonly List<CapturedCritter> critters = new List<CapturedCritter>();
+    private int nextCritterId = 1;
 
-    /// <summary>Same shape as counts, but scoped to the current run only - cleared by ResetRunTracking().</summary>
+    /// <summary>Captures THIS run, counted per species+rarity (the run summary only needs totals) - cleared by ResetRunTracking(). Unlike the held critters, never reduced by transforming.</summary>
     private readonly Dictionary<(CreatureData species, CreatureData.Rarity rarity), int> runCounts =
         new Dictionary<(CreatureData, CreatureData.Rarity), int>();
 
@@ -39,8 +36,8 @@ public class InventoryManager : MonoBehaviour
 
     /// <summary>
     /// Every (species, rarity) combo ever captured, persists for the whole
-    /// play session (never cleared) - unlike `counts`, which drops back out
-    /// once every unit of that combo is later transformed/consumed. The
+    /// play session (never cleared) - unlike the held critters, which disappear
+    /// once they are transformed/consumed. The
     /// CritterDex reads THIS, not GetCount, for "has this rarity been seen" -
     /// a species/rarity that's been caught once must never disappear from
     /// the dex again just because none are currently held. See decision log.
@@ -87,24 +84,27 @@ public class InventoryManager : MonoBehaviour
             ResetRunTracking();
     }
 
-    /// <param name="doubleYield">True if this capture was flagged by Ingredient Power to yield double resources on transform (see CreatureAI.TryCapture). Applies to the WHOLE amount being added in this one call.</param>
+    /// <summary>Adds `amount` new critter records (normally 1 - one capture).</summary>
+    /// <param name="doubleYield">True if this capture was flagged to yield double resources on transform (see CreatureAI.TryCapture). Applies to every critter added in this one call.</param>
     public void AddCreature(CreatureData species, CreatureData.Rarity rarity, int amount = 1, bool doubleYield = false)
     {
-        if (species == null) return;
+        if (species == null || amount <= 0) return;
 
         var key = (species, rarity);
 
-        if (!counts.ContainsKey(key)) counts[key] = 0;
-        counts[key] += amount;
+        for (int i = 0; i < amount; i++)
+        {
+            critters.Add(new CapturedCritter
+            {
+                id = nextCritterId++,
+                species = species,
+                rarity = rarity,
+                doubleYield = doubleYield,
+            });
+        }
 
         if (!runCounts.ContainsKey(key)) runCounts[key] = 0;
         runCounts[key] += amount;
-
-        if (doubleYield)
-        {
-            if (!sparkleCounts.ContainsKey(key)) sparkleCounts[key] = 0;
-            sparkleCounts[key] += amount;
-        }
 
         if (!everCapturedSpecies.Contains(species))
         {
@@ -135,53 +135,48 @@ public class InventoryManager : MonoBehaviour
     /// <summary>How many species were captured for the first time ever, during THIS run.</summary>
     public int GetNewSpeciesThisRunCount() => newSpeciesThisRun.Count;
 
+    /// <summary>Every critter currently held, in capture order - what the critter grids build their tiles from.</summary>
+    public IReadOnlyList<CapturedCritter> Critters => critters;
+
     /// <summary>
-    /// Removes captured creatures of a species+rarity (e.g. consumed by
-    /// transforming them into resources). Sparkle-flagged (double-yield)
-    /// units are always consumed FIRST - see the sparkleCounts field comment
-    /// - so a caller that wants to know how many of the units it's about to
-    /// remove were flagged should read GetSparkleCount(species, rarity)
-    /// (clamped to `amount`) BEFORE calling this.
+    /// Removes these specific critters (e.g. the ones staged on the transform
+    /// table). Critters no longer in the inventory are ignored. Fires
+    /// OnInventoryChanged once, however many were removed.
     /// </summary>
-    public void RemoveCreatures(CreatureData species, CreatureData.Rarity rarity, int amount)
+    public void RemoveCritters(IEnumerable<CapturedCritter> toRemove)
     {
-        var key = (species, rarity);
-        if (!counts.ContainsKey(key)) return;
+        if (toRemove == null) return;
 
-        counts[key] -= amount;
-        if (counts[key] <= 0) counts.Remove(key);
+        var set = new HashSet<CapturedCritter>(toRemove);
+        int removed = critters.RemoveAll(c => set.Contains(c));
 
-        if (sparkleCounts.TryGetValue(key, out int sparkle))
-        {
-            int remainingSparkle = Mathf.Max(0, sparkle - amount);
-            if (remainingSparkle <= 0) sparkleCounts.Remove(key);
-            else sparkleCounts[key] = remainingSparkle;
-        }
-
-        OnInventoryChanged?.Invoke();
+        if (removed > 0) OnInventoryChanged?.Invoke();
     }
 
-    /// <summary>Count of one specific species+rarity combo.</summary>
+    /// <summary>How many critters of this species+rarity are currently held.</summary>
     public int GetCount(CreatureData species, CreatureData.Rarity rarity)
     {
-        return counts.TryGetValue((species, rarity), out int c) ? c : 0;
+        int n = 0;
+        foreach (var c in critters)
+            if (c.species == species && c.rarity == rarity) n++;
+        return n;
     }
 
-    /// <summary>How many of this species+rarity's current stock are flagged double-yield (Ingredient Power) - always &lt;= GetCount(species, rarity). 0 = no sparkle badge.</summary>
+    /// <summary>How many of the held critters of this species+rarity yield double resources - always &lt;= GetCount. For grouped displays; individual tiles read CapturedCritter.doubleYield directly.</summary>
     public int GetSparkleCount(CreatureData species, CreatureData.Rarity rarity)
     {
-        return sparkleCounts.TryGetValue((species, rarity), out int c) ? c : 0;
+        int n = 0;
+        foreach (var c in critters)
+            if (c.species == species && c.rarity == rarity && c.doubleYield) n++;
+        return n;
     }
 
     /// <summary>Total captured of a species across all rarities, CURRENTLY HELD. Drops back to 0 once every unit is transformed/consumed - NOT what the CritterDex should use for "seen" (see HasEverCaptured), just for inventory/UI stock displays.</summary>
     public int GetTotalCount(CreatureData species)
     {
         int total = 0;
-        foreach (var kvp in counts)
-        {
-            if (kvp.Key.species == species)
-                total += kvp.Value;
-        }
+        foreach (var c in critters)
+            if (c.species == species) total++;
         return total;
     }
 
@@ -197,5 +192,15 @@ public class InventoryManager : MonoBehaviour
         return everCapturedRarities.Contains((species, rarity));
     }
 
-    public IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int> GetAll() => counts;
+    /// <summary>Held critters counted per species+rarity, in first-caught order. Built fresh each call (the list is small) - for code that only needs totals.</summary>
+    public IReadOnlyDictionary<(CreatureData species, CreatureData.Rarity rarity), int> GetAll()
+    {
+        var totals = new Dictionary<(CreatureData, CreatureData.Rarity), int>();
+        foreach (var c in critters)
+        {
+            var key = (c.species, c.rarity);
+            totals[key] = totals.TryGetValue(key, out int n) ? n + 1 : 1;
+        }
+        return totals;
+    }
 }

@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 
-/// <summary>One row in the inventory list: rarity-correct icon, name, rarity label, count.</summary>
+/// <summary>One tile in the critter inventory: a single critter (individual view - no count) or a species+rarity group (grouped view - shows "xN"). Rarity-correct icon, name, frame, and the double-yield sparkle.</summary>
 public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Image icon;
@@ -16,7 +16,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     // [SerializeField] private Sprite[] rarityFrames; // normal, uncommon, rare, legendary
     [SerializeField] private CritterFrames critterFrames;
 
-    [Tooltip("Shown when any of this stack will yield double resources (Ingredient Power, flagged at capture time) - e.g. a sparkle graphic layered on top of the icon.")]
+    [Tooltip("Shown when this critter yields double resources (or, in grouped view, when ANY in the group does) - flagged at capture time. E.g. a sparkle graphic layered on top of the icon.")]
     [SerializeField] private GameObject sparkleOverlay;
     private CreatureData.Rarity rarity;
 
@@ -28,26 +28,24 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private Color rareColor = new Color(0.3f, 0.5f, 1f);
     [SerializeField] private Color legendaryColor = new Color(1f, 0.65f, 0f);
 
-    public void Set(CreatureData species, CreatureData.Rarity rarity, int count)
+    public void Set(CritterStack stack)
     {
-        this.rarity = rarity;
+        var species = stack.Species;
+        rarity = stack.Rarity;
+
         if (icon != null) icon.sprite = species.GetIcon(rarity);
-        if (nameText != null) nameText.text = species.creatureName;
-        if (countText != null) countText.text = "x" + count;
+        if (nameText != null)
+        {
+            nameText.text = species.creatureName;
+            nameText.color = GetRarityColor(rarity);
+        }
+        // Individual tiles are always exactly one critter - no "x1" on every tile.
+        if (countText != null) countText.text = stack.IsGroup ? "x" + stack.Count : string.Empty;
         description = species.description;
 
-        // if (rarityText != null)
-        // {
-        //     rarityText.text = rarity.ToString();
-        nameText.color = GetRarityColor(rarity);
-        if (frame != null) frame.sprite = critterFrames.rarityFrames[(int)rarity];
-        // }
+        if (frame != null && critterFrames != null) frame.sprite = critterFrames.rarityFrames[(int)rarity];
 
-        if (sparkleOverlay != null)
-        {
-            bool hasSparkle = InventoryManager.Instance != null && InventoryManager.Instance.GetSparkleCount(species, rarity) > 0;
-            sparkleOverlay.SetActive(hasSparkle);
-        }
+        if (sparkleOverlay != null) sparkleOverlay.SetActive(stack.DoubleYieldCount > 0);
     }
 
     private Color GetRarityColor(CreatureData.Rarity rarity)

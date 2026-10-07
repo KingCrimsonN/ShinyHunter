@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
+  m_Name: Alien 1
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureData
+  creatureName: 'UGG '
+  description: "UGG is short for Unidentified Green Guy, since I truly haven\u2019t
+    yet identified the origin of this critter or how its anatomy works. So far I
+    only know that it\u2019s probably trying to communicate with something beyond
+    the stars with some kind of an unknown language that uses finger movements and
+    high-pitched sounds."
+  note: "Note from Luc\xEDa: This guy is funny. It just dances around outside looking
+    at the sky and wiggles its shining finger around making cute shapes with the
+    light."
+  family: 2
+  favoriteScent: 4
+  hatedScent: 3
+  variants:
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 345081868, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      - {fileID: 943273806, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      - {fileID: -332892197, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      - {fileID: -625639576, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      - {fileID: -332892197, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      - {fileID: 943273806, guid: cd10a33769444cf4c823b6e76fd44096, type: 3}
+      frameRate: 8
+      loop: 1
+    - state: 3
+      frames:
+      - {fileID: -712389968, guid: 00f71c66253e1f74c9744b14433a4423, type: 3}
+      - {fileID: 1056073007, guid: 00f71c66253e1f74c9744b14433a4423, type: 3}
+      - {fileID: 1056073007, guid: 00f71c66253e1f74c9744b14433a4423, type: 3}
+      - {fileID: -712389968, guid: 00f71c66253e1f74c9744b14433a4423, type: 3}
+      frameRate: 12
+      loop: 0
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: -55256678, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      - {fileID: 229652112, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      - {fileID: 1771307063, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      - {fileID: 730224335, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      - {fileID: 1771307063, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      - {fileID: 229652112, guid: b8e6222bbf6b58d419eb299668cd749d, type: 3}
+      frameRate: 8
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 480012543, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      - {fileID: -698183761, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      - {fileID: -154016289, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      - {fileID: 356039594, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      - {fileID: -154016289, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      - {fileID: -698183761, guid: 083001d454a467d4181cff5db4e6d961, type: 3}
+      frameRate: 8
+      loop: 1
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 565079338, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: 1744540484, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: 564711560, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: -812821696, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: 564711560, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: 564711560, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      - {fileID: 1744540484, guid: db4b3e7be1159ce4499c8c524063b246, type: 3}
+      frameRate: 8
+      loop: 1
+  icons:
+  - {fileID: 21300000, guid: 4831368a830e6734fb5e00d3ec0ab7ea, type: 3}
+  - {fileID: 21300000, guid: 52addd85d64cacf48ad12c43b48cd526, type: 3}
+  - {fileID: 21300000, guid: 8e5b4e2d788c94141910f1a15d5d55f9, type: 3}
+  - {fileID: 21300000, guid: c5087f5db067eec40949854dd1044cb3, type: 3}
+  - {fileID: 21300000, guid: 0c6463b7a78340b48a2a91f71577579d, type: 3}
+  size: {x: 0.15, y: 0.15, z: 0.15}
+  movementMode: 0
+  wanderSpeed: 1.5
+  fleeSpeed: 4
+  wanderRadius: 8
+  idleTimeRange: {x: 2, y: 5}
+  wanderIntervalRange: {x: 3, y: 8}
+  flightHeightMin: 2
+  flightHeightMax: 5
+  detectionRadius: 2
+  fleeDistance: 10
+  detectionAversionScale: 1
+  isAggressive: 0
+  attackRange: 1.5
+  attackCooldown: 5
+  attackDamage: 15
+  attackWindupDuration: 0.5
+  baseCaptureChance: 1
+  stunDuration: 3
+  resources:
+  - {fileID: 11400000, guid: 63b8b901f7adce5438a2cccb2bd6019c, type: 2}
+  - {fileID: 11400000, guid: 07bb944b9672c734d881e9f022d29d01, type: 2}
+  - {fileID: 11400000, guid: cf1a643d8bd268642abbfa7605054fa8, type: 2}
+  - {fileID: 11400000, guid: 609da5f8be259234e969e88a62bce3a5, type: 2}

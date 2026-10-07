@@ -31,8 +31,15 @@ public interface ICapturable
     /// (0-1) is computed by whoever's resolving the attempt - currently
     /// CaptureMinigameController, from the wheel minigame's hit ratio.
     /// Returns whether the capture succeeded.
+    ///
+    /// extraDoubleYieldChance (0-1) is the equipped tool's own chance to flag
+    /// the capture double-yield (ToolData.extraIngredientChance), passed IN
+    /// rather than looked up by the creature: a consumable tool has usually
+    /// already been used up and removed from the inventory by the time the
+    /// wheel resolves, so the creature reading "the equipped tool" at that
+    /// point found nothing for the last one in a stack. See decision log.
     /// </summary>
-    bool TryCapture(float captureChance);
+    bool TryCapture(float captureChance, float extraDoubleYieldChance = 0f);
 
     /// <summary>
     /// A capture attempt (the wheel minigame) has begun. The creature must

@@ -390,7 +390,12 @@ public class CaptureMinigameController : MonoBehaviour
 
         ratio = Mathf.Clamp01(ratio + stewBonus + toolBonus);
 
-        bool success = targetCreature != null && targetCreature.TryCapture(ratio);
+        // The tool is remembered from when the wheel STARTED (equippedToolForThisRun) -
+        // the doll was consumed the moment the throw landed, so for the last
+        // one in a stack the live inventory no longer has it.
+        float extraYieldChance = equippedToolForThisRun != null ? equippedToolForThisRun.extraIngredientChance : 0f;
+
+        bool success = targetCreature != null && targetCreature.TryCapture(ratio, extraYieldChance);
 
         if (popupRoot != null) popupRoot.SetActive(false);
 

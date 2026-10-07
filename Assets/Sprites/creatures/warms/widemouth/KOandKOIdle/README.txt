@@ -1,0 +1,1 @@
+For the KO Spritesheet, play it in this exact order and sequence: 1-2-2-1

@@ -1333,3 +1333,41 @@ target. `MainMenuController` is the menu scene's own non-persistent script (Star
 replacing the menu's use of SceneTransitionManager; the menu scene then needs no GameManagers instance - the Hub brings its
 own, which become the persistent ones. `SceneTransitionManager.TransitionToSceneImmediate` is now unused by design and can
 be deleted once no scene/prefab references it.
+
+## Critters are individual records; grouped view is optional
+
+**Before**: `InventoryManager` held a count per (species, rarity) plus a separate `sparkleCounts` sub-count of how many in
+that stack were double-yield. Critters were interchangeable numbers, which forced the "double-yield units are always
+consumed first" rule and made it impossible to act on one SPECIFIC critter - fatal once each critter gets its own tile.
+
+**Now**: a `List<CapturedCritter>` (id, species, rarity, `doubleYield`), one per critter caught, in capture order.
+`AddCreature` creates records; `RemoveCritters(IEnumerable<CapturedCritter>)` removes specific ones (one
+OnInventoryChanged). `GetCount` / `GetSparkleCount` / `GetTotalCount` / `GetAll` are kept but computed from the list
+(small, so on demand), so the CritterDex, run tracking and capture code needed no changes. `RemoveCreatures(species,
+rarity, amount)` and `sparkleCounts` are gone.
+
+**Display** is separate from storage: `CritterStack.Build(critters, grouped)` makes the tiles for any grid - grouped =
+one per species+rarity (with a count), individual = one per critter but laid out group by group so identical critters sit
+together. `CritterInventoryView` is ONE shared static setting (default individual), so toggling it in the inventory
+also flips the transform table; `CritterViewToggleButton` flips it and wires itself (no OnClick target).
+
+**Transform table** stages specific critters (`List<CapturedCritter>`); each side's tiles are built from that side's
+critters, so the old "available vs staged sparkle" arithmetic (`GetAvailableSparkleCount` / `GetStagedSparkleCount`)
+disappeared - a tile's sparkle is just its own critters' flags. Moving N out of a GROUP chooses which: double-yield first
+into the selection (maximizes the transform), plain first back out. `CompleteTransform` grants each consumed critter's
+resource x2 if it's double-yield and removes exactly those critters. `OnTransformInitiated` / `GetSelection` now use
+`IReadOnlyList<CapturedCritter>` (nothing external used the old dictionary). The station also now unsubscribes in
+OnDestroy, since it subscribes to the persistent inventory and the static view setting.
+
+Not changed: the run summary grid stays grouped (it's a per-run tally, not an inventory) and reads `GetRunCaptures`.
+
+## Fixed: the last doll in a stack never gave its extra-ingredient chance
+
+`CreatureAI.TryCapture` rolled the tool's `extraIngredientChance` by reading `ToolInventoryManager.EquippedSlot` at the
+moment the wheel resolved. But a consumable doll is consumed as soon as the throw lands (`VoodooDoll` raises
+`OnConsumed` right after `BeginCapture` succeeds), so with exactly one doll the slot was already empty and the roll was
+silently skipped. `CaptureMinigameController` already remembers the tool from when the wheel STARTED
+(`equippedToolForThisRun`, used for time limit / attempts / family bonus), so it now passes the chance in:
+`ICapturable.TryCapture(captureChance, extraDoubleYieldChance = 0)`. The creature no longer reads the tool inventory at
+all. General rule: anything the capture outcome needs from the tool must be captured at BeginCapture, never looked up
+at resolve time.

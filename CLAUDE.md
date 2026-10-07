@@ -120,13 +120,13 @@ decision log).
 
 ## Known simplifications / things to revisit
 
-- **Ingredient Power** now rolls its double-resource chance at _capture_
-  time (`CreatureAI.TryCapture`), not transform time — the flag is tracked as
-  a per-(species,rarity) sub-count (`InventoryManager.sparkleCounts`), not
-  true per-instance identity (captured creatures within a stack still aren't
-  individually distinguishable — flagged units are just consumed first).
-  Shown as a sparkle badge in both the regular inventory and the transform
-  station. See decision log.
+- **Critters are individual records.** `InventoryManager` holds one
+  `CapturedCritter` per critter caught (with its own `doubleYield` flag);
+  grouping by species+rarity is only a display choice (`CritterStack`,
+  shared `CritterInventoryView` toggle - individual is the default). Count
+  queries (`GetCount`, `GetAll`...) are computed from the list. Ingredient
+  Power is rolled at capture (`CreatureAI.TryCapture`) and stored on the
+  critter itself. See decision log.
 - **Stew "time cap"** is one global constant
   (`StewCalculationConfig.maxTimeSeconds`), not a per-bowl stat — revisit if
   bowl tiers get added.

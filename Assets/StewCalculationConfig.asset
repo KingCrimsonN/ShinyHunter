@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StewCalculationConfig
   timePerRarity:
   - 25
-  - 45
   - 60
   - 100
+  - 150
   maxTimeSeconds: 600
   scentPerPoint: 5
   scentPopulationMinFraction: 0.4
@@ -36,4 +36,6 @@ MonoBehaviour:
   chronoMaxBonusPerCapture: 60
   captureChanceBonusScale: 0.3
   captureMaxAutoBreakAreas: 2
+  captureHitPowerBonusScale: 0.5
+  captureTimeBonusScale: 3
   soothingMaxSlowdown: 0.5

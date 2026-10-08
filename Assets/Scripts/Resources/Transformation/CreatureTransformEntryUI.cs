@@ -83,6 +83,8 @@ public class CreatureTransformEntryUI : MonoBehaviour,
             MoveAmount(1); // double-click - exactly one
         else if (shiftHeld)
             MoveAmount(int.MaxValue); // shift+click - whole stack (clamped by the station)
+        else if (station != null && stack != null)
+            station.ShowIngredientPopup(stack, (RectTransform)transform); // plain click - what would this critter give? (the first click of a double-click lands here too; the move that follows closes the pop-up again)
     }
 
     public void OnBeginDrag(PointerEventData eventData)

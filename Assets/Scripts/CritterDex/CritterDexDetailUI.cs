@@ -38,6 +38,8 @@ public class CritterDexDetailUI : MonoBehaviour
     [Header("Ingredient Drop (selected rarity)")]
     [SerializeField] private Image resourceIcon;
     [SerializeField] private TMP_Text resourceNameText;
+    [Tooltip("Optional - small rarity icon on the ingredient (hidden for common ones, and while that rarity is undiscovered).")]
+    [SerializeField] private IngredientRarityBadge resourceRarityBadge;
     [Tooltip("The clickable ingredient box (usually the object holding Resource Icon). Clicking it opens the pop-up below. Optional - leave empty to disable the pop-up.")]
     [SerializeField] private Button ingredientButton;
     [SerializeField] private CritterDexIngredientPopupUI ingredientPopup;
@@ -120,6 +122,7 @@ public class CritterDexDetailUI : MonoBehaviour
             resourceIcon.enabled = resourceIcon.sprite != null;
         }
         if (resourceNameText != null) resourceNameText.text = currentResource != null ? (rarityOwned ? currentResource.resourceName : "???") : "-";
+        if (resourceRarityBadge != null) resourceRarityBadge.Set(rarityOwned ? currentResource : null); // like the name: an uncaught rarity's ingredient stays hidden
 
         // Only a caught rarity has an ingredient worth inspecting - an uncaught
         // one would otherwise leak its name/description/stats.
@@ -171,6 +174,7 @@ public class CritterDexDetailUI : MonoBehaviour
         if (hatedScentText != null) hatedScentText.text = "-";
         if (resourceIcon != null) resourceIcon.enabled = false;
         if (resourceNameText != null) resourceNameText.text = "-";
+        if (resourceRarityBadge != null) resourceRarityBadge.Clear();
         if (ingredientButton != null) ingredientButton.interactable = false;
         ClearRarityBadges();
     }
@@ -188,6 +192,7 @@ public class CritterDexDetailUI : MonoBehaviour
 
         if (resourceIcon != null) resourceIcon.enabled = false;
         if (resourceNameText != null) resourceNameText.text = "???";
+        if (resourceRarityBadge != null) resourceRarityBadge.Clear();
         if (ingredientButton != null) ingredientButton.interactable = false;
 
         RefreshRarityBadges(); // not clickable while undiscovered - the badge checks that itself

@@ -40,6 +40,12 @@ public class CreatureTransformStationUI : MonoBehaviour
     [Tooltip("Shared floating icon shown while dragging. UI Image under this popup's Canvas, Raycast Target OFF, inactive by default.")]
     [SerializeField] private Image dragIconTemplate;
 
+    [Header("Pop-ups")]
+    [Tooltip("Shown when a critter is clicked: the ingredient it would give. The same CritterDexIngredientPopupUI script the dex uses (this scene's own instance).")]
+    [SerializeField] private CritterDexIngredientPopupUI ingredientPopup;
+    [Tooltip("Shown after a transformation: the ingredients you received, with a close button that only closes the pop-up.")]
+    [SerializeField] private TransformResultPopupUI resultPopup;
+
     /// <summary>The critters staged for transformation, in the order they were staged.</summary>
     private readonly List<CapturedCritter> staged = new List<CapturedCritter>();
 
@@ -56,6 +62,10 @@ public class CreatureTransformStationUI : MonoBehaviour
         CreatureTransformEntryUI.DragIcon = dragIconTemplate;
         if (dragIconTemplate != null) dragIconTemplate.gameObject.SetActive(false);
         if (popupRoot != null) popupRoot.SetActive(false);
+
+        // Here (not in the shared script's own defaults) so the dex's pop-up
+        // keeps its old behaviour: this one also closes on any click outside it.
+        if (ingredientPopup != null) ingredientPopup.SetCloseOnOutsideClick(true);
     }
 
     private void OnDestroy()
@@ -77,7 +87,8 @@ public class CreatureTransformStationUI : MonoBehaviour
         // (and frees the cursor) - see PlayerStateManager. Registers Close
         // as the Escape callback (see PlayerStateManager.TryCloseCurrentPopup
         // / UIManager's centralized Escape handling). See decision log.
-        PlayerStateManager.Instance.Freeze(Close);
+        PlayerStateManager.Instance.Freeze(HandleEscape);
+        HidePopups();
 
         // Unsubscribe first so an Open() without a matching Close() can't double-subscribe.
         Unsubscribe();
@@ -86,8 +97,31 @@ public class CreatureTransformStationUI : MonoBehaviour
         RefreshGrids();
     }
 
+    /// <summary>Escape closes the top-most layer first: the result pop-up, then the ingredient pop-up, and only then the table itself.</summary>
+    private void HandleEscape()
+    {
+        if (resultPopup != null && resultPopup.IsOpen) { resultPopup.Hide(); return; }
+        if (ingredientPopup != null && ingredientPopup.IsOpen) { ingredientPopup.Hide(); return; }
+        Close();
+    }
+
+    private void HidePopups()
+    {
+        if (ingredientPopup != null) ingredientPopup.Hide();
+        if (resultPopup != null) resultPopup.Hide();
+    }
+
+    /// <summary>Called by a critter tile when it is clicked: shows the ingredient that critter would give (what it is - not the x2).</summary>
+    public void ShowIngredientPopup(CritterStack stack, RectTransform tile)
+    {
+        if (ingredientPopup == null || stack == null) return;
+
+        ingredientPopup.ShowAt(stack.Species.GetResource(stack.Rarity), tile); // a null resource hides it
+    }
+
     public void Close()
     {
+        HidePopups();
         if (popupRoot != null) popupRoot.SetActive(false);
         PlayerStateManager.Instance.Unfreeze();
         Unsubscribe();
@@ -183,6 +217,10 @@ public class CreatureTransformStationUI : MonoBehaviour
 
     private void NotifyChanged()
     {
+        // The pop-up describes a critter that's about to move (or whose tile is
+        // about to be rebuilt) - close it rather than leave it pointing at nothing.
+        if (ingredientPopup != null) ingredientPopup.Hide();
+
         OnSelectionChanged?.Invoke();
         RefreshGrids();
     }
@@ -234,6 +272,9 @@ public class CreatureTransformStationUI : MonoBehaviour
 
         foreach (var grant in grants)
             ResourceInventoryManager.Instance.AddResource(grant.Key, grant.Value);
+
+        if (ingredientPopup != null) ingredientPopup.Hide();
+        if (resultPopup != null) resultPopup.Show(grants); // only this pop-up closes with its button - the table stays open
 
         OnTransformCompleted?.Invoke();
     }

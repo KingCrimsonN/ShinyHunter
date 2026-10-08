@@ -1666,9 +1666,9 @@ RectTransform:
   - {fileID: 8962442275575478210}
   m_Father: {fileID: 7052658502847491685}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 194.40524, y: -27.820007}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 67.4049, y: 42.9445}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4389629795228436189
@@ -5376,9 +5376,9 @@ RectTransform:
   - {fileID: 7769411836573954763}
   m_Father: {fileID: 7052658502847491685}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 273.25662, y: -27.820007}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 67.4049, y: 42.9445}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9117436256323833477
@@ -7284,6 +7284,7 @@ MonoBehaviour:
   familyBadge: {fileID: 3632332845765776635}
   resourceIcon: {fileID: 1042173407571429479}
   resourceNameText: {fileID: 0}
+  resourceRarityBadge: {fileID: 3934810559612846028}
   ingredientButton: {fileID: 1034117736694136081}
   ingredientPopup: {fileID: 4806150383543892654}
   ingredientLockedColor: {r: 0.12, g: 0.12, b: 0.12, a: 1}
@@ -11295,7 +11296,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &9194132081994663813
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11387,9 +11388,9 @@ RectTransform:
   - {fileID: 4452565000152277712}
   m_Father: {fileID: 7052658502847491685}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 36.70245, y: -27.820007}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 67.4049, y: 42.9445}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4038827155153729597
@@ -12590,9 +12591,9 @@ RectTransform:
   - {fileID: 2215664133125727147}
   m_Father: {fileID: 7052658502847491685}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 352.10803, y: -27.820007}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 67.4049, y: 42.9445}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8325194570384466503
@@ -12633,6 +12634,95 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &5294300177583416859
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3493133043532019449}
+  - component: {fileID: 7210629150491683557}
+  - component: {fileID: 2483593041747526783}
+  - component: {fileID: 3934810559612846028}
+  m_Layer: 5
+  m_Name: Rarity Badge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &3493133043532019449
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5294300177583416859}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 816886469083118579}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 28.107, y: -37.301}
+  m_SizeDelta: {x: 43.7869, y: 44.5167}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &7210629150491683557
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5294300177583416859}
+  m_CullTransparentMesh: 1
+--- !u!114 &2483593041747526783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5294300177583416859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 8f0a2a89244117848b2631eb8db7bd5e, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3934810559612846028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5294300177583416859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc9a628ecad1e344499269aaf3ea9360, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IngredientRarityBadge
+  icons: {fileID: 11400000, guid: 8ed590061ece23647ab34f25e62ddbf9, type: 2}
 --- !u!1 &5322500621411451281
 GameObject:
   m_ObjectHideFlags: 0
@@ -14020,6 +14110,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8138609320590392781}
+  - {fileID: 3493133043532019449}
   m_Father: {fileID: 6256296698586422480}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -16711,7 +16802,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3749855609426900842
 RectTransform:
   m_ObjectHideFlags: 0
@@ -16787,6 +16878,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CritterDexIngredientPopupUI
   popupRoot: {fileID: 6673347011266623175}
   closeButton: {fileID: 4767611974311563212}
+  icon: {fileID: 0}
+  rarityBadge: {fileID: 0}
   nameText: {fileID: 3479216061111801915}
   descriptionText: {fileID: 3783247841574253791}
   scentTexts:
@@ -18599,9 +18692,9 @@ RectTransform:
   - {fileID: 125162948718815695}
   m_Father: {fileID: 7052658502847491685}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 115.55385, y: -27.820007}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 67.4049, y: 42.9445}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6048893301612383333
@@ -25697,22 +25790,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ResourceSlot
       objectReference: {fileID: 0}
-    - target: {fileID: 1305614292164118409, guid: f0253848236acd44eb32ef1cf201a314, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2050939175311882252, guid: f0253848236acd44eb32ef1cf201a314, type: 3}
       propertyPath: descriptionText
       value: 
       objectReference: {fileID: 9093987185467674191}
-    - target: {fileID: 5140259530405445146, guid: f0253848236acd44eb32ef1cf201a314, type: 3}
-      propertyPath: m_text
-      value: 1000
-      objectReference: {fileID: 0}
-    - target: {fileID: 5140259530405445146, guid: f0253848236acd44eb32ef1cf201a314, type: 3}
-      propertyPath: m_fontSize
-      value: 11.3
-      objectReference: {fileID: 0}
     - target: {fileID: 7074382024998114761, guid: f0253848236acd44eb32ef1cf201a314, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

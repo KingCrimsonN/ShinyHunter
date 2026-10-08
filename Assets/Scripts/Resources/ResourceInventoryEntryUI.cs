@@ -11,6 +11,8 @@ public class ResourceInventoryEntryUI : MonoBehaviour, IPointerEnterHandler, IPo
     [SerializeField] private TMP_Text countText;
     public TMP_Text descriptionText;
     [SerializeField] private GameObject selectedHighlight;
+    [Tooltip("Optional - small rarity icon on the ingredient (hidden for common ones).")]
+    [SerializeField] private IngredientRarityBadge rarityBadge;
 
     private string description;
 
@@ -20,6 +22,7 @@ public class ResourceInventoryEntryUI : MonoBehaviour, IPointerEnterHandler, IPo
         if (nameText != null) nameText.text = data.resourceName;
         if (countText != null) countText.text = "x" + count;
         description = data.description;
+        if (rarityBadge != null) rarityBadge.Set(data);
     }
 
     public void OnPointerEnter(PointerEventData eventData)

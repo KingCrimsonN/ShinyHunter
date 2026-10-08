@@ -1378,3 +1378,43 @@ at resolve time.
 from the tool remembered at `BeginCapture` like every other tool-driven minigame value. A multiplier (not an absolute
 speed) to match `barrierSpeedMultiplier` and so retuning the base needle speed still moves every tool together. Rarity
 still doesn't affect the needle - rarity drives barriers, tools drive the needle.
+
+
+## Transform table redesign: result pop-up, click-to-inspect, ingredient rarity icons
+
+**Result pop-up** (`TransformResultPopupUI` + `TransformResultEntryUI`): `CompleteTransform` already built a
+resource -> amount dictionary (double-yield critters counted as 2), so it just hands that to the pop-up after granting.
+One tile per ingredient with the TOTAL amount, rarest first then by name (the order of the dictionary depends on which
+critter happened to be staged first, which would look random). Its close button closes only the pop-up.
+
+**Escape is layered.** Escape on the table used to close the whole table (`Freeze(Close)`). With pop-ups on top that
+would throw away the table when the player only wanted to dismiss the result. The station now registers
+`HandleEscape`: result pop-up first, then the ingredient pop-up, and only then the table. `Open`/`Close` also hide both
+pop-ups so a reopened table never shows stale ones.
+
+**Click a critter -> ingredient pop-up.** Reuses `CritterDexIngredientPopupUI` as asked (each scene has its own
+instance; the class keeps its name so the dex's existing scene references don't break). It gained an optional icon + the
+rarity badge, since the new design shows them. A plain click opens it; shift+click / double-click / drag still move
+critters, and any move closes the pop-up (the tile it described is being moved or rebuilt). The first click of a
+double-click also opens it for an instant - the move that follows closes it again.
+
+**Ingredient rarity icon.** `IngredientRarityIcons` (one shared asset: Uncommon/Rare/Legendary sprites; Normal is always
+empty) + `IngredientRarityBadge` (goes on the small Image on an ingredient icon; `Set(resource)` shows
+`ResourceData.rarity`'s icon or hides). One component for every view so they can't disagree: ingredient inventory
+(`ResourceInventoryEntryUI`), brewing list (`BrewIngredientEntryUI`), cauldron slots (`BrewCauldronSlotUI`), dex
+ingredient box (`CritterDexDetailUI`), the shared ingredient pop-up, and the result tiles. In the dex the badge, like the
+ingredient's name, stays hidden for a rarity the player hasn't caught. The badge only toggles its own Image, never its
+GameObject, so a view's Set can't deactivate the thing it's calling.
+
+## Transform table ingredient pop-up: placed at the tile, closes on outside click / scroll
+
+`CritterDexIngredientPopupUI.ShowAt(resource, tile)` positions the pop-up BESIDE the clicked tile (right of it, top edges
+aligned; flips to the left if there's no room; clamped to the screen) and attaches it to that tile. Beside rather than on
+top because the tile must stay clickable: a pop-up covering it would swallow the double-click / drag that moves the critter.
+The gap is `anchorGap` (canvas units). Plain `Show` (the dex) still leaves it wherever it sits in the scene.
+
+Closing: it watches its tile instead of listening to ScrollRects - it hides if the tile's position changes (scrolled, by
+wheel/drag/scrollbar alike, or the grid re-laid out), the tile is destroyed (the grids rebuild on every change) or is
+inactive. Outside clicks are checked on mouse DOWN (a tile is clicked on mouse UP), so clicking another critter closes the
+old pop-up and then opens that one's. Outside-click closing is opt-in (`SetCloseOnOutsideClick`), switched on by the
+station in its Awake, so the dex's pop-up behaves exactly as before.

@@ -9,6 +9,8 @@ public class BrewIngredientEntryUI : MonoBehaviour, IBeginDragHandler, IDragHand
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text countText;
+    [Tooltip("Optional - small rarity icon on the ingredient (hidden for common ones).")]
+    [SerializeField] private IngredientRarityBadge rarityBadge;
 
     /// <summary>Shared floating ghost icon, set once by BrewingStationUI.Awake().</summary>
     public static Image DragIcon;
@@ -22,6 +24,7 @@ public class BrewIngredientEntryUI : MonoBehaviour, IBeginDragHandler, IDragHand
         if (icon != null) icon.sprite = resource.icon;
         if (nameText != null) nameText.text = resource.resourceName;
         if (countText != null) countText.text = "x" + count;
+        if (rarityBadge != null) rarityBadge.Set(resource);
     }
 
     public void OnBeginDrag(PointerEventData eventData)

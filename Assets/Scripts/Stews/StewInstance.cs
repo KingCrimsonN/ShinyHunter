@@ -2,6 +2,23 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>One modifier on a stew, as the UI sees it - see StewInstance.GetModifiers.</summary>
+public readonly struct StewModifierInfo
+{
+    public readonly StewModifierType type;
+    /// <summary>0-1 strength.</summary>
+    public readonly float power;
+    /// <summary>The family its effect applies to.</summary>
+    public readonly IngredientFamily family;
+
+    public StewModifierInfo(StewModifierType type, float power, IngredientFamily family)
+    {
+        this.type = type;
+        this.power = power;
+        this.family = family;
+    }
+}
+
 /// <summary>
 /// A brewed stew ("bowl"). Runtime data, not a ScriptableObject - each stew
 /// is a unique result of a specific brew, not an authored design-time asset.
@@ -48,4 +65,20 @@ public class StewInstance
     /// the moment of brewing - see StewCalculator.Calculate / StewDisplayUtil.FormatModifier.
     /// </summary>
     [NonSerialized] public bool isPreview;
+
+    /// <summary>
+    /// Every modifier on this stew, for DISPLAY. Today a stew carries at most
+    /// one (modifierType / modifierPower / affectedFamily), so this returns zero
+    /// or one entries - but every screen (StewDetailsUI) loops over this list, so
+    /// when stews gain several modifiers only this method and the data behind it
+    /// change; the UIs already handle any number. (The gameplay queries in
+    /// ExpeditionStewManager still read the single modifier directly.)
+    /// </summary>
+    public IReadOnlyList<StewModifierInfo> GetModifiers()
+    {
+        var list = new List<StewModifierInfo>();
+        if (modifierType != StewModifierType.None)
+            list.Add(new StewModifierInfo(modifierType, modifierPower, affectedFamily));
+        return list;
+    }
 }

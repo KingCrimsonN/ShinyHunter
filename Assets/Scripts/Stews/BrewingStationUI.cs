@@ -34,7 +34,7 @@ public class BrewingStationUI : MonoBehaviour
     [Header("Sub-panels")]
     [SerializeField] private StewResultPopupUI resultPopup;
     [Tooltip("Live preview of the stew the current cauldron contents would make. Optional.")]
-    [SerializeField] private StewPreviewUI preview;
+    [SerializeField] private StewDetailsUI preview;
     [SerializeField] private StewInventoryPanelUI stewInventoryPanel;
     [SerializeField] private Button viewStewInventoryButton;
 
@@ -133,12 +133,21 @@ public class BrewingStationUI : MonoBehaviour
         }
 
         var stew = StewCalculator.Calculate(ingredients, cauldronSlots.Length, calculationConfig, preview: true);
-        preview.Show(stew, visualConfig != null ? visualConfig.GetFamilyIcon(stew.dominantFamily) : null);
+        ApplyVisuals(stew); // same icon and name the real brew gets
+        preview.Show(stew);
+    }
+
+    /// <summary>The stew's icon (its dominant family's) and name ("Shiny Cake": its power + dominant family).</summary>
+    private void ApplyVisuals(StewInstance stew)
+    {
+        if (visualConfig == null) return;
+
+        stew.icon = visualConfig.GetFamilyIcon(stew.dominantFamily);
+        stew.displayName = visualConfig.GetStewName(stew.modifierType, stew.dominantFamily);
     }
 
     private void RefreshIngredientGrid()
     {
-        print("REFRESHING");
         foreach (Transform child in ingredientGridParent)
             Destroy(child.gameObject);
 
@@ -232,7 +241,7 @@ public class BrewingStationUI : MonoBehaviour
         // of how many you've unlocked, and unlocking more slots doesn't retroactively
         // change how strong an already-brewed recipe would have smelled.
         var stew = StewCalculator.Calculate(ingredients, cauldronSlots.Length, calculationConfig);
-        stew.icon = visualConfig != null ? visualConfig.GetFamilyIcon(stew.dominantFamily) : null;
+        ApplyVisuals(stew);
 
         // Ingredients are spent the moment you brew, win or lose - dumping
         // the result later loses the stew's contents, not the raw ingredients again.

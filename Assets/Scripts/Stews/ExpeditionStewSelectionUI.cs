@@ -42,12 +42,8 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
     [SerializeField] private float shiftTime = 0.2f;
 
     [Header("Selected Stew Stats")]
-    [Tooltip("Optional - the selected stew's name (\"Auntie's Stew\" for the default one, \"Stew\" for brewed ones).")]
-    [SerializeField] private TMP_Text nameText;
-    [SerializeField] private TMP_Text timeText;
-    [Tooltip("Exactly 5, in order: Sweet, Fresh, Putrid, Metallic, Marine.")]
-    [SerializeField] private TMP_Text[] scentTexts;
-    [SerializeField] private TMP_Text modifierText;
+    [Tooltip("The shared stew read-out for the centred stew (name, time, scent chart, modifiers).")]
+    [SerializeField] private StewDetailsUI details;
 
     [SerializeField] private string expeditionSceneName = "Forest";
 
@@ -204,20 +200,10 @@ public class ExpeditionStewSelectionUI : MonoBehaviour
         if (previousButton != null) previousButton.interactable = selectedIndex > 0;
         if (nextButton != null) nextButton.interactable = selectedIndex < spawned.Count - 1;
 
-        if (spawned.Count == 0)
-        {
-            if (nameText != null) nameText.text = string.Empty;
-            if (timeText != null) timeText.text = "No stews available";
-            if (modifierText != null) modifierText.text = string.Empty;
-            StewDisplayUtil.SetScentTexts(scentTexts, new float[] { 0f, 0f, 0f, 0f, 0f });
-            return;
-        }
+        if (details == null) return;
 
-        var stew = choices[selectedIndex];
-        if (nameText != null) nameText.text = StewDisplayUtil.FormatName(stew);
-        if (timeText != null) timeText.text = $"{stew.timeSeconds / 60f:0.#} min";
-        StewDisplayUtil.SetScentTexts(scentTexts, stew.scents);
-        if (modifierText != null) modifierText.text = StewDisplayUtil.FormatModifier(stew);
+        if (spawned.Count == 0) details.ShowEmpty("No stews available");
+        else details.Show(choices[selectedIndex]);
     }
 
     private void Confirm()

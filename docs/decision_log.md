@@ -1418,3 +1418,66 @@ wheel/drag/scrollbar alike, or the grid re-laid out), the tile is destroyed (the
 inactive. Outside clicks are checked on mouse DOWN (a tile is clicked on mouse UP), so clicking another critter closes the
 old pop-up and then opens that one's. Outside-click closing is opt-in (`SetCloseOnOutsideClick`), switched on by the
 station in its Awake, so the dex's pop-up behaves exactly as before.
+
+
+## Stew read-out: radar chart, one shared panel, expandable modifiers, mid-run panel
+
+**Radar chart** (`ScentRadarChart`): a custom UI `MaskableGraphic`. It overrides `OnPopulateMesh` to build a triangle fan
+(centre vertex + one corner per axis at `radius * value / max`, one triangle per neighbouring pair), so it is an ordinary
+UI element - canvas, masking, sorting and the Color tint all work - but its shape is data-driven, which a sprite Image
+can't be. Only the FILL is drawn; the pentagon outline, coloured spokes and labels are plain art/text. Axes run clockwise
+from the top (project angle convention); the default order Sweet, Fresh, Metallic, Marine, Putrid matches the art and is
+decoupled from `ScentType`'s enum order (the chart looks each scent up by type). Values ease toward new targets on
+unscaled time. `editorPreview` draws sample values outside play mode so it can be sized in the editor.
+
+**One shared read-out** (`StewDetailsUI`): time (m:ss), chart + five numbers, modifier rows, optional icon/name/empty
+hint. Used by the brewing preview, stew inventory entries, exit-door selection, post-brew result popup and the mid-run
+panel, so they can't drift. It IS the old `StewPreviewUI`, renamed together with its .meta (same GUID), so existing scene
+wiring (icon, time, scent numbers, empty hint) kept working; its single `modifierText` became rows. Inventory entry, exit
+panel and result popup got an OPTIONAL `details` field - set, it replaces their plain text fields; unset, they behave as
+before - so each screen can migrate when its art is ready.
+
+**Modifiers expandable**: `StewInstance.GetModifiers()` returns the stew's modifiers as `StewModifierInfo` (type, power,
+family); today zero or one. Every UI loops over that list, so supporting several modifiers later only changes that
+method and the data behind it. Gameplay queries in `ExpeditionStewManager` still read the single modifier. Per-type icons
+live in `StewVisualConfig.modifierIcons`. Not implemented: the mock's "lvl N" - a stew modifier has a 0-1 power, no level
+concept; rows show the power as a percentage until levels are defined.
+
+**Preview stays live** because `BrewingStationUI.RefreshPreview` already runs on open, every place, every clear and
+after every brew; an empty cauldron calls `ShowEmpty()`.
+
+**Mid-run panel** (`ExpeditionStewPanelUI`): `StewDetailsUI` for `ExpeditionStewManager.ActiveStew` plus time left in whole
+seconds from `PlayerHealth.currentHealth` (which IS the expedition clock), refreshed each frame while visible. Not a popup
+- no freeze. Toggle() from a button or an optional key; holds no references to the persistent managers (CLAUDE.md #3).
+
+
+## Stew UI cleanup, six bowl slots, stew names, family-first modifier labels
+
+**One read-out, no legacy copies.** `StewResultPopupUI`, `StewBowlEntryUI` and `ExpeditionStewSelectionUI` had grown an
+optional `details` (StewDetailsUI) next to their own icon / time / scent / modifier text fields, so every screen
+carried two parallel ways to show the same stew. The legacy fields and the helpers only they used
+(`StewDisplayUtil.SetScentTexts`, `FormatModifier`) are gone: each screen holds a `StewDetailsUI` and nothing else
+about the stew's stats. The selection UI's separate `nameText` went too (StewDetailsUI has `nameText`); its
+"No stews available" message is now `StewDetailsUI.ShowEmpty(hint)`. Also removed: `print` debug lines in
+`BrewingStationUI` / `StewInventoryPanelUI`, the panel's double destroy loop (children AND a parallel list), and the
+duplicated icon-assignment in `BrewingStationUI` (preview and real brew now share `ApplyVisuals`). Left alone on
+purpose: `BrewingStationUI.Open()` and `OnEnable()` do the same Freeze/clear/refresh - removing either could break
+how the popup is opened, so it is flagged, not changed.
+
+**Six bowl slots.** `StewInventoryManager.maxSlots` (6) is the number of slots the inventory shows; usable capacity is
+still `baseCapacity (3) + sharedCapacity`, clamped to `maxSlots`, so three start locked. `StewInventoryPanelUI` now
+always spawns `MaxSlots` copies of the slot prefab into the existing grid (full rebuild on refresh, convention #8):
+index < Count = filled, < Capacity = vacant, otherwise locked. `StewBowlEntryUI` became that slot, with filled / vacant
+/ locked state objects. `StewBowlCountLabel` shows "taken/total" (`Count / MaxSlots`, so 2/6 even though only 3 are
+usable yet) and refreshes on enable and on `OnBowlsChanged`; it is a separate component so the brewing screen and the
+inventory use the same one. Brewing is still blocked by `IsFull` (usable capacity), not by the six.
+
+**Stew names.** `"{power word} {dish}"` - the modifier type picks the word, the DOMINANT family (not the rolled
+affected family, so it is also known in the live preview) picks the dish: "Shiny Cake". No modifier = "Plain {dish}".
+Both tables live in `StewVisualConfig` (`modifierNameWords`, `familyDishNames`, `noModifierWord`) per convention #10;
+the words are placeholders. `BrewingStationUI.ApplyVisuals` sets `displayName` at brew time, so the name is stored
+on the stew; the default stew keeps its own name.
+
+**Modifier labels.** "{Family} {Power name}" with the percentage kept: "Bug Encounter Power  73%". The family
+name is the enum's own (`Bug`, `Plant`, `Freaky`, `Warm`, `Cold`); a preview shows "??? Encounter Power" because the
+affected family is only rolled at brew time. `StewModifierRowUI.familyText` was removed (merged into `nameText`).

@@ -5,7 +5,8 @@ using UnityEngine;
 /// <summary>
 /// Persistent storage for brewed stews ("bowls"). baseCapacity is this hub's
 /// own local bowl count (default 3); sharedCapacity is an unlockable pool
-/// usable from anywhere. Total capacity = base + shared.
+/// usable from anywhere. Usable capacity = base + shared, never above maxSlots
+/// (6) - the number of slots the inventory UI shows; the rest are locked.
 ///
 /// NOTE: this project currently has one Hub scene, so "per hub" capacity is
 /// represented as a single pool here. If you add multiple hub scenes later,
@@ -18,12 +19,17 @@ public class StewInventoryManager : MonoBehaviour
 
     [SerializeField] private int baseCapacity = 3;
     [SerializeField] private int sharedCapacity = 0;
+    [Tooltip("Slots the inventory shows in total - the ones above the usable capacity are shown locked.")]
+    [SerializeField] private int maxSlots = 6;
 
     private readonly List<StewInstance> bowls = new List<StewInstance>();
 
     public event Action OnBowlsChanged;
 
-    public int Capacity => baseCapacity + sharedCapacity;
+    /// <summary>Slots currently usable.</summary>
+    public int Capacity => Mathf.Min(baseCapacity + sharedCapacity, maxSlots);
+    /// <summary>Slots the inventory has in total, usable or locked.</summary>
+    public int MaxSlots => maxSlots;
     public int Count => bowls.Count;
     public bool IsFull => bowls.Count >= Capacity;
     public IReadOnlyList<StewInstance> Bowls => bowls;
@@ -58,6 +64,8 @@ public class StewInventoryManager : MonoBehaviour
     /// <summary>Progression hook - unlocks one more shared bowl slot.</summary>
     public void UnlockSharedBowlSlot()
     {
+        if (Capacity >= maxSlots) return;
+
         sharedCapacity++;
         OnBowlsChanged?.Invoke();
     }

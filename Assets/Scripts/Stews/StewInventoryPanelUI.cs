@@ -2,11 +2,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>Sub-panel opened from the brewing UI to browse the stew (bowl) inventory.</summary>
+/// <summary>
+/// Sub-panel opened from the brewing UI to browse the stew (bowl) inventory.
+/// Always shows StewInventoryManager.MaxSlots slots in the grid: the first
+/// Count are filled with a stew, the rest of the usable ones are vacant, and the
+/// ones beyond the unlocked capacity are locked.
+/// </summary>
 public class StewInventoryPanelUI : MonoBehaviour
 {
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private Transform gridParent;
+    [Tooltip("The slot prefab - one is spawned per slot (6), each with filled / vacant / locked states.")]
     [SerializeField] private StewBowlEntryUI entryPrefab;
     [SerializeField] private Button closeButton;
 
@@ -20,10 +26,8 @@ public class StewInventoryPanelUI : MonoBehaviour
 
     public void Show()
     {
-        print("SHOWING");
         if (panelRoot != null) panelRoot.SetActive(true);
         Refresh();
-
     }
 
     public void Hide()
@@ -33,18 +37,24 @@ public class StewInventoryPanelUI : MonoBehaviour
 
     private void Refresh()
     {
+        // Anything left in the grid at design time is only a preview of the look.
         foreach (Transform child in gridParent)
             Destroy(child.gameObject);
-
-        foreach (var entry in spawned)
-            if (entry != null) Destroy(entry.gameObject);
         spawned.Clear();
 
-        foreach (var stew in StewInventoryManager.Instance.Bowls)
+        var manager = StewInventoryManager.Instance;
+        var bowls = manager.Bowls;
+
+        for (int i = 0; i < manager.MaxSlots; i++)
         {
-            var entry = Instantiate(entryPrefab, gridParent);
-            entry.Set(stew);
-            spawned.Add(entry);
+            var slot = Instantiate(entryPrefab, gridParent);
+            slot.gameObject.SetActive(true);
+
+            if (i < bowls.Count) slot.SetFilled(bowls[i]);
+            else if (i < manager.Capacity) slot.SetVacant();
+            else slot.SetLocked();
+
+            spawned.Add(slot);
         }
     }
 }

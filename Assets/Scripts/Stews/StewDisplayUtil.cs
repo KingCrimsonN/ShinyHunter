@@ -1,18 +1,10 @@
 using UnityEngine;
 using TMPro;
 
-/// <summary>Shared formatting for stew stats, reused across the result popup, bowl inventory, and exit-door carousel.</summary>
+/// <summary>Shared formatting for stew stats, used by StewDetailsUI and its modifier rows.</summary>
 public static class StewDisplayUtil
 {
     private static readonly string[] ScentLabels = { "Sweet", "Fresh", "Putrid", "Metallic", "Marine" };
-
-    public static void SetScentTexts(TMP_Text[] scentTexts, float[] scents)
-    {
-        if (scentTexts == null || scents == null) return;
-
-        for (int i = 0; i < scentTexts.Length && i < scents.Length; i++)
-            if (scentTexts[i] != null) scentTexts[i].text = $"{ScentLabels[i]}: {scents[i]:0}";
-    }
 
     public static void SetScentNumbers(TMP_Text[] scentTexts, float[] scents)
     {
@@ -20,6 +12,13 @@ public static class StewDisplayUtil
 
         for (int i = 0; i < scentTexts.Length && i < scents.Length; i++)
             if (scentTexts[i] != null) scentTexts[i].text = $"{scents[i]:0}";
+    }
+
+    /// <summary>Seconds as minutes:seconds, e.g. 150 -> "2:30".</summary>
+    public static string FormatTime(float seconds)
+    {
+        int total = Mathf.Max(0, Mathf.RoundToInt(seconds));
+        return $"{total / 60}:{total % 60:00}";
     }
 
     public static string FormatName(StewInstance stew)
@@ -42,30 +41,16 @@ public static class StewDisplayUtil
         }
     }
 
+    /// <summary>The family as one word, used in front of a power: "Bug", "Plant", "Freaky", "Warm", "Cold".</summary>
+    public static string FormatFamily(IngredientFamily family) => family.ToString();
+
     /// <summary>
-    /// Informal family nickname, matching the names already used in
-    /// IngredientFamily's own comments ("Bugs", "Freakies") - invented for
-    /// the other three (Plants/Warm-Blooded/Cold-Blooded), retune freely.
+    /// The modifier line's label: the family first, then the power - "Bug Encounter Power".
+    /// A preview shows "???" for the family: it is rolled when the stew is actually brewed.
     /// </summary>
-    public static string FormatFamily(IngredientFamily family)
+    public static string FormatModifierLabel(StewModifierInfo modifier, bool isPreview)
     {
-        switch (family)
-        {
-            case IngredientFamily.Bug: return "Bugs";
-            case IngredientFamily.Plant: return "Plants";
-            case IngredientFamily.Freaky: return "Freakies";
-            case IngredientFamily.Warm: return "Warm-Blooded";
-            case IngredientFamily.Cold: return "Cold-Blooded";
-            default: return family.ToString();
-        }
-    }
-
-    /// <summary>e.g. "Shiny Power: Bugs (73%)". Every active modifier is family-scoped - see StewInstance.affectedFamily. A preview shows "???" for the family: it's rolled when the stew is actually brewed.</summary>
-    public static string FormatModifier(StewInstance stew)
-    {
-        if (stew.modifierType == StewModifierType.None) return "No modifier";
-
-        string family = stew.isPreview ? "???" : FormatFamily(stew.affectedFamily);
-        return $"{FormatModifierName(stew.modifierType)}: {family} ({stew.modifierPower * 100f:0}%)";
+        string family = isPreview ? "???" : FormatFamily(modifier.family);
+        return $"{family} {FormatModifierName(modifier.type)}";
     }
 }

@@ -16,7 +16,7 @@ using TMPro;
 public class StewPreviewUI : MonoBehaviour
 {
     [Tooltip("Optional. Shown while there's a recipe to preview and hidden while the cauldron is empty. Leave empty to keep everything always visible (it then just shows the empty state).")]
-    [SerializeField] private GameObject rootObject;
+    // [SerializeField] private GameObject rootObject;
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text timeText;
     [Tooltip("Exactly 5, in order: Sweet, Fresh, Putrid, Metallic, Marine.")]
@@ -28,7 +28,7 @@ public class StewPreviewUI : MonoBehaviour
 
     public void Show(StewInstance stew, Sprite stewIcon)
     {
-        if (rootObject != null) rootObject.SetActive(true);
+        // if (rootObject != null) rootObject.SetActive(true);
         if (emptyHintText != null) emptyHintText.gameObject.SetActive(false);
 
         if (icon != null)
@@ -45,7 +45,7 @@ public class StewPreviewUI : MonoBehaviour
     /// <summary>Nothing in the cauldron.</summary>
     public void ShowEmpty()
     {
-        if (rootObject != null) rootObject.SetActive(false);
+        // if (rootObject != null) rootObject.SetActive(false);
 
         if (emptyHintText != null)
         {

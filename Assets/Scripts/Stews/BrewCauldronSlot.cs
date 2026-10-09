@@ -9,6 +9,7 @@ public class BrewCauldronSlotUI : MonoBehaviour, IDropHandler, IPointerClickHand
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private GameObject lockedOverlay;
+    [SerializeField] private GameObject unlockedOverlay;
     [SerializeField] private Button closeButton;
     [Tooltip("Optional - small rarity icon on the ingredient in this slot (hidden for common ones and empty slots).")]
     [SerializeField] private IngredientRarityBadge rarityBadge;
@@ -30,7 +31,7 @@ public class BrewCauldronSlotUI : MonoBehaviour, IDropHandler, IPointerClickHand
     {
         this.isUnlocked = unlocked;
         if (lockedOverlay != null) lockedOverlay.SetActive(!unlocked);
-
+        if (unlockedOverlay != null) unlockedOverlay.SetActive(unlocked);
         if (icon != null)
         {
             icon.sprite = resource != null ? resource.icon : null;

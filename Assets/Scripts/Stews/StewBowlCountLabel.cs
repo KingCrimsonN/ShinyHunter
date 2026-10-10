@@ -35,6 +35,6 @@ public class StewBowlCountLabel : MonoBehaviour
         var manager = StewInventoryManager.Instance;
         if (label == null || manager == null) return;
 
-        label.text = string.Format(format, manager.Count, manager.MaxSlots);
+        label.text = string.Format(format, manager.Count, manager.Capacity);
     }
 }

@@ -24,6 +24,8 @@ public class StewDetailsUI : MonoBehaviour
     [SerializeField] private Image icon;
     [Tooltip("Optional - the stew's name (\"Auntie's Stew\" / \"Stew\").")]
     [SerializeField] private TMP_Text nameText;
+    [Tooltip("Optional - the stew's description.")]
+    [SerializeField] private TMP_Text descriptionText;
     [Tooltip("Optional - the stew's expedition time as m:ss. Leave empty on the mid-run panel, which shows the time LEFT instead.")]
     [SerializeField] private TMP_Text timeText;
 
@@ -70,6 +72,7 @@ public class StewDetailsUI : MonoBehaviour
         }
 
         if (nameText != null) nameText.text = StewDisplayUtil.FormatName(stew);
+        // if (descriptionText != null) descriptionText.text = stew.description;
         if (timeText != null) timeText.text = StewDisplayUtil.FormatTime(stew.timeSeconds);
 
         ShowScents(stew.scents);

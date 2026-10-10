@@ -37,7 +37,7 @@ public class CaptureMinigameConfig : ScriptableObject
     [Header("Dash per rarity (a hit that damages but doesn't stun)")]
     [Tooltip("Instant \"blink\" distance in the flee direction, applied ONCE the moment a dash triggers, before the speed boost kicks in - the snappy, visually-obvious part of the dash. 0 = no blink, just the speed boost.")]
     public float[] dashBlinkDistancePerRarity = { 0f, 1.5f, 2f, 2.5f };
-    [Tooltip("Flee-speed multiplier applied briefly after a hit that damages but doesn't stun, per rarity - 1 = no dash. Regular defaults to no dash since it always stuns in one hit at base damage anyway (dashDurationPerRarity's Regular entry is 0, which alone disables it regardless of this value). Only applies to NON-aggressive creatures - see CreatureData.isAggressive / CreatureAI.OnHit.")]
+    [Tooltip("Flee-speed multiplier applied briefly after a hit that damages but doesn't stun, per rarity - 1 = no dash. Regular defaults to no dash since it always stuns in one hit at base damage anyway (dashDurationPerRarity's Regular entry is 0, which alone disables it regardless of this value). Only applies to NON-aggressive creatures - see CreatureData.temperament / CreatureAI.OnHit.")]
     public float[] dashSpeedMultiplierPerRarity = { 1f, 1.3f, 1.6f, 2f };
     [Tooltip("How long (seconds) the dash speed boost lasts after a qualifying hit, per rarity. 0 = no dash for that rarity, regardless of the multiplier/blink above.")]
     public float[] dashDurationPerRarity = { 0f, 0.6f, 0.8f, 1f };

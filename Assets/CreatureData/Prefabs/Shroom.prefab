@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 2766311189737238091}
   - component: {fileID: 2484358039248839425}
   - component: {fileID: 8088657778383106192}
+  - component: {fileID: 855685804282203928}
   m_Layer: 0
   m_Name: Shroom
   m_TagString: Untagged
@@ -39,6 +40,7 @@ Transform:
   - {fileID: 671609267114433154}
   - {fileID: 532709627154260819}
   - {fileID: 5379903427446863930}
+  - {fileID: 8155338014267552329}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &9041468794839543916
@@ -85,6 +87,7 @@ MonoBehaviour:
   playerSpottedParticles: {fileID: 6471966550805014671}
   currentState: 0
   rolledRarity: 0
+  provoked: 0
 --- !u!195 &1512524225747870182
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -191,6 +194,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c3d8bb641a32ba45b11c4ea9e0646fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreatureSpriteAnimator
+--- !u!114 &855685804282203928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 389122531314925588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3058fcf17030764ea802a49ffe51e73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BurrowedStart
+  buriedOffset: 6
+  revealRadius: 2
+  emergeDuration: 0.4
+  emergeHopHeight: 8
+  emergeParticles: {fileID: 8155338014248192423}
+  audioClips:
+  - {fileID: 8300000, guid: dde0a9effb553da47b688bb4109f2aca, type: 3}
+  - {fileID: 8300000, guid: 1fe153065cae8594dabfce7f78a0a611, type: 3}
+  - {fileID: 8300000, guid: d66061c91461e5547ba44404c7abae07, type: 3}
 --- !u!1 &6509240608041114642
 GameObject:
   m_ObjectHideFlags: 0
@@ -10099,4 +10123,79 @@ ParticleSystem:
 Transform:
   m_CorrespondingSourceObject: {fileID: 983669210457285991, guid: 9d073536dcc4613499c29b67541f659a, type: 3}
   m_PrefabInstance: {fileID: 6249101524933511358}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &8155338014267952721
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6582618777071795979}
+    m_Modifications:
+    - target: {fileID: 187952, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_Name
+      value: ShroomDust
+      objectReference: {fileID: 0}
+    - target: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 19826678, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 19892744, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+--- !u!198 &8155338014248192423 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 19826678, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+  m_PrefabInstance: {fileID: 8155338014267952721}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8155338014267552329 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 424984, guid: 462e0999fd963ca47ab9964cc1d72582, type: 3}
+  m_PrefabInstance: {fileID: 8155338014267952721}
   m_PrefabAsset: {fileID: 0}

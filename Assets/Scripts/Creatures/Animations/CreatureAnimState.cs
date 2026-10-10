@@ -10,6 +10,10 @@ public enum CreatureAnimState
     Flee,
     Hit,
     Captured,
-    /// <summary>Only ever played by aggressive creatures (CreatureData.isAggressive) landing an attack - see CreatureAI.State.Attacking. Chasing itself reuses Move.</summary>
-    Attack
+    /// <summary>Only ever played by aggressive creatures (CreatureData.temperament) landing an attack - see CreatureAI.State.Attacking. Chasing itself reuses Move.</summary>
+    Attack,
+    /// <summary>BurrowedStart: popping out of the ground. Falls back to Idle if not authored.</summary>
+    Emerge,
+    /// <summary>Climber: going up/down a ClimbSpot. Falls back to Move if not authored.</summary>
+    Climb
 }

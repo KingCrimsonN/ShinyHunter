@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
-  m_Name: Boletus
+  m_Name: Shroom
   m_EditorClassIdentifier: Assembly-CSharp::CreatureData
   creatureName: 'Mushtink '
   description: "A colony of sentient fungi that buries itself into the soil and scares
@@ -110,14 +110,20 @@ MonoBehaviour:
   flightHeightMax: 5
   detectionRadius: 4
   fleeDistance: 5
-  detectionAversionScale: 1
-  isAggressive: 0
+  scentDistanceAtMax: 3
+  temperament: 0
   attackRange: 1.5
   attackCooldown: 5
   attackDamage: 15
   attackWindupDuration: 0.5
+  hitStaggerDuration: 0.6
+  aggroLossDuration: 5
   baseCaptureChance: 1
   stunDuration: 3
+  ambientSounds: []
+  ambientSoundInterval: {x: 6, y: 15}
+  hitSounds: []
+  soundVolume: 1
   resources:
   - {fileID: 11400000, guid: b68eb7d1fe1c34941b714abb4ca14f5f, type: 2}
   - {fileID: 11400000, guid: 6a1f5710ddcb74d47b2db93a3a0b1856, type: 2}

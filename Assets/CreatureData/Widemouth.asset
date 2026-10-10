@@ -103,7 +103,7 @@ MonoBehaviour:
   detectionRadius: 3
   fleeDistance: 10
   scentDistanceAtMax: 3
-  isAggressive: 1
+  temperament: 1
   attackRange: 1.5
   attackCooldown: 5
   attackDamage: 15
@@ -112,6 +112,14 @@ MonoBehaviour:
   aggroLossDuration: 5
   baseCaptureChance: 1
   stunDuration: 3
+  ambientSounds:
+  - {fileID: 8300000, guid: 6723eee9b5d3b824e98ed73b60b6b73c, type: 3}
+  - {fileID: 8300000, guid: 3a4dc717bbee2ae46a1246eb21b84325, type: 3}
+  - {fileID: 8300000, guid: 6398c120d64882245a903c32cc8bfca0, type: 3}
+  ambientSoundInterval: {x: 6, y: 15}
+  hitSounds:
+  - {fileID: 8300000, guid: 7af8c76e765273c479c83f5f6539ba8b, type: 3}
+  soundVolume: 0.489
   resources:
   - {fileID: 11400000, guid: f0ed829fb42bcef438e1939ffec16ef1, type: 2}
   - {fileID: 11400000, guid: 1d45712d4b10acf4d8abf0927e87aae2, type: 2}

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 2766311189737238091}
   - component: {fileID: 2484358039248839425}
   - component: {fileID: 8088657778383106192}
+  - component: {fileID: 441287452065292348}
   m_Layer: 0
   m_Name: Alien
   m_TagString: Untagged
@@ -85,6 +86,7 @@ MonoBehaviour:
   playerSpottedParticles: {fileID: 1584709283702216375}
   currentState: 0
   rolledRarity: 0
+  provoked: 0
 --- !u!195 &1512524225747870182
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -191,6 +193,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c3d8bb641a32ba45b11c4ea9e0646fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreatureSpriteAnimator
+--- !u!114 &441287452065292348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 389122531314925588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a08fac89859f3d4aa5f2c82c4f11637, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefersHeights
+  heightPreference: 0.8
+  candidates: 8
+  searchRadiusMultiplier: 1.5
+  sampleHeight: 6
+  minHeightGain: 0.3
 --- !u!1 &6509240608041114642
 GameObject:
   m_ObjectHideFlags: 0

@@ -95,14 +95,22 @@ MonoBehaviour:
   flightHeightMax: 5
   detectionRadius: 2
   fleeDistance: 10
-  detectionAversionScale: 1
-  isAggressive: 0
+  scentDistanceAtMax: 3
+  temperament: 0
   attackRange: 1.5
   attackCooldown: 5
   attackDamage: 15
   attackWindupDuration: 0.5
+  hitStaggerDuration: 0.6
+  aggroLossDuration: 5
   baseCaptureChance: 1
   stunDuration: 3
+  ambientSounds:
+  - {fileID: 8300000, guid: 9b59d4785aee2ac42905727746f5c091, type: 3}
+  - {fileID: 8300000, guid: 39769b3d1b57f5548b1b933073163c30, type: 3}
+  ambientSoundInterval: {x: 6, y: 15}
+  hitSounds: []
+  soundVolume: 1
   resources:
   - {fileID: 11400000, guid: 63b8b901f7adce5438a2cccb2bd6019c, type: 2}
   - {fileID: 11400000, guid: 07bb944b9672c734d881e9f022d29d01, type: 2}

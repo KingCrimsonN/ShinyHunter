@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6898760461868504675}
   - component: {fileID: 5006378529860762961}
   - component: {fileID: 2066551664435575947}
+  - component: {fileID: 4419298076597865853}
   m_Layer: 0
   m_Name: Apple
   m_TagString: Untagged
@@ -85,6 +86,7 @@ MonoBehaviour:
   playerSpottedParticles: {fileID: 5057277853568683190}
   currentState: 0
   rolledRarity: 0
+  provoked: 0
 --- !u!195 &7060665361306326388
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -191,6 +193,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c3d8bb641a32ba45b11c4ea9e0646fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreatureSpriteAnimator
+--- !u!114 &4419298076597865853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4887625026067394377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 650b786531609ad4597ceb455751f9e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RecklessRunner
+  sprintChance: 0.6
+  sprintSpeedMultiplier: 1.5
+  solidLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  minBumpSpeed: 3
+  probeDistance: 0.3
+  probeRadius: 0
+  minWallAngle: 50
+  bumpCooldown: 2
+  stuckTime: 0.4
+  pathfindFallback: 1.5
 --- !u!1001 &694840034514314757
 PrefabInstance:
   m_ObjectHideFlags: 0

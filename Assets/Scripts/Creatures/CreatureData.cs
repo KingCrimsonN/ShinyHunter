@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// Per-species configuration. Create one asset per creature type
@@ -18,6 +19,20 @@ public class CreatureData : ScriptableObject
     public string creatureName;
 
     public enum Rarity { Normal, Uncommon, Rare, Legendary }
+
+    /// <summary>
+    /// How the species treats the player. The numbers matter: this replaced the
+    /// old bool isAggressive (false = 0, true = 1), so existing assets keep their meaning.
+    /// </summary>
+    public enum Temperament
+    {
+        /// <summary>Flees when it notices the player or is hit.</summary>
+        Passive = 0,
+        /// <summary>Chases and attacks when it notices the player.</summary>
+        Aggressive = 1,
+        /// <summary>Flees like Passive - until it is HIT, then turns aggressive (that one critter only) until it loses interest or is stunned.</summary>
+        Neutral = 2,
+    }
 
     [TextArea] public string description;
     [TextArea] public string note;
@@ -61,16 +76,17 @@ public class CreatureData : ScriptableObject
     public float flightHeightMax = 5f;
 
     [Header("Fear / Detection")]
-    [Tooltip("Player distance at which the creature notices and reacts (flees, or moves in to attack if isAggressive).")]
+    [Tooltip("Player distance at which the creature notices and reacts (flees, or moves in to attack if aggressive).")]
     public float detectionRadius = 6f;
-    [Tooltip("Player distance the creature must reach before it feels safe/loses interest again (fleeing OR aggressive - see isAggressive).")]
+    [Tooltip("Player distance the creature must reach before it feels safe/loses interest again (fleeing OR aggressive - see temperament).")]
     public float fleeDistance = 10f;
     [Tooltip("World units added to the detection radius at a full-strength FAVORITE scent, and subtracted at a full-strength HATED one (scaled by how strong the stew's scent is on that axis, 0 to 1). Negative flips both. The radius never drops below a small minimum. See CreatureAI.EffectiveDetectionRadius.")]
     public float scentDistanceAtMax = 3f;
 
     [Header("Aggression")]
-    [Tooltip("If true, this species moves TOWARD the player and attacks once it notices them, instead of fleeing. Everything else (detectionRadius, fleeDistance as the \"give up\" distance, fleeSpeed as the chase speed) is reused as-is - see CreatureAI.CheckPlayerProximity.")]
-    public bool isAggressive;
+    [Tooltip("Passive flees. Aggressive moves TOWARD the player and attacks once it notices them. Neutral flees until it is hit, then turns aggressive. When aggressive, everything else (detectionRadius, fleeDistance as the \"give up\" distance, fleeSpeed as the chase speed) is reused as-is - see CreatureAI.CheckPlayerProximity.")]
+    [FormerlySerializedAs("isAggressive")]
+    public Temperament temperament = Temperament.Passive;
     [Tooltip("Distance at which an aggressive creature can land an attack.")]
     public float attackRange = 1.5f;
     [Tooltip("Seconds between attacks - deliberately generous (\"reasonably big cooldown\" per design), not spammable.")]
@@ -89,6 +105,15 @@ public class CreatureData : ScriptableObject
     [Range(0f, 1f)] public float baseCaptureChance = 0.5f;
     [Tooltip("Seconds the creature stays stunned/vulnerable after being hit with the stick.")]
     public float stunDuration = 3f;
+
+    [Header("Sounds")]
+    [Tooltip("Natural sounds it makes now and then while alive - one picked at random each time. Played in 3D from the critter (CreatureAudio).")]
+    public AudioClip[] ambientSounds;
+    [Tooltip("Seconds between natural sounds (random in range).")]
+    public Vector2 ambientSoundInterval = new Vector2(6f, 15f);
+    [Tooltip("Played when it is hit - also when a reckless critter runs into something.")]
+    public AudioClip[] hitSounds;
+    [Range(0f, 1f)] public float soundVolume = 1f;
 
     [Header("Resources")]
     [Tooltip("Index 0=Normal, 1=Uncommon, 2=Rare, 3=Legendary. The resource obtained when a creature of this species+rarity is turned into resources.")]

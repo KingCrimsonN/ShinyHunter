@@ -1489,3 +1489,54 @@ affected family is only rolled at brew time. `StewModifierRowUI.familyText` was 
 ## Stew inventory panel moved to the Overlay
 
 The panel used to be a hub-scene object wired into `BrewingStationUI`, which a tablet button couldn't reference (scene refs die on scene change). It now lives on the persistent Overlay as `StewInventoryPanelUI.Instance` (duplicate-Overlay-safe Awake). Hosts open it with `Show()` (brewing via `Instance`, the tablet's hub-only button via OnClick). It is not its own popup: hosts own the freeze/Escape, and the panel hides itself when the player becomes unfrozen or a scene loads - so Esc/closing the host closes it too, with no coupling from UIManager or the brewing UI.
+
+
+## Critter behaviours: temperament + composable behaviour components
+
+**Composition, not subclasses.** Species traits are `CreatureBehaviour` components added next to `CreatureAI` on the
+prefab (`Creatures/Behaviours/`). `CreatureAI` collects them in Awake and consults them at fixed hooks: take full
+control for a while (`HasControl`/`ControlTick`), block targeting, override ground movement (`MoveTowards`), choose
+wander targets, scale speed per state, and hear state changes/hits. Subclassing was rejected because traits are shared
+and combine (Snipe = Appy minus aggression; any trait could later pair with any other) - with inheritance every new
+combination is a new class. Pure-data traits (temperament, sounds) live on `CreatureData` instead.
+
+**Temperament** replaces `bool isAggressive`: Passive 0 / Aggressive 1 / Neutral 2 - the numbers match the old bool,
+the field has `FormerlySerializedAs("isAggressive")`, and the nine species assets were migrated in text (Bee and Alien
+set to Neutral). Neutral flees like Passive until HIT; then that instance is `provoked` (a CreatureAI field, never the
+shared asset) and behaves as Aggressive until it loses interest (fleeDistance) or is stunned. A bump (below) never
+provokes.
+
+**One ground-movement funnel.** Every agent call goes through `SetGroundTarget` / `StopGround` and is guarded by
+`AgentReady` (enabled + on the NavMesh), because a behaviour may switch the agent off (climbing). A behaviour that
+overrides ground movement gets the target every frame. Flying chase now holds a steady `flightHeightMin` above the
+player instead of a new random height per frame (that jittered). (Correction to my earlier note: flying creatures
+COULD already chase - the motor split I proposed was not needed; the funnel + Suspend/ResumeNavigation covers climbing.)
+
+- `RecklessRunner` (Appy, Snipe): straight-line running via `NavMeshAgent.Move` (no pathing around obstacles), frequent
+  wander sprints; a sphere cast ahead against `solidLayers` at >= `minBumpSpeed` on a steep surface = `CreatureAI.Bump()`,
+  identical to a stunning hit (per design). Stuck on a NavMesh edge: wander leg ends / brief normal pathing.
+- `PrefersHeights` (Alien): samples NavMesh points from above and usually wanders to the highest. Only reaches what the
+  baked NavMesh reaches.
+- `BurrowedStart` (Shroom): buried = NavMeshAgent Base Offset lowered (a pure Y offset, agent stays put on the mesh);
+  untargetable and paused until the player is within `revealRadius`, then hops out and is a normal critter.
+- `Climber` + `ClimbSpot` (Widemouth): option 1 of the three proposed (designer-placed spots; off-mesh links and true
+  surface crawling rejected as fiddly / fighting billboards). Wander leg to a free spot's foot -> agent off -> climb ->
+  perch -> descend -> agent back. Hit while up = falls, then the hit resolves normally.
+- `CreatureAudio`: auto-added to every critter; 3D AudioSource on the critter (the shared SoundFXManager prefab is 2D
+  and doesn't follow the critter). Clips per species on CreatureData.
+- New anim states appended (`Emerge`, `Climb`) - appended so existing serialized clip states keep their numbers.
+
+## Climbing follows the bark; climb spots generated from terrain trees
+
+The first Climber moved in a straight line from foot to `top`, through the trunk. Now `ClimbSpot` sits at the trunk's
+CENTRE (radius + climb height, no `top` child - old hand-placed spots must be re-placed), and every frame the Climber
+raycasts at the trunk from outside at its current height and sits `barkGap` off the hit surface (falls back to the
+radius). That follows any collider - a terrain tree's capsule (terrain tree colliders are raycastable through the
+TerrainCollider), a rock's mesh. A billboard on the far side of a trunk still cuts through it whatever the path, so by
+default the critter also creeps around the trunk to the camera's side (`stayOnCameraSide`); there a camera-facing sprite
+plane is tangent to the trunk and can't intersect it.
+
+`Tools > ShinyHunt > Generate Climb Spots` (editor window) creates spots for terrain trees, which can't hold components:
+per enabled prototype, a chance per tree, min spacing (grid hash), optional NavMesh-nearby check, radius/height from the
+prototype's Capsule/Box/Sphere collider times the instance's width/height scale. Output goes under one
+"ClimbSpots (Generated)" child of the terrain that Generate replaces, seeded so re-runs are repeatable; Undo works.

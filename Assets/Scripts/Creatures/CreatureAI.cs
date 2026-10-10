@@ -5,13 +5,26 @@ using UnityEngine.AI;
 
 /// <summary>
 /// Drives a single creature's behaviour: idle/wander naturally, react to the
-/// player getting close (flee, or - for CreatureData.isAggressive species -
+/// player getting close (flee, or - for aggressive / provoked neutral species -
 /// chase and attack instead), go stunned when hit enough to zero its health,
 /// and resolve capture attempts.
 ///
+/// Temperament (CreatureData.temperament): Passive flees; Aggressive chases and
+/// attacks; Neutral flees like Passive until it is HIT, then turns aggressive
+/// (this instance only - `provoked` lives here, never on the shared data) until
+/// it loses interest or is stunned.
+///
+/// Species-specific behaviour is NOT subclassed in: it comes from
+/// CreatureBehaviour components on the same prefab (RecklessRunner,
+/// PrefersHeights, BurrowedStart, Climber, CreatureAudio...), which this class
+/// collects in Awake and consults at a handful of hook points - see
+/// CreatureBehaviour for the list. Mix and match them per prefab.
+///
 /// Ground/Swimming creatures use NavMeshAgent (bake a NavMesh in the scene).
-/// Flying creatures use a simple point-to-point mover so they aren't
-/// constrained to the mesh's walkable surface.
+/// All ground movement goes through SetGroundTarget/StopGround, so one
+/// behaviour can take over HOW the creature moves (RecklessRunner runs in
+/// straight lines instead of pathing). Flying creatures use a simple
+/// point-to-point mover so they aren't constrained to the mesh's walkable surface.
 ///
 /// Visuals are delegated to CreatureSpriteAnimator - this script only calls
 /// Play(state) on transitions, it never touches the SpriteRenderer.
@@ -19,7 +32,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Collider))]
 public class CreatureAI : MonoBehaviour, ICapturable
 {
-    /// <summary>Aggressive and Attacking are only ever entered for species with CreatureData.isAggressive set - see CheckPlayerProximity.</summary>
+    /// <summary>Aggressive and Attacking are only ever entered while IsAggressive - see CheckPlayerProximity / OnHit.</summary>
     public enum State { Idle, Wander, Flee, Stunned, Captured, Aggressive, Attacking }
 
     [Header("Config")]
@@ -41,6 +54,8 @@ public class CreatureAI : MonoBehaviour, ICapturable
     [Header("Debug (read-only)")]
     [SerializeField] private State currentState = State.Idle;
     [SerializeField] private CreatureData.Rarity rolledRarity = CreatureData.Rarity.Normal;
+    [Tooltip("A Neutral creature that has been hit and is now aggressive. Per instance - never stored on the shared CreatureData.")]
+    [SerializeField] private bool provoked;
 
     /// <summary>
     /// This instance's rolled rarity. Rolled once in Awake and kept locally -
@@ -49,12 +64,28 @@ public class CreatureAI : MonoBehaviour, ICapturable
     /// </summary>
     public CreatureData.Rarity Rarity => rolledRarity;
 
+    public State CurrentState => currentState;
+
+    /// <summary>Chases and attacks right now: an Aggressive species, or a Neutral one that has been provoked by a hit.</summary>
+    public bool IsAggressive =>
+        data.temperament == CreatureData.Temperament.Aggressive
+        || (data.temperament == CreatureData.Temperament.Neutral && provoked);
+
     private Transform player;
     private NavMeshAgent agent;
     private Vector3 spawnPoint;
     private Vector3 currentFlyTarget;
     private float stateTimer;
     private float stunTimer;
+
+    /// <summary>Where the creature is currently heading on the ground, and how fast - see SetGroundTarget. Kept here (not only in the agent) so a behaviour can do the moving itself.</summary>
+    private Vector3 groundTarget;
+    private float groundSpeed;
+    private bool hasGroundTarget;
+
+    private CreatureBehaviour[] behaviours = new CreatureBehaviour[0];
+    /// <summary>The behaviour (if any) that moves this creature on the ground instead of NavMeshAgent pathing - see CreatureBehaviour.OverridesGroundMovement.</summary>
+    private CreatureBehaviour groundMover;
 
     /// <summary>True while a capture minigame is running against this creature - the stun timer is suspended so the creature can't recover before the attempt resolves.</summary>
     private bool captureInProgress;
@@ -113,8 +144,31 @@ public class CreatureAI : MonoBehaviour, ICapturable
     /// <summary>The creature's own collider - its bounds are what aiming is measured against.</summary>
     public Collider BodyCollider => bodyCollider;
 
-    /// <summary>False once captured (it's about to be destroyed) - no longer a valid target.</summary>
-    public bool IsTargetable => currentState != State.Captured;
+    /// <summary>False once captured (it's about to be destroyed), or while a behaviour hides it (e.g. a buried Shroom) - no longer a valid target.</summary>
+    public bool IsTargetable
+    {
+        get
+        {
+            if (currentState == State.Captured) return false;
+            foreach (var b in behaviours)
+                if (b != null && b.BlocksTargeting) return false;
+            return true;
+        }
+    }
+
+    // ---------------- For behaviours ----------------
+
+    public NavMeshAgent Agent => agent;
+    public Transform Player => player;
+
+    /// <summary>The agent exists, is enabled and stands on the NavMesh - every agent call goes through this check, because behaviours may switch the agent off (climbing).</summary>
+    private bool AgentReady => agent != null && agent.enabled && agent.isOnNavMesh;
+
+    public bool IsPlayerWithin(float distance) =>
+        player != null && (player.position - transform.position).sqrMagnitude <= distance * distance;
+
+    /// <summary>Plays an animation state; returns false if this variant has no clip for it (so the caller can fall back to another).</summary>
+    public bool PlayAnimation(CreatureAnimState state) => animator != null && animator.Play(state);
 
     private void OnEnable()
     {
@@ -136,7 +190,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
     /// family - see ExpeditionStewManager.GetSoothingMultiplier). See
     /// CreatureData.GetScentAffinity for how scent strength is scored.
     /// </summary>
-    private float EffectiveDetectionRadius
+    public float EffectiveDetectionRadius
     {
         get
         {
@@ -161,11 +215,15 @@ public class CreatureAI : MonoBehaviour, ICapturable
     /// CaptureMinigameConfig). Also doubles as the AGGRESSIVE chase speed
     /// (TickAggressive) - one "urgent movement" speed either way, fleeing or
     /// charging, rather than a separate per-species chase-speed field.
+    /// Behaviours can scale it per state (CreatureBehaviour.GetSpeedMultiplier).
     /// </summary>
     private float EffectiveFleeSpeed =>
         data.fleeSpeed
         * (ExpeditionStewManager.Instance != null ? ExpeditionStewManager.Instance.GetSoothingMultiplier(data.family) : 1f)
-        * (dashTimer > 0f ? dashSpeedMultiplier : 1f);
+        * (dashTimer > 0f ? dashSpeedMultiplier : 1f)
+        * BehaviourSpeedMultiplier(currentState);
+
+    private float EffectiveWanderSpeed => data.wanderSpeed * BehaviourSpeedMultiplier(State.Wander);
 
     private void Awake()
     {
@@ -199,6 +257,18 @@ public class CreatureAI : MonoBehaviour, ICapturable
         var playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null) player = playerObj.transform;
         else Debug.LogWarning($"{name}: no GameObject tagged 'Player' found in scene.");
+
+        // Every critter gets sounds; a prefab may already carry a tuned CreatureAudio.
+        if (GetComponent<CreatureAudio>() == null) gameObject.AddComponent<CreatureAudio>();
+
+        // Bound AFTER the agent exists, so behaviours can grab it in OnBound.
+        behaviours = GetComponents<CreatureBehaviour>();
+        foreach (var b in behaviours)
+        {
+            b.Bind(this);
+            if (groundMover == null && b.OverridesGroundMovement && data.movementMode != CreatureMovementMode.Flying)
+                groundMover = b;
+        }
     }
 
     private CreatureData.Rarity RollRarity()
@@ -238,6 +308,15 @@ public class CreatureAI : MonoBehaviour, ICapturable
         if (staggerTimer > 0f) staggerTimer -= Time.deltaTime;
         if (aggroBlockedTimer > 0f) aggroBlockedTimer -= Time.deltaTime;
 
+        // A behaviour that has taken over (buried, climbing...) runs INSTEAD of
+        // the normal detection and state logic until it lets go.
+        var controller = ControllingBehaviour();
+        if (controller != null)
+        {
+            controller.ControlTick();
+            return;
+        }
+
         CheckPlayerProximity();
 
         switch (currentState)
@@ -249,6 +328,24 @@ public class CreatureAI : MonoBehaviour, ICapturable
             case State.Aggressive: TickAggressive(); break;
             case State.Attacking: TickAttacking(); break;
         }
+
+        if (groundMover != null && hasGroundTarget && AgentReady)
+            groundMover.MoveTowards(groundTarget, groundSpeed);
+    }
+
+    private CreatureBehaviour ControllingBehaviour()
+    {
+        foreach (var b in behaviours)
+            if (b != null && b.isActiveAndEnabled && b.HasControl) return b;
+        return null;
+    }
+
+    private float BehaviourSpeedMultiplier(State state)
+    {
+        float multiplier = 1f;
+        foreach (var b in behaviours)
+            if (b != null && b.isActiveAndEnabled) multiplier *= b.GetSpeedMultiplier(state);
+        return multiplier;
     }
 
     // ---------------- State machine ----------------
@@ -274,11 +371,14 @@ public class CreatureAI : MonoBehaviour, ICapturable
             // sense for a species that never flees) and ignores the player for
             // aggroLossDuration, since the player is right next to it and it
             // would otherwise re-aggro the very next frame.
-            if (data.isAggressive)
+            if (data.temperament == CreatureData.Temperament.Aggressive)
             {
                 aggroBlockedTimer = data.aggroLossDuration;
                 if (newState == State.Flee) newState = State.Idle;
             }
+
+            // A provoked Neutral calms down again - from here it flees like a passive one.
+            provoked = false;
         }
 
         // The flinch only lives inside the chase; leaving it (stun, lost
@@ -307,31 +407,31 @@ public class CreatureAI : MonoBehaviour, ICapturable
         {
             case State.Idle:
                 stateTimer = Random.Range(data.idleTimeRange.x, data.idleTimeRange.y);
-                if (agent != null) agent.isStopped = true;
+                StopGround();
                 animator?.Play(CreatureAnimState.Idle);
                 break;
 
             case State.Wander:
                 stateTimer = Random.Range(data.wanderIntervalRange.x, data.wanderIntervalRange.y);
-                if (agent != null) { agent.isStopped = false; agent.speed = data.wanderSpeed; }
+                // Behaviours hear about the new leg BEFORE the target is picked, so
+                // e.g. RecklessRunner's sprint roll already applies to this leg's speed.
+                NotifyStateEntered(newState);
                 PickNewWanderTarget();
                 animator?.Play(CreatureAnimState.Move);
-                break;
+                return;
 
             case State.Flee:
-                if (agent != null) { agent.isStopped = false; agent.speed = EffectiveFleeSpeed; }
                 animator?.Play(CreatureAnimState.Flee);
                 break;
 
             case State.Stunned:
                 stunTimer = data.stunDuration;
-                if (agent != null) agent.isStopped = true;
+                StopGround();
                 animator?.Play(CreatureAnimState.Hit);
                 StartCoroutine(WaitAnChangeAnimation(State.Captured, 0.5f));
                 break;
 
             case State.Aggressive:
-                if (agent != null) { agent.isStopped = false; agent.speed = EffectiveFleeSpeed; }
                 animator?.Play(CreatureAnimState.Move); // chasing reuses the normal movement animation - only the attack itself gets its own state
                 break;
 
@@ -344,16 +444,19 @@ public class CreatureAI : MonoBehaviour, ICapturable
                 // has JUST verified range and cooldown, so no need to re-check here.
                 stateTimer = data.attackWindupDuration;
                 attackCooldownTimer = data.attackCooldown;
-                if (agent != null) agent.isStopped = true;
+                StopGround();
                 animator?.Play(CreatureAnimState.Attack);
                 if (PlayerHealth.Instance != null) PlayerHealth.Instance.TakeDamage(data.attackDamage);
                 break;
-
-                // case State.Captured:
-                //     if (agent != null) agent.isStopped = true;
-                //     animator?.Play(CreatureAnimState.Captured);
-                //     break;
         }
+
+        NotifyStateEntered(newState);
+    }
+
+    private void NotifyStateEntered(State state)
+    {
+        foreach (var b in behaviours)
+            if (b != null && b.isActiveAndEnabled) b.OnStateEntered(state);
     }
 
     private IEnumerator WaitAnChangeAnimation(State newState, float delay)
@@ -374,7 +477,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
         float dist = Vector3.Distance(transform.position, player.position);
 
-        if (data.isAggressive)
+        if (IsAggressive)
         {
             bool isChasingOrAttacking = currentState == State.Aggressive || currentState == State.Attacking;
 
@@ -393,7 +496,10 @@ public class CreatureAI : MonoBehaviour, ICapturable
             }
             else if (isChasingOrAttacking && dist >= data.fleeDistance)
             {
-                EnterState(State.Idle); // player got far enough away - loses interest, same threshold a fleeing species uses to feel safe
+                // Player got far enough away - loses interest, same threshold a
+                // fleeing species uses to feel safe. A provoked Neutral calms down.
+                provoked = false;
+                EnterState(State.Idle);
             }
 
             return;
@@ -421,7 +527,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
         stateTimer -= Time.deltaTime;
 
         if (data.movementMode == CreatureMovementMode.Flying)
-            MoveTowardsFlyTarget(data.wanderSpeed);
+            MoveTowardsFlyTarget(EffectiveWanderSpeed);
 
         if (stateTimer <= 0f || ReachedDestination())
             EnterState(State.Idle);
@@ -436,11 +542,12 @@ public class CreatureAI : MonoBehaviour, ICapturable
             currentFlyTarget = fleeTarget + Vector3.up * Random.Range(data.flightHeightMin, data.flightHeightMax);
             MoveTowardsFlyTarget(EffectiveFleeSpeed);
         }
-        else if (agent != null)
+        else
         {
-            agent.speed = EffectiveFleeSpeed; // live-refreshed every tick (not just on EnterState) so a dash kicking in mid-flee takes effect immediately, and drops back down the instant it ends
-            if (NavMesh.SamplePosition(fleeTarget, out NavMeshHit hit, data.fleeDistance, NavMesh.AllAreas))
-                agent.SetDestination(hit.position);
+            // Re-aimed and re-speeded every tick (not just on EnterState) so a
+            // dash kicking in mid-flee takes effect immediately, and drops back
+            // down the instant it ends.
+            SetGroundTarget(fleeTarget, EffectiveFleeSpeed, data.fleeDistance);
         }
     }
 
@@ -476,14 +583,13 @@ public class CreatureAI : MonoBehaviour, ICapturable
                 staggered = true;
                 animator?.Play(CreatureAnimState.Hit);
             }
-            if (agent != null) agent.isStopped = true; // flying creatures hold by simply not moving below
+            StopGround(); // flying creatures hold by simply not moving below
 
             return;
         }
         if (staggered)
         {
             staggered = false;
-            if (agent != null) agent.isStopped = false;
             animator?.Play(CreatureAnimState.Move);
         }
 
@@ -492,7 +598,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
         if (toPlayer.magnitude <= data.attackRange)
         {
-            if (agent != null) agent.isStopped = true; // flying creatures "hold" simply by not calling MoveTowardsFlyTarget below
+            StopGround(); // flying creatures "hold" simply by not calling MoveTowardsFlyTarget below
 
             // No attacks while the player is in the capture minigame - it holds
             // position at range and strikes once the minigame is over (the
@@ -505,15 +611,14 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
         if (data.movementMode == CreatureMovementMode.Flying)
         {
-            currentFlyTarget = player.position + Vector3.up * Random.Range(data.flightHeightMin, data.flightHeightMax);
+            // A steady height above the player (was a new random height every
+            // frame, which made a chasing flyer jitter up and down).
+            currentFlyTarget = player.position + Vector3.up * data.flightHeightMin;
             MoveTowardsFlyTarget(EffectiveFleeSpeed);
         }
-        else if (agent != null)
+        else
         {
-            agent.isStopped = false;
-            agent.speed = EffectiveFleeSpeed; // live-refreshed here (not just on EnterState) so a dash-equivalent or Soothing Power change takes effect immediately, same as TickFlee
-            if (NavMesh.SamplePosition(player.position, out NavMeshHit hit, data.fleeDistance, NavMesh.AllAreas))
-                agent.SetDestination(hit.position);
+            SetGroundTarget(player.position, EffectiveFleeSpeed, data.fleeDistance);
         }
     }
 
@@ -551,7 +656,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
         {
             transform.position = target;
         }
-        else if (agent != null)
+        else if (AgentReady)
         {
             if (NavMesh.SamplePosition(target, out NavMeshHit hit, distance, NavMesh.AllAreas))
                 agent.Warp(hit.position);
@@ -560,20 +665,64 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     private void PickNewWanderTarget()
     {
-        Vector3 randomOffset = Random.insideUnitSphere * data.wanderRadius;
-        randomOffset.y = 0f;
-        Vector3 target = spawnPoint + randomOffset;
+        Vector3 target = default;
+        bool picked = false;
+
+        // A behaviour may choose instead (PrefersHeights, Climber...).
+        foreach (var b in behaviours)
+        {
+            if (b != null && b.isActiveAndEnabled && b.TryPickWanderTarget(spawnPoint, data.wanderRadius, out target))
+            {
+                picked = true;
+                break;
+            }
+        }
+
+        if (!picked)
+        {
+            Vector3 randomOffset = Random.insideUnitSphere * data.wanderRadius;
+            randomOffset.y = 0f;
+            target = spawnPoint + randomOffset;
+        }
 
         if (data.movementMode == CreatureMovementMode.Flying)
         {
             target.y = spawnPoint.y + Random.Range(data.flightHeightMin, data.flightHeightMax);
             currentFlyTarget = target;
         }
-        else if (agent != null)
+        else
         {
-            if (NavMesh.SamplePosition(target, out NavMeshHit hit, data.wanderRadius, NavMesh.AllAreas))
-                agent.SetDestination(hit.position);
+            SetGroundTarget(target, EffectiveWanderSpeed, data.wanderRadius);
         }
+    }
+
+    // ---------------- Ground movement (the one place the agent is driven) ----------------
+
+    /// <summary>
+    /// Heads for target (snapped to the NavMesh within sampleRadius) at speed.
+    /// Normally the agent paths there; if a behaviour overrides ground movement
+    /// (groundMover) it is handed the target every frame instead.
+    /// </summary>
+    private void SetGroundTarget(Vector3 target, float speed, float sampleRadius)
+    {
+        if (!AgentReady) return;
+        if (!NavMesh.SamplePosition(target, out NavMeshHit hit, sampleRadius, NavMesh.AllAreas)) return;
+
+        groundTarget = hit.position;
+        groundSpeed = speed;
+        hasGroundTarget = true;
+        agent.speed = speed;
+
+        if (groundMover != null) return; // moved in Update by the behaviour
+
+        agent.isStopped = false;
+        agent.SetDestination(hit.position);
+    }
+
+    private void StopGround()
+    {
+        hasGroundTarget = false;
+        if (AgentReady) agent.isStopped = true;
     }
 
     private void MoveTowardsFlyTarget(float speed)
@@ -590,10 +739,62 @@ public class CreatureAI : MonoBehaviour, ICapturable
         if (data.movementMode == CreatureMovementMode.Flying)
             return Vector3.Distance(transform.position, currentFlyTarget) < 0.3f;
 
-        if (agent != null)
+        if (groundMover != null)
+        {
+            if (!hasGroundTarget) return true;
+            Vector3 to = groundTarget - transform.position;
+            to.y = 0f;
+            return to.magnitude <= Mathf.Max(agent != null ? agent.stoppingDistance : 0f, 0.4f);
+        }
+
+        if (AgentReady)
             return !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance;
 
         return true;
+    }
+
+    // ---------------- Hooks for behaviours ----------------
+
+    /// <summary>The ground mover got stuck against the NavMesh edge - a wander leg just ends (a chase/flee keeps re-aiming).</summary>
+    public void NotifyMovementBlocked()
+    {
+        if (currentState == State.Wander) EnterState(State.Idle);
+    }
+
+    /// <summary>Ran into something solid (RecklessRunner) - exactly like a hit that stuns: same particles, sound and capture window. Doesn't provoke a Neutral (nobody hit it).</summary>
+    public void Bump()
+    {
+        ApplyHit(CurrentHealth, provokes: false);
+    }
+
+    /// <summary>Takes the creature off the NavMesh so a behaviour can move the transform freely (climbing). Undo with ResumeNavigation.</summary>
+    public void SuspendNavigation()
+    {
+        StopGround();
+        if (agent != null && agent.enabled) agent.enabled = false;
+    }
+
+    /// <summary>Back onto the NavMesh at the nearest point to where the creature is now.</summary>
+    public void ResumeNavigation()
+    {
+        if (agent == null || data.movementMode == CreatureMovementMode.Flying) return;
+
+        Vector3 position = transform.position;
+        if (!agent.enabled) agent.enabled = true;
+        if (NavMesh.SamplePosition(position, out NavMeshHit hit, 10f, NavMesh.AllAreas))
+            agent.Warp(hit.position);
+    }
+
+    /// <summary>A behaviour handed control back - re-apply the current state so movement/animation match it again (a stun is kept as it is).</summary>
+    public void ResumeAfterControl()
+    {
+        if (currentState == State.Stunned)
+        {
+            StopGround();
+            return;
+        }
+
+        EnterState(currentState == State.Attacking ? State.Aggressive : currentState);
     }
 
     // ---------------- ICapturable ----------------
@@ -601,29 +802,47 @@ public class CreatureAI : MonoBehaviour, ICapturable
     /// <summary>
     /// Applies damage; only stuns once accumulated damage brings health to 0
     /// or below (see CaptureMinigameConfig.healthPerRarity - a Regular takes
-    /// 1 base-weapon hit, a Radiant takes 5). Already-stunned/captured
-    /// creatures ignore further hits - there's nothing more for another hit
-    /// to do once the capture window is already open.
+    /// 1 base-weapon hit, a Radiant takes 5). Already-stunned/captured or
+    /// untargetable creatures ignore further hits.
     /// </summary>
     public void OnHit(float damage)
     {
-        if (currentState == State.Captured || currentState == State.Stunned) return;
+        ApplyHit(damage, provokes: true);
+    }
+
+    private void ApplyHit(float damage, bool provokes)
+    {
+        if (!IsTargetable || currentState == State.Stunned) return;
 
         CurrentHealth -= damage;
-        Destroy(Instantiate(hitParticles, transform.position, Quaternion.identity), 0.5f);
-        if (CurrentHealth <= 0f)
+        if (hitParticles != null) Destroy(Instantiate(hitParticles, transform.position, Quaternion.identity), 0.5f);
+
+        bool stunned = CurrentHealth <= 0f;
+        foreach (var b in behaviours)
+            if (b != null && b.isActiveAndEnabled) b.OnHit(stunned);
+
+        if (stunned)
         {
             EnterState(State.Stunned);
             return;
+        }
+
+        // A Neutral creature that gets hit turns aggressive (this instance only).
+        if (provokes && data.temperament == CreatureData.Temperament.Neutral && !provoked)
+        {
+            provoked = true;
+            playerSpottedParticles?.Play();
         }
 
         // Aggressive creatures don't flee or dash when damaged-but-not-stunned
         // - they flinch (hold still for hitStaggerDuration, see TickAggressive)
         // and then keep pressing the attack. Only non-aggressive (fleeing)
         // species dash.
-        if (data.isAggressive)
+        if (IsAggressive)
         {
-            staggerTimer = data.hitStaggerDuration;
+            if (currentState != State.Aggressive && currentState != State.Attacking && aggroBlockedTimer <= 0f)
+                EnterState(State.Aggressive);
+            staggerTimer = data.hitStaggerDuration; // after EnterState - leaving the chase would clear it
             return;
         }
 
@@ -663,19 +882,11 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
         if (success)
         {
-            // currentState = State.Captured;
             InventoryManager.Instance.AddCreature(data, rolledRarity, 1);
 
             if (stunParticles != null) stunParticles.SetActive(false);
-            if (agent != null) agent.isStopped = true;
+            StopGround();
 
-            // Play the capture reaction if this variant has one, and only
-            // destroy once it finishes. Falls back to destroying immediately
-            // if no Captured clip is authored for this rarity yet.
-            // bool playingCaptureAnim = animator != null &&
-            //     animator.Play(CreatureAnimState.Captured, () => Destroy(gameObject));
-
-            // if (!playingCaptureAnim)
             Destroy(gameObject); // swap for a pool-return call if using pooling
         }
         else
@@ -722,17 +933,10 @@ public class CreatureAI : MonoBehaviour, ICapturable
             ExpeditionStewManager.Instance?.ApplyChronoBonusIfMatching(data.family);
 
             if (stunParticles != null) stunParticles.SetActive(false);
-            if (agent != null) agent.isStopped = true;
+            StopGround();
             captureParticles.SetActive(true);
             captureParticles.transform.SetParent(null); // detach so it doesn't move with the creature
 
-            // Play the capture reaction if this variant has one, and only
-            // destroy once it finishes. Falls back to destroying immediately
-            // if no Captured clip is authored for this rarity yet.
-            // bool playingCaptureAnim = animator != null &&
-            //     animator.Play(CreatureAnimState.Captured, () => Destroy(gameObject));
-
-            // if (!playingCaptureAnim)
             Destroy(gameObject); // swap for a pool-return call if using pooling
         }
         else
@@ -751,7 +955,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, data.wanderRadius);
 
-        if (data.isAggressive)
+        if (data.temperament != CreatureData.Temperament.Passive)
         {
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(transform.position, data.attackRange);

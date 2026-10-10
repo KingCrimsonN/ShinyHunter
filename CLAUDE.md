@@ -23,7 +23,7 @@ decision log).
 > first real session here and it'll stay accurate after that.
 
 - `Player/` — movement, health/"life", centralized freeze/unfreeze
-- `Creatures/` (+ `Creatures/Animation/`) — species data, AI, flipbook animation
+- `Creatures/` (+ `Creatures/Animations/`, `Creatures/Behaviours/`) — species data, AI, flipbook animation, and the composable per-species behaviour components (add a `CreatureBehaviour`, don't subclass `CreatureAI`)
 - `Inventory/`, `Tools/`, `Resources/` — the three separate inventories
 - `Spawning/` — weighted creature spawners
 - `CaptureMinigame/`, `CreatureTransform/`, `Dialogue/`, `Shop/`, `Stew/`,

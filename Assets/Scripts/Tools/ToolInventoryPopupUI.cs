@@ -15,7 +15,7 @@ public class ToolInventoryPopupUI : MonoBehaviour
     [SerializeField] private TMPro.TMP_Text descriptionText;
     [Tooltip("Shared floating icon shown while dragging. Should be a UI Image under this popup's Canvas, Raycast Target OFF, inactive by default.")]
     [SerializeField] private Image dragIconTemplate;
-    [SerializeField] private KeyCode toggleKey = KeyCode.Tab;
+    [SerializeField] private KeyCode toggleKey = KeyCode.T; // Tab belongs to ExpeditionStewPanelUI
 
     [Tooltip("Optional. Any DraggableToolSlot elsewhere in this UI (outside slotParent) is found automatically and driven by its own SlotIndex - list tiles here only if that discovery ever misses one.")]
     [SerializeField] private DraggableToolSlot[] equipSlots;

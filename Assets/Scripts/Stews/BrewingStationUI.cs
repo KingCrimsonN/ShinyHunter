@@ -35,7 +35,6 @@ public class BrewingStationUI : MonoBehaviour
     [SerializeField] private StewResultPopupUI resultPopup;
     [Tooltip("Live preview of the stew the current cauldron contents would make. Optional.")]
     [SerializeField] private StewDetailsUI preview;
-    [SerializeField] private StewInventoryPanelUI stewInventoryPanel;
     [SerializeField] private Button viewStewInventoryButton;
 
     [Header("Config")]
@@ -53,7 +52,7 @@ public class BrewingStationUI : MonoBehaviour
         if (popupRoot != null) popupRoot.SetActive(false);
 
         if (brewButton != null) brewButton.onClick.AddListener(OnBrewPressed);
-        if (viewStewInventoryButton != null) viewStewInventoryButton.onClick.AddListener(() => stewInventoryPanel?.Show());
+        if (viewStewInventoryButton != null) viewStewInventoryButton.onClick.AddListener(() => StewInventoryPanelUI.Instance?.Show());
 
         for (int i = 0; i < cauldronSlots.Length; i++)
         {

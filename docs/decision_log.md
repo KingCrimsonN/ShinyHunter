@@ -1481,3 +1481,11 @@ on the stew; the default stew keeps its own name.
 **Modifier labels.** "{Family} {Power name}" with the percentage kept: "Bug Encounter Power  73%". The family
 name is the enum's own (`Bug`, `Plant`, `Freaky`, `Warm`, `Cold`); a preview shows "??? Encounter Power" because the
 affected family is only rolled at brew time. `StewModifierRowUI.familyText` was removed (merged into `nameText`).
+
+## Mid-run stew panel: Tab, slider, close button
+
+`ExpeditionStewPanelUI` now toggles on Tab (default `toggleKey`), has a `closeButton` and a `timeLeftSlider` (time left / `PlayerHealth.MaxHealth`, 0-1) next to the text. Tab is ignored in the Hub and while another popup has the player frozen (hiding is always allowed), and the panel hides on every scene load (the Overlay is persistent, so `Start` runs once). Tab used to open the tool inventory (`ToolInventoryPopupUI.toggleKey`, serialized as Tab on the Overlay prefab); its default is now T, and the Overlay's serialized value must be changed by hand. It is still not a popup (no freeze), so its Close button only works while the cursor is free.
+
+## Stew inventory panel moved to the Overlay
+
+The panel used to be a hub-scene object wired into `BrewingStationUI`, which a tablet button couldn't reference (scene refs die on scene change). It now lives on the persistent Overlay as `StewInventoryPanelUI.Instance` (duplicate-Overlay-safe Awake). Hosts open it with `Show()` (brewing via `Instance`, the tablet's hub-only button via OnClick). It is not its own popup: hosts own the freeze/Escape, and the panel hides itself when the player becomes unfrozen or a scene loads - so Esc/closing the host closes it too, with no coupling from UIManager or the brewing UI.

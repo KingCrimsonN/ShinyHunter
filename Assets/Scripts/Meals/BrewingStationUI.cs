@@ -144,7 +144,7 @@ public class BrewingStationUI : MonoBehaviour
         if (visualConfig == null) return;
 
         meal.icon = visualConfig.GetMealIcon(meal.dominantFamily, meal.tier);
-        meal.topping = visualConfig.GetTopping(meal.modifierType, meal.dominantFamily, meal.tier);
+        meal.topping = visualConfig.GetTopping(meal.modifierType, meal.affectedFamily, meal.tier);
         meal.displayName = visualConfig.GetMealName(meal.modifierType, meal.dominantFamily);
     }
 

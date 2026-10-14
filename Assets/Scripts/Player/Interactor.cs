@@ -10,7 +10,7 @@ public interface IInteractable
 /// to interact" accordingly.
 ///
 /// Disabled centrally by PlayerStateManager.Freeze while any popup (shop,
-/// transform table, brewing, dialogue, a door's stew carousel...) owns the
+/// transform table, brewing, dialogue, a door's meal carousel...) owns the
 /// player - OnDisable hides the prompt right then, so it can't linger over
 /// whatever just opened. This matters because disabling a component mid-frame
 /// does NOT cancel an already-running Update() call: if Interact() itself

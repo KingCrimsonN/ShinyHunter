@@ -15,6 +15,6 @@ public class CapturedCritter
     public CreatureData species;
     public CreatureData.Rarity rarity;
 
-    /// <summary>Flagged at capture (stew Ingredient Power or the tool's extra-ingredient chance): transforming THIS critter gives double resources.</summary>
+    /// <summary>Flagged at capture (meal Ingredient Power or the tool's extra-ingredient chance): transforming THIS critter gives double resources.</summary>
     public bool doubleYield;
 }

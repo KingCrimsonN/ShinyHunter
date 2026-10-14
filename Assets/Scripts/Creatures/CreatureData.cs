@@ -37,13 +37,13 @@ public class CreatureData : ScriptableObject
     [TextArea] public string description;
     [TextArea] public string note;
 
-    [Tooltip("Biological family - drives which stew modifier this species' ingredient contributes toward, and Encounter Power's spawn-weight boost target.")]
+    [Tooltip("Biological family - drives which meal modifier this species' ingredient contributes toward, and Encounter Power's spawn-weight boost target.")]
     public IngredientFamily family;
 
     [Header("Scent Preference (spawn bias)")]
-    [Tooltip("The one scent this species is drawn to. Boosts spawn weight when the active stew is strong on this axis - the stew's other four scent values are ignored entirely for this species. See GetScentAffinity.")]
+    [Tooltip("The one scent this species is drawn to. Boosts spawn weight when the active meal is strong on this axis - the meal's other four scent values are ignored entirely for this species. See GetScentAffinity.")]
     public ScentType favoriteScent = ScentType.Sweet;
-    [Tooltip("The one scent this species is repelled by (\"hated\"). Reduces spawn weight AND increases detection radius (notices/flees the player from farther away, scaled by Detection Aversion Scale below) when the active stew is strong on THIS axis - again, only this one axis matters, not the other four. See GetScentAffinity.")]
+    [Tooltip("The one scent this species is repelled by (\"hated\"). Reduces spawn weight AND increases detection radius (notices/flees the player from farther away, scaled by Detection Aversion Scale below) when the active meal is strong on THIS axis - again, only this one axis matters, not the other four. See GetScentAffinity.")]
     public ScentType hatedScent = ScentType.Putrid;
 
     [Header("Visuals per rarity")]
@@ -80,7 +80,7 @@ public class CreatureData : ScriptableObject
     public float detectionRadius = 6f;
     [Tooltip("Player distance the creature must reach before it feels safe/loses interest again (fleeing OR aggressive - see temperament).")]
     public float fleeDistance = 10f;
-    [Tooltip("World units added to the detection radius at a full-strength FAVORITE scent, and subtracted at a full-strength HATED one (scaled by how strong the stew's scent is on that axis, 0 to 1). Negative flips both. The radius never drops below a small minimum. See CreatureAI.EffectiveDetectionRadius.")]
+    [Tooltip("World units added to the detection radius at a full-strength FAVORITE scent, and subtracted at a full-strength HATED one (scaled by how strong the meal's scent is on that axis, 0 to 1). Negative flips both. The radius never drops below a small minimum. See CreatureAI.EffectiveDetectionRadius.")]
     public float scentDistanceAtMax = 3f;
 
     [Header("Aggression")]
@@ -151,10 +151,10 @@ public class CreatureData : ScriptableObject
 
     /// <summary>
     /// How drawn to (lovedScore) vs. repelled by (hatedScore) this species is
-    /// by the given scent profile - each axis on ExpeditionStewManager
+    /// by the given scent profile - each axis on ExpeditionMealManager
     /// .GetScents()'s 0-scentMax scale (0 = that scent isn't present at all),
-    /// normalized here to 0-1 by dividing by scentMax (pass ExpeditionStewManager.ScentMax). Only favoriteScent/hatedScent's own single axis
-    /// is ever read - a stew that's maxed out on every OTHER axis still scores
+    /// normalized here to 0-1 by dividing by scentMax (pass ExpeditionMealManager.ScentMax). Only favoriteScent/hatedScent's own single axis
+    /// is ever read - a meal that's maxed out on every OTHER axis still scores
     /// 0 here if none of them is this species' favorite or hated scent. Shared
     /// by Spawner (spawn-weight bias) and CreatureAI (detection-range bias) so
     /// both read the EXACT same match, just apply it differently.

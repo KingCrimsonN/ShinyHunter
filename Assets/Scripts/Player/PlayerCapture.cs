@@ -67,9 +67,9 @@ public class PlayerCapture : MonoBehaviour
         if (CreatureTargeting.TryFind(cam.transform, hitRange, hitRadius, out CreatureTarget target))
         {
             // Capture Power can raise hit power - family-scoped like every
-            // other modifier (see ExpeditionStewManager.GetHitPowerBonus).
-            float hitPowerBonus = ExpeditionStewManager.Instance != null
-                ? ExpeditionStewManager.Instance.GetHitPowerBonus(target.creature.Data.family)
+            // other modifier (see ExpeditionMealManager.GetHitPowerBonus).
+            float hitPowerBonus = ExpeditionMealManager.Instance != null
+                ? ExpeditionMealManager.Instance.GetHitPowerBonus(target.creature.Data.family)
                 : 0f;
             float damage = baseDamage * (1f + hitPowerBonus);
 

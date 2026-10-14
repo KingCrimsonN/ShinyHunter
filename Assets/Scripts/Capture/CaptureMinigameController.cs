@@ -9,7 +9,7 @@ using System.Collections;
 /// Drives the capture minigame: spins a needle around a wheel with randomly
 /// placed hit arcs ("barriers"). Player gets a number of attempts and a time
 /// limit to hit as many as possible; final capture chance = hits/total
-/// (plus Capture Power's stew bonus and the tool's own family bonus, if
+/// (plus Capture Power's meal bonus and the tool's own family bonus, if
 /// either applies - see EndMinigame).
 ///
 /// Every run is configured from three independent sources (see BeginCapture
@@ -18,7 +18,7 @@ using System.Collections;
 ///     orbit-speed multiplier, extra-ingredient chance, family capture bonus.
 ///   - The CREATURE'S RARITY (CaptureMinigameConfig): barrier count/width,
 ///     and whether/how fast barriers orbit the wheel (Shiny/Radiant only).
-///   - The ACTIVE STEW (ExpeditionStewManager): Capture Power's time bonus
+///   - The ACTIVE MEAL (ExpeditionMealManager): Capture Power's time bonus
 ///     and hit-power bonus (the latter applied by PlayerCapture, not here),
 ///     both family-scoped like every other modifier.
 ///
@@ -115,7 +115,7 @@ public class CaptureMinigameController : MonoBehaviour
     private bool ending;
     private bool cooldown;
 
-    // ---------------- Per-run config, resolved once in BeginCapture from the equipped tool + creature rarity + active stew ----------------
+    // ---------------- Per-run config, resolved once in BeginCapture from the equipped tool + creature rarity + active meal ----------------
 
     /// <summary>Whichever tool triggered this attempt (e.g. the doll) - cached once at the start, since the player can't switch tools while frozen mid-minigame anyway. Null-safe everywhere it's read.</summary>
     private ToolData equippedToolForThisRun;
@@ -197,7 +197,7 @@ public class CaptureMinigameController : MonoBehaviour
     /// decision log): the equipped tool (time limit, attempt count, barrier
     /// speed multiplier, family capture bonus), the creature's rarity
     /// (barrier count/size, whether/how fast they move - CaptureMinigameConfig),
-    /// and the active stew (Capture Power's time bonus, family-scoped).
+    /// and the active meal (Capture Power's time bonus, family-scoped).
     /// </summary>
     /// <returns>True if the minigame started. False if it didn't (already running, or the creature is gone / no longer stunned) - callers must not consume anything for a capture that never began.</returns>
     public bool BeginCapture(ICapturable creature)
@@ -234,8 +234,8 @@ public class CaptureMinigameController : MonoBehaviour
         needleSpeed = defaultNeedleSpeed * (equippedToolForThisRun != null ? equippedToolForThisRun.needleSpeedMultiplier : 1f);
 
         float toolTimeLimit = equippedToolForThisRun != null ? equippedToolForThisRun.minigameTimeLimit : defaultTimeLimit;
-        float captureTimeBonus = ExpeditionStewManager.Instance != null && creatureData != null
-            ? ExpeditionStewManager.Instance.GetCaptureTimeBonus(creatureData.family)
+        float captureTimeBonus = ExpeditionMealManager.Instance != null && creatureData != null
+            ? ExpeditionMealManager.Instance.GetCaptureTimeBonus(creatureData.family)
             : 0f;
         timeLimitForThisRun = toolTimeLimit + captureTimeBonus;
         timeRemaining = timeLimitForThisRun;
@@ -258,12 +258,12 @@ public class CaptureMinigameController : MonoBehaviour
         return true;
     }
 
-    /// <summary>Capture Power head-start: marks some hit areas as already hit, without spending attempts. Only if this creature's family matches the stew's affected family.</summary>
+    /// <summary>Capture Power head-start: marks some hit areas as already hit, without spending attempts. Only if this creature's family matches the meal's affected family.</summary>
     private void ApplyCapturePowerAutoBreak()
     {
-        if (ExpeditionStewManager.Instance == null || creatureData == null) return;
+        if (ExpeditionMealManager.Instance == null || creatureData == null) return;
 
-        int autoBreakCount = ExpeditionStewManager.Instance.GetCaptureAutoBreakCount(creatureData.family);
+        int autoBreakCount = ExpeditionMealManager.Instance.GetCaptureAutoBreakCount(creatureData.family);
         for (int i = 0; i < autoBreakCount && i < activeHitAreas.Count; i++)
         {
             activeHitAreas[i].MarkHit();
@@ -378,17 +378,17 @@ public class CaptureMinigameController : MonoBehaviour
 
         float ratio = hitAreaCount > 0 ? (float)hitsScored / hitAreaCount : 0f;
 
-        float stewBonus = ExpeditionStewManager.Instance != null && creatureData != null
-            ? ExpeditionStewManager.Instance.GetCaptureChanceBonus(creatureData.family)
+        float mealBonus = ExpeditionMealManager.Instance != null && creatureData != null
+            ? ExpeditionMealManager.Instance.GetCaptureChanceBonus(creatureData.family)
             : 0f;
 
         // Tool's own family bonus (ToolData.bonusFamily/bonusFamilyCaptureChance) -
-        // stacks additively with the stew's Capture Power bonus above.
+        // stacks additively with the meal's Capture Power bonus above.
         float toolBonus = 0f;
         if (equippedToolForThisRun != null && creatureData != null && creatureData.family == equippedToolForThisRun.bonusFamily)
             toolBonus = equippedToolForThisRun.bonusFamilyCaptureChance;
 
-        ratio = Mathf.Clamp01(ratio + stewBonus + toolBonus);
+        ratio = Mathf.Clamp01(ratio + mealBonus + toolBonus);
 
         // The tool is remembered from when the wheel STARTED (equippedToolForThisRun) -
         // the doll was consumed the moment the throw landed, so for the last

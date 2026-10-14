@@ -1540,3 +1540,28 @@ plane is tangent to the trunk and can't intersect it.
 per enabled prototype, a chance per tree, min spacing (grid hash), optional NavMesh-nearby check, radius/height from the
 prototype's Capsule/Box/Sphere collider times the instance's width/height scale. Output goes under one
 "ClimbSpots (Generated)" child of the terrain that Generate replaces, seeded so re-runs are repeatable; Undo works.
+
+
+## Stews renamed to meals; meal tiers, toppings, modifier tiers
+
+**Rename.** "Stew" is "Meal" everywhere in code: every type, member, comment and string under Assets/Scripts
+(`MealInstance`, `MealInventoryManager`, `ExpeditionMealManager`, `MealDetailsUI`, `MealModifierType`...), the
+`Scripts/Stews` folder is `Scripts/Meals`, and each renamed file moved WITH its .meta - the script GUIDs are unchanged,
+so scene and prefab references survive. `StewCarouseleEntryUI.cs` became `MealCarouselEntryUI.cs`, fixing the old
+file/class name mismatch. Serialized fields whose names changed carry `FormerlySerializedAs` (the default meal's
+name/time/scents/icon on the calculation config, the brewing screen's inventory button). Asset and prefab FILES
+(StewUI.prefab, StewVisualConfig.asset, StewCalculationConfig.asset, StewExit.prefab) and the default meal's name
+value ("Auntie's Stew") were left alone - content, not code. Older decision-log entries keep the old names.
+
+**Meal tier (1-4)** from its time, thresholds on `MealCalculationConfig.mealTierTimeThresholds` (was hardcoded
+120/180/210 in the calculator - convention #10). **Modifier tier (1-4)** from its power,
+`modifierTierThresholds` (35/50/80%); the UI shows just the tier number instead of a percentage. Display only - effects still
+scale with the exact power.
+
+**Art picked once.** `BrewingStationUI.ApplyVisuals` stamps `icon` (dominant family + tier) and `topping` (same, only
+when there is a modifier) onto the `MealInstance`; `MealDetailsUI` and the carousel just show those, hiding an image
+with no sprite. Fixed on the way: both lookups indexed the tier arrays by FAMILY instead of tier; the topping was
+never hidden for a meal without a modifier; `MealDetailsUI` enabled its icon from a stale parameter and threw when
+no topping Image was wired; the carousel needed its own config reference. Removed as redundant: `familyIcons` /
+`GetFamilyIcon` (replaced by the tier art), the visual config's unassigned `defaultMealIcon` (the calculation
+config's default-meal icon is the one in use), and the `Show(meal, sprite)` overload.

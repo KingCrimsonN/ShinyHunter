@@ -1,6 +1,6 @@
 /// <summary>
-/// The five scent axes stews/ingredients are measured on. Order MUST match
-/// StewInstance.scents' index order and StewDisplayUtil.ScentLabels (Sweet,
+/// The five scent axes meals/ingredients are measured on. Order MUST match
+/// MealInstance.scents' index order and MealDisplayUtil.ScentLabels (Sweet,
 /// Fresh, Putrid, Metallic, Marine).
 ///
 /// ResourceData keeps its five scent fields as plain floats rather than

@@ -184,24 +184,24 @@ public class CreatureAI : MonoBehaviour, ICapturable
     private const float MinDetectionRadius = 0.5f;
 
     /// <summary>
-    /// data.detectionRadius, shifted by the stew's scent (favorite adds, hated
+    /// data.detectionRadius, shifted by the meal's scent (favorite adds, hated
     /// subtracts - see scentDistanceAtMax) and scaled by Soothing Power (less than 1 = notices
-    /// the player from closer, ONLY for creatures of the stew's affected
-    /// family - see ExpeditionStewManager.GetSoothingMultiplier). See
+    /// the player from closer, ONLY for creatures of the meal's affected
+    /// family - see ExpeditionMealManager.GetSoothingMultiplier). See
     /// CreatureData.GetScentAffinity for how scent strength is scored.
     /// </summary>
     public float EffectiveDetectionRadius
     {
         get
         {
-            if (ExpeditionStewManager.Instance == null) return data.detectionRadius;
+            if (ExpeditionMealManager.Instance == null) return data.detectionRadius;
 
-            float soothing = ExpeditionStewManager.Instance.GetSoothingMultiplier(data.family);
+            float soothing = ExpeditionMealManager.Instance.GetSoothingMultiplier(data.family);
 
             // Scent is ADDITIVE now: a favorite scent adds distance, a hated one
             // subtracts it (scentDistanceAtMax units at full strength), instead
             // of the old multiplier that only a hated scent used.
-            data.GetScentAffinity(ExpeditionStewManager.Instance.GetScents(), ExpeditionStewManager.Instance.ScentMax, out float lovedScore, out float hatedScore);
+            data.GetScentAffinity(ExpeditionMealManager.Instance.GetScents(), ExpeditionMealManager.Instance.ScentMax, out float lovedScore, out float hatedScore);
             float scentShift = (lovedScore - hatedScore) * data.scentDistanceAtMax;
 
             return Mathf.Max(MinDetectionRadius, (data.detectionRadius + scentShift) * soothing);
@@ -210,7 +210,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     /// <summary>
     /// data.fleeSpeed scaled by Soothing Power (less than 1 = flees slower,
-    /// ONLY for creatures of the stew's affected family) and, while dashTimer
+    /// ONLY for creatures of the meal's affected family) and, while dashTimer
     /// is running, by the rarity-scaled dash multiplier (see OnHit /
     /// CaptureMinigameConfig). Also doubles as the AGGRESSIVE chase speed
     /// (TickAggressive) - one "urgent movement" speed either way, fleeing or
@@ -219,7 +219,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
     /// </summary>
     private float EffectiveFleeSpeed =>
         data.fleeSpeed
-        * (ExpeditionStewManager.Instance != null ? ExpeditionStewManager.Instance.GetSoothingMultiplier(data.family) : 1f)
+        * (ExpeditionMealManager.Instance != null ? ExpeditionMealManager.Instance.GetSoothingMultiplier(data.family) : 1f)
         * (dashTimer > 0f ? dashSpeedMultiplier : 1f)
         * BehaviourSpeedMultiplier(currentState);
 
@@ -273,12 +273,12 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     private CreatureData.Rarity RollRarity()
     {
-        // Shiny Power only benefits creatures of the active stew's dominant
-        // family (see ExpeditionStewManager.GetRarityChanceMultiplier) - data
+        // Shiny Power only benefits creatures of the active meal's dominant
+        // family (see ExpeditionMealManager.GetRarityChanceMultiplier) - data
         // is guaranteed non-null here, this is only ever called from Awake
         // inside its own "if (data != null)" guard.
-        float multiplier = ExpeditionStewManager.Instance != null
-            ? ExpeditionStewManager.Instance.GetRarityChanceMultiplier(data.family)
+        float multiplier = ExpeditionMealManager.Instance != null
+            ? ExpeditionMealManager.Instance.GetRarityChanceMultiplier(data.family)
             : 1f;
 
         float legendary = Mathf.Clamp01(legendaryChance * multiplier);
@@ -912,12 +912,12 @@ public class CreatureAI : MonoBehaviour, ICapturable
             // straight onto the InventoryManager stack so the sparkle badge
             // (inventory / transform station UI) reflects it immediately,
             // long before the player ever visits the transform table.
-            bool doubleYield = ExpeditionStewManager.Instance != null
-                && ExpeditionStewManager.Instance.TryRollDoubleIngredients(data.family);
+            bool doubleYield = ExpeditionMealManager.Instance != null
+                && ExpeditionMealManager.Instance.TryRollDoubleIngredients(data.family);
 
             // A tool can ALSO grant an independent chance at the same flag
             // (ToolData.extraIngredientChance) - either roll succeeding is
-            // enough, so only bother rolling this one if the stew didn't
+            // enough, so only bother rolling this one if the meal didn't
             // already get there first. The chance is handed in by whoever
             // resolved the capture (CaptureMinigameController remembers the
             // tool from when the wheel started) - it can't be read from the
@@ -930,7 +930,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
             // Chrono Power: grants bonus CURRENT-run time immediately if this
             // capture's family matches - a full no-op unless Chrono Power is
             // active AND matches (see ApplyChronoBonusIfMatching).
-            ExpeditionStewManager.Instance?.ApplyChronoBonusIfMatching(data.family);
+            ExpeditionMealManager.Instance?.ApplyChronoBonusIfMatching(data.family);
 
             if (stunParticles != null) stunParticles.SetActive(false);
             StopGround();

@@ -26,7 +26,7 @@ decision log).
 - `Creatures/` (+ `Creatures/Animations/`, `Creatures/Behaviours/`) — species data, AI, flipbook animation, and the composable per-species behaviour components (add a `CreatureBehaviour`, don't subclass `CreatureAI`)
 - `Inventory/`, `Tools/`, `Resources/` — the three separate inventories
 - `Spawning/` — weighted creature spawners
-- `CaptureMinigame/`, `CreatureTransform/`, `Dialogue/`, `Shop/`, `Stew/`,
+- `CaptureMinigame/`, `CreatureTransform/`, `Dialogue/`, `Shop/`, `Meals/`,
   `RunSummary/`, `CritterDex/`, `UI/` — feature systems, each roughly
   self-contained
 - `docs/systems.md` — full system-by-system map; read before touching an
@@ -46,8 +46,8 @@ decision log).
 
 2. **Persistent singleton pattern.** Every cross-scene manager
    (`InventoryManager`, `ToolInventoryManager`, `ResourceInventoryManager`,
-   `PlayerHealth`, `PlayerStateManager`, `StewInventoryManager`,
-   `ExpeditionStewManager`, `SceneTransitionManager`, `DialogueManager`)
+   `PlayerHealth`, `PlayerStateManager`, `MealInventoryManager`,
+   `ExpeditionMealManager`, `SceneTransitionManager`, `DialogueManager`)
    follows the same shape:
 
    ```csharp
@@ -105,7 +105,7 @@ decision log).
    the expedition time dial — keep any new radial UI consistent with this.
 
 8. **Grid UI rebuilds fully on refresh** rather than diffing (creature/tool/
-   resource inventories, CritterDex, shop, stew inventory). Simpler and
+   resource inventories, CritterDex, shop, meal inventory). Simpler and
    correct; only worth optimizing if profiling actually says so.
 
 9. **Drag-and-drop UI** uses a shared "ghost" `Image` (a static field on the
@@ -115,7 +115,7 @@ decision log).
    empty space still works).
 
 10. **Balance numbers live in config `ScriptableObject`s**, not hardcoded
-    constants — `StewCalculationConfig` is the biggest example. Tune there,
+    constants — `MealCalculationConfig` is the biggest example. Tune there,
     not in code.
 
 ## Known simplifications / things to revisit
@@ -127,10 +127,10 @@ decision log).
   queries (`GetCount`, `GetAll`...) are computed from the list. Ingredient
   Power is rolled at capture (`CreatureAI.TryCapture`) and stored on the
   critter itself. See decision log.
-- **Stew "time cap"** is one global constant
-  (`StewCalculationConfig.maxTimeSeconds`), not a per-bowl stat — revisit if
+- **Meal "time cap"** is one global constant
+  (`MealCalculationConfig.maxTimeSeconds`), not a per-bowl stat — revisit if
   bowl tiers get added.
-- **Multi-hub bowl capacity** isn't built — `StewInventoryManager` has one
+- **Multi-hub bowl capacity** isn't built — `MealInventoryManager` has one
   capacity pool. If multiple hub scenes get added, `baseCapacity` needs to
   become keyed by scene.
 - **Money system API** (`MoneyManager.GetCurrentMoney()` / `AddMoney(int)` /

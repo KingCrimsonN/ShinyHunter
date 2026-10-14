@@ -45,7 +45,7 @@ public class SceneTransitionManager : MonoBehaviour
     /// Fades to black, loads the given scene, holds, fades back in. Returns
     /// false (and does nothing) if a transition is already running or the
     /// scene can't be loaded - so callers can avoid consuming anything
-    /// (e.g. a stew) for a transition that never happens.
+    /// (e.g. a meal) for a transition that never happens.
     ///
     /// The player is frozen for the whole transition and released once the
     /// new scene has loaded. PlayerStateManager re-applies its frozen state

@@ -1,7 +1,7 @@
 /// <summary>
 /// The GDD's five creature families, reused as the ingredient/modifier
 /// classification axis. Names in comments match the informal names used
-/// when designing the stew modifiers.
+/// when designing the meal modifiers.
 /// </summary>
 public enum IngredientFamily
 {

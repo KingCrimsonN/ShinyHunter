@@ -17,7 +17,7 @@ using UnityEngine.UI;
 /// Selection-change "animation": since there's no new item sliding in from
 /// outside (only ever 3 tools total), a change is a ROTATION of the three
 /// already-visible icons between the three fixed card positions - not a
-/// sliding track like ExpeditionStewSelectionUI's carousel. Moving to the
+/// sliding track like ExpeditionMealSelectionUI's carousel. Moving to the
 /// NEXT slot: each icon moves one card to the left, and the vacated right
 /// card is filled by whatever just fell off the left (wraps around);
 /// PREVIOUS is the mirror. On top of that, the center card's frame briefly

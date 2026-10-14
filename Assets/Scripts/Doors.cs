@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// The hub's exit door - opens the stew-selection carousel, UNLESS the
+/// The hub's exit door - opens the meal-selection carousel, UNLESS the
 /// player has no capture tools at all, in which case NoToolsWarningUI gates
 /// it first (Yes = proceed anyway, No = stay in the hub). The stick
 /// (PlayerCapture) is always available regardless and isn't counted here -
@@ -16,17 +16,17 @@ public class Doors : MonoBehaviour, IInteractable
     {
         if (HasAnyTools() || NoToolsWarningUI.Instance == null)
         {
-            OpenStewSelection();
+            OpenMealSelection();
         }
         else
         {
-            NoToolsWarningUI.Instance.Open(OpenStewSelection);
+            NoToolsWarningUI.Instance.Open(OpenMealSelection);
         }
     }
 
-    private static void OpenStewSelection()
+    private static void OpenMealSelection()
     {
-        ExpeditionStewSelectionUI.Instance.Open();
+        ExpeditionMealSelectionUI.Instance.Open();
     }
 
     /// <summary>True if ANY tool slot (equipped or not) holds anything. Fails OPEN (returns true, no warning) if the tool inventory can't be checked at all, rather than blocking the player from ever leaving.</summary>

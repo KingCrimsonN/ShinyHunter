@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 /// root with every manager on it, and the Overlay with the HUD/tablet) are
 /// DontDestroyOnLoad, so loading the main menu does NOT get rid of them: the
 /// Overlay kept rendering - and blocking clicks - on top of the menu, and the
-/// old inventory/money/stews would have leaked into the next game.
+/// old inventory/money/meals would have leaked into the next game.
 /// ReturnToMainMenu destroys those roots first, so the menu is clean and the
 /// next "Start" builds a brand-new session from the Hub scene's own copies.
 ///
@@ -37,7 +37,7 @@ public static class GameSession
 
     /// <summary>
     /// Every manager lives on one of these roots: GameManagers (PlayerStateManager
-    /// stands in for the whole group - inventory, tools, money, stews, health,
+    /// stands in for the whole group - inventory, tools, money, meals, health,
     /// transitions, sound all share it) and the Overlay (UIManager, plus the
     /// DialogueManager if it's parented there). Destroyed rather than reset:
     /// the next session's Awakes then rebuild everything exactly as a first

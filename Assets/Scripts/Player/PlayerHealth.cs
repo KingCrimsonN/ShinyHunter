@@ -31,7 +31,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float baseMaxHealth = 300f;
     [SerializeField] public float currentHealth;
 
-    /// <summary>Additive bonus/penalty for the CURRENT run only - cleared when returning to the hub. "For one run" potions use this, and (as of the capture-time rework) so does Chrono Power's per-capture bonus - see ExpeditionStewManager.ApplyChronoBonusIfMatching.</summary>
+    /// <summary>Additive bonus/penalty for the CURRENT run only - cleared when returning to the hub. "For one run" potions use this, and (as of the capture-time rework) so does Chrono Power's per-capture bonus - see ExpeditionMealManager.ApplyChronoBonusIfMatching.</summary>
     private float temporaryMaxHealthModifier;
 
     /// <summary>Permanent base + this run's temporary modifier.</summary>

@@ -29,7 +29,7 @@ public class Spawner : MonoBehaviour
     [SerializeField] private bool snapToNavMesh = true;
 
     [Header("Population")]
-    [Tooltip("Max creatures alive from this spawner at once, AT FULL scent strength. Scaled down when the active stew smells weak - see EffectivePopulationCap / StewCalculationConfig.scentPopulationMinFraction.")]
+    [Tooltip("Max creatures alive from this spawner at once, AT FULL scent strength. Scaled down when the active meal smells weak - see EffectivePopulationCap / MealCalculationConfig.scentPopulationMinFraction.")]
     [SerializeField] private int populationCap = 5;
     [Tooltip("Seconds to wait before refilling a slot that's freed up (e.g. after a capture).")]
     [SerializeField] private float respawnDelay = 60f;
@@ -40,12 +40,12 @@ public class Spawner : MonoBehaviour
     private float respawnTimer;
 
     /// <summary>
-    /// populationCap, scaled down by how weak the active stew's scent
-    /// currently is - a weak/neutral smell (or no stew at all) draws fewer
+    /// populationCap, scaled down by how weak the active meal's scent
+    /// currently is - a weak/neutral smell (or no meal at all) draws fewer
     /// creatures to the area; a strong one draws up to the full populationCap.
     /// "Strength" is the loudest single scent axis (0-ScentMax), not an average -
-    /// one dominant note is what a stew "smells like". Recomputed on every
-    /// use rather than cached: cheap (a 5-element scan), and the active stew
+    /// one dominant note is what a meal "smells like". Recomputed on every
+    /// use rather than cached: cheap (a 5-element scan), and the active meal
     /// never changes mid-expedition anyway, so it's always consistent without
     /// needing invalidation. See decision log.
     /// </summary>
@@ -53,15 +53,15 @@ public class Spawner : MonoBehaviour
     {
         get
         {
-            if (ExpeditionStewManager.Instance == null) return populationCap;
+            if (ExpeditionMealManager.Instance == null) return populationCap;
 
-            float[] scents = ExpeditionStewManager.Instance.GetScents();
+            float[] scents = ExpeditionMealManager.Instance.GetScents();
             float strength = 0f;
             if (scents != null)
                 foreach (float s in scents) strength = Mathf.Max(strength, s);
-            strength = Mathf.Clamp01(strength / ExpeditionStewManager.Instance.ScentMax);
+            strength = Mathf.Clamp01(strength / ExpeditionMealManager.Instance.ScentMax);
 
-            float minFraction = ExpeditionStewManager.Instance.GetScentPopulationMinFraction();
+            float minFraction = ExpeditionMealManager.Instance.GetScentPopulationMinFraction();
             float fraction = Mathf.Lerp(minFraction, 1f, strength);
 
             return Mathf.Max(1, Mathf.RoundToInt(populationCap * fraction));
@@ -138,9 +138,9 @@ public class Spawner : MonoBehaviour
 
     /// <summary>
     /// Base weight, scaled by how well this species' scent preference/aversion
-    /// matches the player's current stew scent profile (loved scents boost
+    /// matches the player's current meal scent profile (loved scents boost
     /// weight, hated scents suppress it, exponentially - see
-    /// ExpeditionStewManager.GetScentSpawnMultiplier), and by Encounter
+    /// ExpeditionMealManager.GetScentSpawnMultiplier), and by Encounter
     /// Power's spawn-weight boost if this species' family is the boosted one.
     /// </summary>
     private float GetEffectiveWeight(SpawnableCreature entry)
@@ -151,13 +151,13 @@ public class Spawner : MonoBehaviour
 
         var creatureAI = entry.prefab.GetComponent<CreatureAI>();
         var data = creatureAI != null ? creatureAI.Data : null;
-        if (data == null || ExpeditionStewManager.Instance == null) return weight;
+        if (data == null || ExpeditionMealManager.Instance == null) return weight;
 
-        float[] scents = ExpeditionStewManager.Instance.GetScents();
-        data.GetScentAffinity(scents, ExpeditionStewManager.Instance.ScentMax, out float lovedScore, out float hatedScore);
-        weight *= ExpeditionStewManager.Instance.GetScentSpawnMultiplier(lovedScore, hatedScore); // exponential, and bounded away from zero by construction - see that method
+        float[] scents = ExpeditionMealManager.Instance.GetScents();
+        data.GetScentAffinity(scents, ExpeditionMealManager.Instance.ScentMax, out float lovedScore, out float hatedScore);
+        weight *= ExpeditionMealManager.Instance.GetScentSpawnMultiplier(lovedScore, hatedScore); // exponential, and bounded away from zero by construction - see that method
 
-        if (ExpeditionStewManager.Instance.TryGetEncounterBoostFamily(out var boostedFamily, out float boostMultiplier)
+        if (ExpeditionMealManager.Instance.TryGetEncounterBoostFamily(out var boostedFamily, out float boostMultiplier)
             && data.family == boostedFamily)
         {
             weight *= boostMultiplier;

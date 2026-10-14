@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// the player tries to leave the hub with nothing in their tool inventory
 /// (the stick is always available regardless - this only checks purchased/
 /// found ToolData items, see Doors.HasAnyTools). Yes proceeds with whatever
-/// action the door wanted to take anyway (normally opening the stew-selection
+/// action the door wanted to take anyway (normally opening the meal-selection
 /// carousel); No just closes the warning, leaving the player in the hub free
 /// to go buy something first.
 ///

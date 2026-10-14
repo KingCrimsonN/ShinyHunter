@@ -41,10 +41,10 @@ public class ToolData : ScriptableObject
     public float barrierSpeedMultiplier = 1f;
 
     [Header("Capture Minigame - Extra Modifiers")]
-    [Tooltip("Chance (0-1) a SUCCESSFUL capture with this tool is flagged double-yield (the same sparkle mechanic Ingredient Power uses - see InventoryManager.AddCreature's doubleYield parameter). Rolled independently of, and in addition to, any stew Ingredient Power roll - either succeeding is enough.")]
+    [Tooltip("Chance (0-1) a SUCCESSFUL capture with this tool is flagged double-yield (the same sparkle mechanic Ingredient Power uses - see InventoryManager.AddCreature's doubleYield parameter). Rolled independently of, and in addition to, any meal Ingredient Power roll - either succeeding is enough.")]
     [Range(0f, 1f)] public float extraIngredientChance = 0f;
     [Tooltip("Which family this tool is specially good at capturing. Ignored (no effect) while bonusFamilyCaptureChance is 0.")]
     public IngredientFamily bonusFamily = IngredientFamily.Bug;
-    [Tooltip("Flat capture-chance bonus (0-1) added to the minigame's final ratio when the targeted creature's family matches bonusFamily. Stacks additively with any stew Capture Power bonus.")]
+    [Tooltip("Flat capture-chance bonus (0-1) added to the minigame's final ratio when the targeted creature's family matches bonusFamily. Stacks additively with any meal Capture Power bonus.")]
     [Range(0f, 1f)] public float bonusFamilyCaptureChance = 0f;
 }

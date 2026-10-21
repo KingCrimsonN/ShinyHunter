@@ -51,6 +51,10 @@ public class MealCalculationConfig : ScriptableObject
     [Range(0f, 1f)]
     public float scentPopulationMinFraction = 0.4f;
 
+    [Header("Dominant smell")]
+    [Tooltip("A scent only counts as the meal's DOMINANT smell if it is at least this strong and no other scent is as strong. Otherwise the meal is plain: plain art and name (MealVisualConfig). Same units as the scents themselves (0 to Scent Max Value).")]
+    [Min(0f)] public float dominantScentMinValue = 25f;
+
     [Header("Modifier Selection")]
     [Tooltip("Minimum dominance ratio (0-1) required for ANY modifier to activate. Below this, the meal gets MealModifierType.None.")]
     public float modifierActivationThreshold = 0.3f;

@@ -138,14 +138,15 @@ public class BrewingStationUI : MonoBehaviour
         preview.Show(meal);
     }
 
-    /// <summary>The meal's picture (dominant family + tier), its topping (only with a modifier) and name ("Shiny Cake": its power + dominant family).</summary>
+    /// <summary>The meal's picture (dominant smell + tier, or plain), its topping and fork (only with a modifier) and name ("Shiny Cake": its power + dominant smell).</summary>
     private void ApplyVisuals(MealInstance meal)
     {
         if (visualConfig == null) return;
 
-        meal.icon = visualConfig.GetMealIcon(meal.dominantFamily, meal.tier);
+        meal.icon = visualConfig.GetMealIcon(meal.hasDominantScent, meal.dominantScent, meal.tier);
         meal.topping = visualConfig.GetTopping(meal.modifierType, meal.affectedFamily, meal.tier);
-        meal.displayName = visualConfig.GetMealName(meal.modifierType, meal.dominantFamily);
+        meal.fork = visualConfig.GetFork(meal.modifierType, meal.tier);
+        meal.displayName = visualConfig.GetMealName(meal.modifierType, meal.hasDominantScent, meal.dominantScent);
     }
 
     private void RefreshIngredientGrid()

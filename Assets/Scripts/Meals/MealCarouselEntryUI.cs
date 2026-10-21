@@ -7,6 +7,8 @@ public class MealCarouselEntryUI : MonoBehaviour
     [SerializeField] private Image icon;
     [Tooltip("Optional - the topping drawn over the icon; hidden when the meal has no modifier.")]
     [SerializeField] private Image toppingIcon;
+    [Tooltip("Optional - the fork showing which power the meal has; hidden when it has no modifier.")]
+    [SerializeField] private Image forkIcon;
     [SerializeField] private GameObject selectedHighlight;
     [SerializeField] private float selectedScale = 1.15f;
 
@@ -19,6 +21,11 @@ public class MealCarouselEntryUI : MonoBehaviour
         {
             toppingIcon.sprite = meal.topping;
             toppingIcon.enabled = meal.topping != null;
+        }
+        if (forkIcon != null)
+        {
+            forkIcon.sprite = meal.fork;
+            forkIcon.enabled = meal.fork != null;
         }
     }
 

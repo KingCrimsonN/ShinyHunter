@@ -160,14 +160,20 @@ MonoBehaviour:
   flightHeightMax: 20
   detectionRadius: 4
   fleeDistance: 10
-  detectionAversionScale: 1
+  scentDistanceAtMax: 3
   temperament: 0
   attackRange: 1.5
   attackCooldown: 5
   attackDamage: 15
   attackWindupDuration: 0.5
+  hitStaggerDuration: 0.6
+  aggroLossDuration: 5
   baseCaptureChance: 1
   stunDuration: 3
+  ambientSounds: []
+  ambientSoundInterval: {x: 6, y: 15}
+  hitSounds: []
+  soundVolume: 1
   resources:
   - {fileID: 11400000, guid: fe8f4c75c6dbe4a4493e674d944d433f, type: 2}
   - {fileID: 11400000, guid: eceba646713e57646a4bfaacd50dbadf, type: 2}

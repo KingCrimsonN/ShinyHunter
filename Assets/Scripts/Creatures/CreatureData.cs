@@ -30,7 +30,7 @@ public class CreatureData : ScriptableObject
         Passive = 0,
         /// <summary>Chases and attacks when it notices the player.</summary>
         Aggressive = 1,
-        /// <summary>Flees like Passive - until it is HIT, then turns aggressive (that one critter only) until it loses interest or is stunned.</summary>
+        /// <summary>Flees like Passive - until it is HIT, then turns aggressive (that one critter only) - staying angry through a stun - until the player gets far enough away.</summary>
         Neutral = 2,
     }
 

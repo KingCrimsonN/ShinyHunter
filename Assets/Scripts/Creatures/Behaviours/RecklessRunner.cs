@@ -48,6 +48,13 @@ public class RecklessRunner : CreatureBehaviour
     private NavMeshAgent agent;
     private Collider ownCollider;
 
+    /// <summary>
+    /// True while the AGENT is driving (the stuck fallback): it follows a path
+    /// with its own speed and momentum. False while this script runs it in a
+    /// straight line with agent.Move. Exactly one of the two may move the
+    /// critter - see SetPathing.
+    /// </summary>
+    private bool pathing;
     private bool sprinting;
     private float cooldownTimer;
     private float stuckTimer;
@@ -75,11 +82,45 @@ public class RecklessRunner : CreatureBehaviour
         if (state == CreatureAI.State.Wander) sprinting = Random.value < sprintChance;
         if (state == CreatureAI.State.Stunned) cooldownTimer = AI.Data.stunDuration + bumpCooldown;
         stuckTimer = 0f;
+
+        // Every state change starts from a still agent: no leftover path or
+        // momentum from a fallback may carry over into straight running.
+        if (state != CreatureAI.State.Wander && state != CreatureAI.State.Flee && state != CreatureAI.State.Aggressive)
+        {
+            fallbackTimer = 0f;
+            SetPathing(false);
+        }
+    }
+
+    /// <summary>
+    /// Hands movement to the agent's pathing (true) or takes it back for
+    /// straight running (false). Taking it back clears the path AND the agent's
+    /// velocity and stops its own simulation - otherwise the agent kept coasting
+    /// on its old path speed while agent.Move pushed it too, two movers at once.
+    /// </summary>
+    private void SetPathing(bool on)
+    {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+        if (pathing == on && (on || !agent.hasPath)) return;
+
+        pathing = on;
+        if (on)
+        {
+            agent.isStopped = false;
+            return;
+        }
+
+        if (agent.hasPath) agent.ResetPath();
+        agent.velocity = Vector3.zero;
+        agent.isStopped = true;
     }
 
     public override void MoveTowards(Vector3 target, float speed)
     {
-        if (agent == null) return;
+        // Paused (tablet, Time.timeScale = 0): nothing moves, nothing bumps.
+        // CreatureAI already skips this while paused - this keeps the runner
+        // safe on its own too.
+        if (agent == null || Time.deltaTime <= 0f) return;
 
         Vector3 to = target - transform.position;
         to.y = 0f;
@@ -89,13 +130,13 @@ public class RecklessRunner : CreatureBehaviour
         // Stuck a moment ago: let the agent path around for a bit.
         if (fallbackTimer > 0f)
         {
-            agent.isStopped = false;
+            SetPathing(true);
             agent.speed = speed;
             agent.SetDestination(target);
             return;
         }
 
-        if (agent.hasPath) agent.ResetPath();
+        SetPathing(false);
 
         Vector3 direction = to / distance;
         float step = Mathf.Min(speed * Time.deltaTime, distance);

@@ -26,6 +26,7 @@ decision log).
 - `Creatures/` (+ `Creatures/Animations/`, `Creatures/Behaviours/`) — species data, AI, flipbook animation, and the composable per-species behaviour components (add a `CreatureBehaviour`, don't subclass `CreatureAI`)
 - `Inventory/`, `Tools/`, `Resources/` — the three separate inventories
 - `Spawning/` — weighted creature spawners
+- `World/` — world-grid travel: `SceneExit`, `ScenePlayerSpawns`, `PlayerSpawnPoint`
 - `CaptureMinigame/`, `CreatureTransform/`, `Dialogue/`, `Shop/`, `Meals/`,
   `RunSummary/`, `CritterDex/`, `UI/` — feature systems, each roughly
   self-contained

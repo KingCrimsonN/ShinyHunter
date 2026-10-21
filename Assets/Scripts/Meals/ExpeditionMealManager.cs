@@ -189,8 +189,10 @@ public class ExpeditionMealManager : MonoBehaviour
         if (capturedFamily != ActiveMeal.affectedFamily) return;
         if (config == null || PlayerHealth.Instance == null) return;
 
+        // AddTime, not AddTemporaryMaxHealth: raising only the maximum mid-run gave
+        // no time at all and made the dial (time left / maximum) jump DOWN.
         float bonus = ActiveMeal.modifierPower * config.chronoMaxBonusPerCapture;
-        PlayerHealth.Instance.AddTemporaryMaxHealth(bonus);
+        PlayerHealth.Instance.AddTime(bonus);
     }
 
     /// <summary>The scent scale's ceiling (MealCalculationConfig.scentMaxValue) - divide a scent value by this to get 0-1. Everything that normalizes a scent goes through here instead of hardcoding a number.</summary>

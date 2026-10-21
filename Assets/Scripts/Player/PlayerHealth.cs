@@ -76,10 +76,13 @@ public class PlayerHealth : MonoBehaviour
             isRunning = false;
             temporaryMaxHealthModifier = 0f; // "for one run" effects are consumed by the run that just ended
         }
-        else
+        else if (!isRunning)
         {
+            // Leaving the hub (or starting straight in a level): a new run, fresh full time.
+            // Moving on to ANOTHER expedition scene (SceneExit) keeps the clock running -
+            // it's the same run.
             isRunning = true;
-            currentHealth = MaxHealth; // fresh full time for the new expedition
+            currentHealth = MaxHealth;
             OnHealthChanged?.Invoke(currentHealth / MaxHealth);
         }
     }
@@ -137,6 +140,22 @@ public class PlayerHealth : MonoBehaviour
     public void AddPermanentMaxHealth(float amount)
     {
         baseMaxHealth += amount;
+    }
+
+    /// <summary>
+    /// Adds time to the CURRENT run (e.g. Chrono Power on a capture). Goes onto
+    /// the time left; if that would exceed the maximum, the maximum grows by the
+    /// overflow, so the time dial never shows more than full. Raising only the
+    /// maximum (AddTemporaryMaxHealth) mid-run gives NO time and makes the dial
+    /// drop, since it shows time left / maximum.
+    /// </summary>
+    public void AddTime(float seconds)
+    {
+        if (!isRunning || seconds <= 0f) return;
+
+        currentHealth += seconds;
+        if (currentHealth > MaxHealth) temporaryMaxHealthModifier += currentHealth - MaxHealth;
+        OnHealthChanged?.Invoke(currentHealth / MaxHealth);
     }
 
     /// <summary>Refills currentHealth to the current MaxHealth (permanent + this run's temporary bonus) - e.g. an instant-refill potion drunk mid-run.</summary>

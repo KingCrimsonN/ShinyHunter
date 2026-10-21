@@ -56,8 +56,13 @@ public class MealInstance
     /// <summary>1-4 from modifierPower (MealCalculationConfig.GetModifierTier); 0 without a modifier.</summary>
     public int modifierTier;
 
-    /// <summary>Which family the recipe actually leaned into most (drives the meal's icon via MealVisualConfig) - NOT the same as affectedFamily. See decision log.</summary>
+    /// <summary>Which family the recipe actually leaned into most - NOT the same as affectedFamily. See decision log.</summary>
     public IngredientFamily dominantFamily;
+
+    /// <summary>The meal's strongest smell - picks its dish art and name (MealVisualConfig). See MealCalculator.GetDominantScent.</summary>
+    public ScentType dominantScent;
+    /// <summary>False = no clear dominant smell (a tie, or every scent below MealCalculationConfig.dominantScentMinValue): the meal is plain, and dominantScent is meaningless.</summary>
+    public bool hasDominantScent;
     /// <summary>
     /// Which family modifierType's EFFECT applies to - rolled RANDOMLY once at
     /// brew time (MealCalculator.CalculateModifier), independent of
@@ -69,6 +74,8 @@ public class MealInstance
     public Sprite icon;
     /// <summary>Drawn over the icon when the meal has a modifier; null otherwise.</summary>
     public Sprite topping;
+    /// <summary>Drawn with the meal when it has a modifier, showing WHICH power it is at its tier (MealVisualConfig.GetFork); null otherwise.</summary>
+    public Sprite fork;
 
     /// <summary>
     /// True for the live recipe preview in the brewing panel only (never

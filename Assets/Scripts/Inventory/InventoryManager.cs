@@ -80,9 +80,23 @@ public class InventoryManager : MonoBehaviour
     /// </summary>
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (!SceneNames.IsHub(scene.name))
+        if (SceneNames.IsHub(scene.name))
+        {
+            inRun = false;
+            return;
+        }
+
+        // Only the first expedition scene after the hub starts a new run - moving
+        // on to a neighbouring scene (SceneExit) is the same run and keeps its captures.
+        if (!inRun)
+        {
+            inRun = true;
             ResetRunTracking();
+        }
     }
+
+    /// <summary>True from the first expedition scene of a run until back in the hub - see OnSceneLoaded.</summary>
+    private bool inRun;
 
     /// <summary>Adds `amount` new critter records (normally 1 - one capture).</summary>
     /// <param name="doubleYield">True if this capture was flagged to yield double resources on transform (see CreatureAI.TryCapture). Applies to every critter added in this one call.</param>

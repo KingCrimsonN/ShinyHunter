@@ -24,6 +24,8 @@ public class MealDetailsUI : MonoBehaviour
     [SerializeField] private Image icon;
     [Tooltip("Optional - the topping drawn over the icon; hidden when the meal has no modifier.")]
     [SerializeField] private Image modifierTopping;
+    [Tooltip("Optional - the fork showing which power the meal has; hidden when it has no modifier.")]
+    [SerializeField] private Image modifierFork;
     [Tooltip("Optional - the meal's name (\"Auntie's Meal\" / \"Meal\").")]
     [SerializeField] private TMP_Text nameText;
     [Tooltip("Optional - the meal's description.")]
@@ -67,6 +69,7 @@ public class MealDetailsUI : MonoBehaviour
         // The sprites were picked once, at brew time (BrewingStationUI.ApplyVisuals).
         SetImage(icon, meal.icon);
         SetImage(modifierTopping, meal.topping);
+        SetImage(modifierFork, meal.fork);
 
         if (nameText != null) nameText.text = MealDisplayUtil.FormatName(meal);
         // if (descriptionText != null) descriptionText.text = meal.description;
@@ -87,6 +90,7 @@ public class MealDetailsUI : MonoBehaviour
 
         SetImage(icon, null);
         SetImage(modifierTopping, null);
+        SetImage(modifierFork, null);
         if (nameText != null) nameText.text = string.Empty;
         if (timeText != null) timeText.text = string.Empty;
 

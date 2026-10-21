@@ -42,6 +42,22 @@ public class SceneTransitionManager : MonoBehaviour
     public bool IsTransitioning { get; private set; }
 
     /// <summary>
+    /// Which PlayerSpawnPoint (index in the next scene's ScenePlayerSpawns) the
+    /// player should appear at, or -1 for the scene's default position. Set by
+    /// every transition, read once by ScenePlayerSpawns when the scene starts.
+    /// Static so it survives the load whichever way the scene was loaded.
+    /// </summary>
+    private static int pendingSpawnId = -1;
+
+    /// <summary>Returns the pending spawn ID and clears it (-1 = none).</summary>
+    public static int ConsumePendingSpawnId()
+    {
+        int id = pendingSpawnId;
+        pendingSpawnId = -1;
+        return id;
+    }
+
+    /// <summary>
     /// Fades to black, loads the given scene, holds, fades back in. Returns
     /// false (and does nothing) if a transition is already running or the
     /// scene can't be loaded - so callers can avoid consuming anything
@@ -52,7 +68,10 @@ public class SceneTransitionManager : MonoBehaviour
     /// to the new scene's player on load, so there's no window where the
     /// player can move (or re-trigger the door) mid-transition.
     /// </summary>
-    public bool TransitionToScene(string sceneName)
+    public bool TransitionToScene(string sceneName) => TransitionToScene(sceneName, -1);
+
+    /// <summary>Same, arriving at spawn point spawnId of the new scene (-1 = its default position) - see SceneExit / ScenePlayerSpawns.</summary>
+    public bool TransitionToScene(string sceneName, int spawnId)
     {
         if (IsTransitioning) return false;
 
@@ -62,6 +81,7 @@ public class SceneTransitionManager : MonoBehaviour
             return false;
         }
 
+        pendingSpawnId = spawnId;
         StartCoroutine(TransitionRoutine(sceneName));
         return true;
     }
@@ -76,6 +96,7 @@ public class SceneTransitionManager : MonoBehaviour
             return;
         }
 
+        pendingSpawnId = -1;
         SceneManager.LoadScene(sceneName);
         Destroy(gameObject);
     }

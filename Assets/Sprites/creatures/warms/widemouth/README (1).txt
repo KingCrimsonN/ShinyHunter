@@ -1,0 +1,1 @@
+For the Idle Spritesheet, play it in the following frame sequence: 1-1-2-3-3-2.

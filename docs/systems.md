@@ -133,3 +133,13 @@ via index-entry click, side arrows, or bookmarks, all through one flip animation
   `ExpeditionMealSelectionUI` (start of run). Route any other scene changes
   through it too, for the fade and the player freeze. Scene names the code
   branches on live in `SceneNames`.
+
+## World grid: scene exits and player spawns
+
+| Script | Role |
+| --- | --- |
+| `World/SceneExit.cs` | Exit to a neighbouring scene (press E or walk-in trigger); names the target scene and the spawn ID there. Uses `SceneTransitionManager.TransitionToScene(scene, spawnId)` |
+| `World/ScenePlayerSpawns.cs` | One per scene: `PlayerSpawnPoint[]`, index = spawn ID. On Start consumes `SceneTransitionManager.ConsumePendingSpawnId()` and places the player (`FirstPersonController.PlaceAt`); no/unknown ID = default position |
+| `World/PlayerSpawnPoint.cs` | Marker on the spawn prefab - position + facing (forward) |
+
+`PlayerHealth` and `InventoryManager` start a new run only when entering an expedition scene from the hub, so the clock and captures carry across grid scenes.

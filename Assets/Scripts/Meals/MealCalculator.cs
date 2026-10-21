@@ -18,6 +18,8 @@ public static class MealCalculator
         meal.timeSeconds = CalculateTime(ingredients, config);
         meal.scents = CalculateScents(ingredients, config);
 
+        (meal.dominantScent, meal.hasDominantScent) = GetDominantScent(meal.scents, config);
+
         var (modifier, power, dominantFamily, affectedFamily) = CalculateModifier(ingredients, totalCapacity, config, preview);
         meal.modifierType = modifier;
         meal.modifierPower = power;
@@ -142,6 +144,35 @@ public static class MealCalculator
             }
         }
         return dominant;
+    }
+
+    /// <summary>
+    /// The strongest scent - but only if it is a clear winner: at least
+    /// dominantScentMinValue, and no other scent as strong. Otherwise has =
+    /// false: the meal is plain. scents is indexed like ScentType.
+    /// </summary>
+    public static (ScentType scent, bool has) GetDominantScent(float[] scents, MealCalculationConfig config)
+    {
+        if (scents == null || scents.Length == 0) return (ScentType.Sweet, false);
+
+        int best = 0;
+        bool tied = false;
+        for (int i = 1; i < scents.Length; i++)
+        {
+            if (scents[i] > scents[best] && !Mathf.Approximately(scents[i], scents[best]))
+            {
+                best = i;
+                tied = false;
+            }
+            else if (Mathf.Approximately(scents[i], scents[best]))
+            {
+                tied = true;
+            }
+        }
+
+        float minimum = config != null ? config.dominantScentMinValue : 25f;
+        bool has = !tied && scents[best] >= minimum;
+        return ((ScentType)best, has);
     }
 
     /// <summary>Uniformly random family, for a newly-active modifier's affectedFamily. See CalculateModifier.</summary>

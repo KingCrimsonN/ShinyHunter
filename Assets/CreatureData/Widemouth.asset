@@ -46,6 +46,21 @@ MonoBehaviour:
       - {fileID: 862396579, guid: 75881f7caef10854eabc761f2edc645b, type: 3}
       frameRate: 8
       loop: 0
+    - state: 2
+      frames:
+      - {fileID: 1355934874, guid: 1e511cfb7f41971458aca86e5c3fd1fa, type: 3}
+      - {fileID: 1355934874, guid: 1e511cfb7f41971458aca86e5c3fd1fa, type: 3}
+      - {fileID: -1974908146, guid: 1e511cfb7f41971458aca86e5c3fd1fa, type: 3}
+      - {fileID: 1224311144, guid: 1e511cfb7f41971458aca86e5c3fd1fa, type: 3}
+      - {fileID: 1224311144, guid: 1e511cfb7f41971458aca86e5c3fd1fa, type: 3}
+      - {fileID: -1974908146, guid: 1e511cfb7f41971458aca86e5c3fd1fa, type: 3}
+      frameRate: 8
+      loop: 1
+    - state: 5
+      frames:
+      - {fileID: 21300000, guid: c15451a5bd03c9f40b983a960db02c3a, type: 3}
+      frameRate: 8
+      loop: 0
   - animations:
     - state: 0
       frames:
@@ -103,7 +118,7 @@ MonoBehaviour:
   detectionRadius: 3
   fleeDistance: 10
   scentDistanceAtMax: 3
-  temperament: 1
+  temperament: 0
   attackRange: 1.5
   attackCooldown: 5
   attackDamage: 15

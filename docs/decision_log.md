@@ -1565,3 +1565,101 @@ never hidden for a meal without a modifier; `MealDetailsUI` enabled its icon fro
 no topping Image was wired; the carousel needed its own config reference. Removed as redundant: `familyIcons` /
 `GetFamilyIcon` (replaced by the tier art), the visual config's unassigned `defaultMealIcon` (the calculation
 config's default-meal icon is the one in use), and the `Show(meal, sprite)` overload.
+
+## Player spawn points and scene exits (world grid)
+
+`SceneExit` (interact or walk-in trigger) calls `SceneTransitionManager.TransitionToScene(scene, spawnId)`; the ID is
+kept in a static on the transition manager (it must survive the load) and consumed by the new scene's
+`ScenePlayerSpawns` in Start, which moves the player (`FirstPersonController.PlaceAt` - CharacterController off for the
+move, yaw to the body, pitch to the camera) to that `PlayerSpawnPoint`. ID = index in the scene's list (as requested);
+reordering the list re-numbers spawns, so append only. No ID / unknown ID = the player's default scene position. Every
+transition sets the ID explicitly (-1 when none), so a stale one can't leak into a later load. Walk-in exits ignore the
+player for `armDelay` after load so arriving on an exit can't bounce you back.
+
+Continuity fix found on the way: `PlayerHealth` refilled the expedition clock and `InventoryManager` reset the run's
+captures on EVERY non-hub scene load - fine with one expedition scene, wrong once you walk between grid scenes. Both now
+start a new run only when entering an expedition scene from the hub (or when the game starts in one). Creature
+spawners still repopulate a scene each time it loads - nothing remembers what was caught there.
+
+## Critters moving while paused
+
+Reported: during a pause (tablet, `Time.timeScale = 0`) some critters shot off and clipped through scenery. No script
+movement can happen at deltaTime 0, so the likely cause is engine-side: flying critters (Bee, Cuelebre) had an ENABLED
+NavMeshAgent they never use. The agent keeps its own ground position and writes it back to the transform whenever
+the script stops moving it, so the critter snapped away through things. Flyers now switch their agent off in Awake.
+Also hardened: `CreatureAI.Update` does nothing while paused (a RecklessRunner could otherwise still bump and stun),
+hits are ignored while paused, and the post-hit dash blink can no longer pass through things - flyers stop short of
+the first collider, ground critters only warp as far as `NavMesh.Raycast` allows (`SamplePosition` alone could pick
+a point on the far side of a tree or wall). Not reproduced here: if it still happens, note which critter and what
+it was doing.
+
+**Correction (same issue):** the flyer explanation above was wrong. Flyers need their enabled NavMeshAgent (it keeps
+them from sinking into uneven ground), so it is back. The bug only showed on Appy and Snipe, the RecklessRunners.
+What is fixed there: (1) the runner does nothing while paused, by itself and through CreatureAI's pause guard - its
+look-ahead could still trigger a bump-stun at time 0; (2) the hand-over between its two movers was unclean. Its
+stuck fallback lets the agent path (`isStopped = false`, a path, agent velocity), and when the fallback ended only the
+path was cleared - the agent was left un-stopped with its momentum while `agent.Move` drove it too. `SetPathing` now
+switches cleanly (straight running = path cleared, velocity zeroed, agent stopped), and every non-moving state
+resets it. Still not reproduced here, so whether (2) was the visible cause is unconfirmed.
+Flyer-specific code is back to the committed version on request (agent kept as it was, and the flyer dash blink is a
+plain teleport again). Note: Bee/Cuelebre data showed flightHeightMin/Max changed from 10/20 to 0.25/1 outside code.
+Then restored again: the flight-height data was the cause, so the flyer dash blink stops short of colliders again
+(the flyers' NavMeshAgent stays enabled, as committed).
+
+## Provoked Neutrals stay angry through a stun
+
+Changed on request: a Neutral critter (e.g. Bee) that is hit stays provoked when its stun ends - it comes straight
+out of the stun into the chase, with no aggro-loss pause (that pause is only for species that are Aggressive by
+nature). It's also provoked by the hit that stuns it, not only by one that doesn't, so a Bee stunned in one blow
+wakes up angry too. It calms down (back to fleeing like a Passive) only when the player gets beyond fleeDistance.
+
+## Widemouth: harmless on the ground, flees up trees, pounces from them
+
+Widemouth's temperament is now Passive (data edit) - it never attacks on the ground. `Climber` adds:
+- **Flee to a tree:** new `CreatureBehaviour.TryGetFleeTarget` hook (CreatureAI asks it every ground flee tick).
+  Climber steers to the nearest free ClimbSpot within `refugeSearchRadius` that the player isn't closer to, and
+  climbs on arrival. No tree = ordinary flee; a failed search waits 0.5 s before retrying (forests can hold
+  thousands of spots). Up there it doesn't climb down while the player is within its detection radius.
+- **Pounce:** while ascending/perched (at least `minPounceHeight` up), the player within `pounceRange` and in sight
+  (`sightBlockers`), not during the capture minigame, off `pounceCooldown`: a parabolic leap to the player's NavMesh
+  position (straight line + `4h*t*(1-t)` on top), Attack animation. On landing the player takes the species'
+  `attackDamage` if still within `pounceHitRadius` - so it can be dodged. Then it is a passive ground critter again
+  and flees to a tree.
+- **Falls** (hit up a tree or mid-leap) go straight down to the NavMesh below it, not back to the trunk's foot.
+
+## Plain meals and modifier forks
+
+**Plain meals.** A meal has a dominant family only if the top family is a clear winner: no tie for first place, and at
+least `MealCalculationConfig.dominantFamilyMinShare` (0.25) of the cauldron's TOTAL slots - with 8 slots, one
+ingredient of a family is not enough, two is. Otherwise `MealInstance.hasDominantFamily` is false and the meal uses
+`MealVisualConfig.plainDish` (per tier) and `plainDishName` ("Shiny Meal" / "Plain Meal"). "<25" in the request was read as
+"under 25% of the cauldron"; the threshold is tunable. Modifiers, scents and the rolled affected family are unchanged.
+A flag rather than a new IngredientFamily value: the family enum indexes many per-family arrays and drives gameplay.
+
+**Forks.** One sprite per modifier type (`MealVisualConfig.modifierForks`, index = MealModifierType), stamped as
+`MealInstance.fork` by `BrewingStationUI.ApplyVisuals` like the icon and topping; `MealDetailsUI.modifierFork` and
+`MealCarouselEntryUI.forkIcon` show it, hidden when the meal has no modifier.
+
+**Changed right after (requested):** dishes follow the DOMINANT SMELL, not the family. `MealInstance.dominantScent` +
+`hasDominantScent` (MealCalculator.GetDominantScent): the strongest scent, unless another ties it or it is below
+`MealCalculationConfig.dominantScentMinValue` (25 scent points) - then the meal is plain. That is the natural reading
+of "<25": very little of any smell. The family-based plain check (`hasDominantFamily`, `dominantFamilyMinShare`) is
+gone again. Config names follow the smells: `sweetDish`/`freshDish`/`putridDish`/`metallicDish`/`marineDish` and
+`scentDishNames` (index = ScentType), each `FormerlySerializedAs` its old family name, so the assigned placeholders
+carry over in enum order (Bug->Sweet, Plant->Fresh, Freaky->Putrid, Warm->Metallic, Cold->Marine). Toppings stay
+per family (the modifier's affected family). `dominantFamily` is still computed but no longer drives any visual.
+
+**Forks per tier:** `modifierForks` (one per modifier) became one 4-sprite array per modifier (`shinyForks`,
+`ingredientForks`, `encounterForks`, `chronoForks`, `captureForks`, `soothingForks`), picked by the MODIFIER's tier
+(`MealInstance.modifierTier`, from its power) - the same tier the modifier rows show. Toppings stay on the meal's own
+tier. Nothing had been assigned to the old array, so no migration was needed.
+Then changed (the art is drawn per meal level): forks are picked by the MEAL's tier (time), like the toppings - not
+the modifier's tier. The modifier tier is still what the modifier rows show.
+
+## Chrono Power took time away
+
+Chrono Power called `PlayerHealth.AddTemporaryMaxHealth` on a matching capture. Mid-run that only raises the
+MAXIMUM: the time left is unchanged, so the player gained nothing, and the time dial (time left / maximum) jumped
+down, which looks like losing time. New `PlayerHealth.AddTime(seconds)` adds to the time left (growing the maximum
+only by any overflow, so the dial never exceeds full); Chrono uses it. `SetActiveMeal` keeps AddTemporaryMaxHealth
+- it runs before the run starts, and the start refills to the new maximum.

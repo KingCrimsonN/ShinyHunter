@@ -13,6 +13,7 @@ using UnityEngine;
 ///   OverridesGroundMovement /   - move the creature on the ground yourself
 ///   MoveTowards                   instead of NavMeshAgent pathing (one per creature)
 ///   TryPickWanderTarget         - choose where the next wander leg goes
+///   TryGetFleeTarget            - choose where to run while fleeing (e.g. a tree)
 ///   GetSpeedMultiplier          - scale the creature's speed in a given state
 ///   OnStateEntered / OnHit      - react to the state machine and to hits
 ///
@@ -48,6 +49,13 @@ public abstract class CreatureBehaviour : MonoBehaviour
 
     /// <summary>Return true with a target to decide where the next wander leg goes (center/radius are the creature's spawn point and wander radius).</summary>
     public virtual bool TryPickWanderTarget(Vector3 center, float radius, out Vector3 target)
+    {
+        target = default;
+        return false;
+    }
+
+    /// <summary>Called every flee tick on the ground: return true with a target to run there instead of straight away from the player.</summary>
+    public virtual bool TryGetFleeTarget(out Vector3 target)
     {
         target = default;
         return false;

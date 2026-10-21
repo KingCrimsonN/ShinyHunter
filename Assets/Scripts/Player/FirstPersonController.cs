@@ -119,6 +119,33 @@ public class FirstPersonController : MonoBehaviour
         focusRoutine = null;
     }
 
+    /// <summary>
+    /// Teleports the player (scene entry - see ScenePlayerSpawns): the
+    /// CharacterController is switched off for the move, or it would put the
+    /// player back where it was. Body faces rotation's yaw; the camera takes its
+    /// pitch (tilt the spawn point down to start looking down). Works while
+    /// frozen/disabled.
+    /// </summary>
+    public void PlaceAt(Vector3 position, Quaternion rotation)
+    {
+        if (focusRoutine != null)
+        {
+            StopCoroutine(focusRoutine);
+            focusRoutine = null;
+        }
+
+        bool wasEnabled = controller.enabled;
+        controller.enabled = false;
+        transform.position = position;
+        controller.enabled = wasEnabled;
+        velocity = Vector3.zero;
+
+        Vector3 euler = rotation.eulerAngles;
+        float spawnPitch = Mathf.DeltaAngle(0f, euler.x);
+        if (cameraPivot != null) ApplyLook(euler.y, Mathf.Clamp(spawnPitch, minPitch, maxPitch));
+        else transform.rotation = Quaternion.Euler(0f, euler.y, 0f);
+    }
+
     private void ApplyLook(float yaw, float newPitch)
     {
         transform.rotation = Quaternion.Euler(0f, yaw, 0f);

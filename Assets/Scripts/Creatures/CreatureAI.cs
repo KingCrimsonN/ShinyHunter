@@ -12,7 +12,7 @@ using UnityEngine.AI;
 /// Temperament (CreatureData.temperament): Passive flees; Aggressive chases and
 /// attacks; Neutral flees like Passive until it is HIT, then turns aggressive
 /// (this instance only - `provoked` lives here, never on the shared data) until
-/// it loses interest or is stunned.
+/// the player gets far enough away (a stun does not calm it down).
 ///
 /// Species-specific behaviour is NOT subclassed in: it comes from
 /// CreatureBehaviour components on the same prefab (RecklessRunner,
@@ -297,9 +297,16 @@ public class CreatureAI : MonoBehaviour, ICapturable
         EnterState(State.Idle);
     }
 
+    /// <summary>The tablet pauses the game with Time.timeScale = 0.</summary>
+    private static bool GamePaused => Time.deltaTime <= 0f;
+
     private void Update()
     {
         if (currentState == State.Captured) return;
+
+        // Paused: no detection, no decisions, no behaviour ticks (a RecklessRunner
+        // could otherwise still "bump" into a tree and get stunned mid-pause).
+        if (GamePaused) return;
 
         // Tick independently of state - a dash/cooldown shouldn't pause just
         // because e.g. a stun briefly interrupted the chase.
@@ -377,8 +384,12 @@ public class CreatureAI : MonoBehaviour, ICapturable
                 if (newState == State.Flee) newState = State.Idle;
             }
 
-            // A provoked Neutral calms down again - from here it flees like a passive one.
-            provoked = false;
+            // A provoked Neutral stays angry: it comes out of the stun straight
+            // into the chase (no aggro-loss pause - that is only for species that
+            // are aggressive by nature). It calms down only once the player gets
+            // far enough away (CheckPlayerProximity).
+            if (provoked && newState != State.Captured)
+                newState = State.Aggressive;
         }
 
         // The flinch only lives inside the chase; leaving it (stun, lost
@@ -544,6 +555,16 @@ public class CreatureAI : MonoBehaviour, ICapturable
         }
         else
         {
+            // A behaviour may know a better place to run (Climber: the nearest tree).
+            foreach (var b in behaviours)
+            {
+                if (b != null && b.isActiveAndEnabled && b.TryGetFleeTarget(out Vector3 refuge))
+                {
+                    SetGroundTarget(refuge, EffectiveFleeSpeed, 3f);
+                    return;
+                }
+            }
+
             // Re-aimed and re-speeded every tick (not just on EnterState) so a
             // dash kicking in mid-flee takes effect immediately, and drops back
             // down the instant it ends.
@@ -650,16 +671,33 @@ public class CreatureAI : MonoBehaviour, ICapturable
     {
         if (distance <= 0f || player == null) return;
 
-        Vector3 target = transform.position + GetFleeDirection() * distance;
+        Vector3 direction = GetFleeDirection();
+        Vector3 target = transform.position + direction * distance;
 
         if (data.movementMode == CreatureMovementMode.Flying)
         {
-            transform.position = target;
+            // Stop short of anything solid in the way instead of teleporting through it.
+            Vector3 origin = bodyCollider != null ? bodyCollider.bounds.center : transform.position;
+            float reach = distance;
+            foreach (var hit in Physics.RaycastAll(origin, direction, distance, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider == null || hit.collider.transform.IsChildOf(transform)) continue;
+                reach = Mathf.Min(reach, Mathf.Max(0f, hit.distance - 0.3f));
+            }
+            transform.position += direction * reach;
         }
         else if (AgentReady)
         {
-            if (NavMesh.SamplePosition(target, out NavMeshHit hit, distance, NavMesh.AllAreas))
-                agent.Warp(hit.position);
+            // Along the NavMesh only: NavMesh.Raycast stops at the first edge
+            // (tree, rock, wall), where SamplePosition alone could pick a spot on
+            // the far side of one and warp straight through it.
+            if (NavMesh.SamplePosition(target, out NavMeshHit sampled, distance, NavMesh.AllAreas))
+            {
+                Vector3 end = NavMesh.Raycast(agent.nextPosition, sampled.position, out NavMeshHit blocked, NavMesh.AllAreas)
+                    ? blocked.position
+                    : sampled.position;
+                agent.Warp(end);
+            }
         }
     }
 
@@ -812,7 +850,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     private void ApplyHit(float damage, bool provokes)
     {
-        if (!IsTargetable || currentState == State.Stunned) return;
+        if (GamePaused || !IsTargetable || currentState == State.Stunned) return;
 
         CurrentHealth -= damage;
         if (hitParticles != null) Destroy(Instantiate(hitParticles, transform.position, Quaternion.identity), 0.5f);
@@ -821,17 +859,18 @@ public class CreatureAI : MonoBehaviour, ICapturable
         foreach (var b in behaviours)
             if (b != null && b.isActiveAndEnabled) b.OnHit(stunned);
 
-        if (stunned)
-        {
-            EnterState(State.Stunned);
-            return;
-        }
-
-        // A Neutral creature that gets hit turns aggressive (this instance only).
+        // A Neutral creature that gets hit turns aggressive (this instance only) -
+        // also when this very hit stuns it: it wakes up angry.
         if (provokes && data.temperament == CreatureData.Temperament.Neutral && !provoked)
         {
             provoked = true;
             playerSpottedParticles?.Play();
+        }
+
+        if (stunned)
+        {
+            EnterState(State.Stunned);
+            return;
         }
 
         // Aggressive creatures don't flee or dash when damaged-but-not-stunned

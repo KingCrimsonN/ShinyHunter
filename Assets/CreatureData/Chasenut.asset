@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
+  m_Name: Chasenut
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureData
+  creatureName: 'Chasenut '
+  description: "A strange critter similar to a peanut with legs and two brains, each
+    with its own personality. The top half is very aggressive but the bottom half
+    is shy, so if you are directly looking at it, it won\u2019t move. Either way,
+    the most it can do is smash into your ankles and hit you with its small arms.\r\n"
+  note: "One time I spent an entire expedition just running from one of these. It
+    didn\u2019t scare me too much, but my ankles were sore from it hitting me non-stop.\r\n"
+  family: 1
+  favoriteScent: 1
+  hatedScent: 0
+  variants:
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: 54ffebce139865e4e9254dfb637dd700, type: 3}
+      frameRate: 0
+      loop: 0
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: 1de497196ee506d428326c3728213382, type: 3}
+      frameRate: 0
+      loop: 0
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: 750032e550f4f0845808cee3d2c74f5e, type: 3}
+      frameRate: 0
+      loop: 0
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: 6b2c16b7b2feae34abd2934d9fd29456, type: 3}
+      frameRate: 0
+      loop: 0
+  icons:
+  - {fileID: 21300000, guid: fd74199c34746434c832d0983a694517, type: 3}
+  - {fileID: 21300000, guid: 675625a989e88024085fffd6f96ee1e7, type: 3}
+  - {fileID: 21300000, guid: 1aea6defcf9d37b4d8b7385349083aa2, type: 3}
+  - {fileID: 21300000, guid: 00bae7310b9750c4ab9e6faf11d5880f, type: 3}
+  size: {x: 0.2, y: 0.2, z: 0.2}
+  movementMode: 0
+  wanderSpeed: 1.5
+  fleeSpeed: 3
+  wanderRadius: 8
+  idleTimeRange: {x: 2, y: 5}
+  wanderIntervalRange: {x: 3, y: 8}
+  flightHeightMin: 2
+  flightHeightMax: 5
+  detectionRadius: 15
+  fleeDistance: 10
+  scentDistanceAtMax: 5
+  temperament: 1
+  attackRange: 1.5
+  attackCooldown: 5
+  attackDamage: 15
+  attackWindupDuration: 0.5
+  hitStaggerDuration: 0.6
+  aggroLossDuration: 5
+  baseCaptureChance: 1
+  stunDuration: 3
+  ambientSounds: []
+  ambientSoundInterval: {x: 6, y: 15}
+  hitSounds: []
+  soundVolume: 1
+  resources:
+  - {fileID: 11400000, guid: f1bfb99a16a4a394aa918b3995a6183b, type: 2}
+  - {fileID: 11400000, guid: a64daf901ff2cfb4788c5543826df35f, type: 2}
+  - {fileID: 11400000, guid: ed1df45b67efdeb4f959e16fd4576ca4, type: 2}
+  - {fileID: 11400000, guid: 1f285a1b51fe03b41ab176197ea62326, type: 2}

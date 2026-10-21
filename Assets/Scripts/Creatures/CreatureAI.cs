@@ -823,6 +823,13 @@ public class CreatureAI : MonoBehaviour, ICapturable
             agent.Warp(hit.position);
     }
 
+    /// <summary>Stops dead on the spot this frame: no ground target, and the agent's leftover momentum cleared, so it doesn't drift to a stop (MovesWhenUnseen).</summary>
+    public void HoldStill()
+    {
+        StopGround();
+        if (AgentReady) agent.velocity = Vector3.zero;
+    }
+
     /// <summary>A behaviour handed control back - re-apply the current state so movement/animation match it again (a stun is kept as it is).</summary>
     public void ResumeAfterControl()
     {

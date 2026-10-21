@@ -1663,3 +1663,14 @@ MAXIMUM: the time left is unchanged, so the player gained nothing, and the time 
 down, which looks like losing time. New `PlayerHealth.AddTime(seconds)` adds to the time left (growing the maximum
 only by any overflow, so the dial never exceeds full); Chrono uses it. `SetActiveMeal` keeps AddTemporaryMaxHealth
 - it runs before the run starts, and the start refills to the new maximum.
+
+## MovesWhenUnseen ("weeping angel" behaviour)
+
+A `CreatureBehaviour` that takes control (`HasControl`) while the player looks at the critter, so CreatureAI's
+detection, movement and attacks all pause, and calls `CreatureAI.HoldStill()` every frame: path cleared and agent
+velocity zeroed, so it stops dead instead of coasting. Its sprite animation optionally freezes too. Looking away
+(after `unfreezeDelay`) hands control back via `ResumeAfterControl`, which picks the current state back up.
+"Seen" = in the camera viewport (`viewMargin`), within `watchDistance`, and a clear ray from the camera to any of
+centre/top/bottom of its collider, ignoring the player and itself. Camera math rather than `OnBecameVisible`, which
+also fires for shadows and the Scene view camera. Never freezes a Stunned/Captured critter, so the stun still runs
+out and capture works while you stare. Aggression itself is the species' temperament (Aggressive).

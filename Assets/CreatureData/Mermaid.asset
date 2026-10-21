@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 532fe926c7aac1b438cb9b71cd19eaf9, type: 3}
+  m_Name: Mermaid
+  m_EditorClassIdentifier: Assembly-CSharp::CreatureData
+  creatureName: 'Mermymph '
+  description: 'A species of social fish that lives in schools of around seven Mermyphs.
+    They hunt by stunning or attracting prey using various sounds: from whistles
+    to screams and songs that sound almost identical to human voices. Their vocal
+    range is dangerously wide and their screams can be very loud.
+
+'
+  note: "It almost looks like a kid, but one time I saw a deer drinking some water
+    next to a group of Mermyphs and\u2026 I don\u2019t really want to describe what
+    happened to the deer, but at least it was quick."
+  family: 4
+  favoriteScent: 4
+  hatedScent: 0
+  variants:
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: 277cc14c185d1c74d99226e0d4c5c404, type: 3}
+      frameRate: 0
+      loop: 0
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: 4b96d78d98e64724887c0e0dfd6b8f2f, type: 3}
+      frameRate: 0
+      loop: 0
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: caed3acbca477fe428b195074dc3e2a6, type: 3}
+      frameRate: 0
+      loop: 0
+  - animations:
+    - state: 0
+      frames:
+      - {fileID: 21300000, guid: 180d2b0a93ad4c242833a996867c042d, type: 3}
+      frameRate: 0
+      loop: 0
+  icons:
+  - {fileID: 21300000, guid: f6c425f7b76bdba4e9664404b7a0fdbd, type: 3}
+  - {fileID: 21300000, guid: f0e1747b2b9c7fd4d93a8a227838b188, type: 3}
+  - {fileID: 21300000, guid: e3d90dde51549af4fb06913171b687c5, type: 3}
+  - {fileID: 21300000, guid: 7f9dfd64ed9627843a9b44e63de75919, type: 3}
+  - {fileID: 21300000, guid: da34819f7f099f344ab947d6a541214d, type: 3}
+  size: {x: 0.2, y: 0.2, z: 0.2}
+  movementMode: 0
+  wanderSpeed: 2
+  fleeSpeed: 7
+  wanderRadius: 8
+  idleTimeRange: {x: 2, y: 5}
+  wanderIntervalRange: {x: 3, y: 8}
+  flightHeightMin: 2
+  flightHeightMax: 5
+  detectionRadius: 4
+  fleeDistance: 10
+  scentDistanceAtMax: 3
+  temperament: 0
+  attackRange: 1.5
+  attackCooldown: 5
+  attackDamage: 15
+  attackWindupDuration: 0.5
+  hitStaggerDuration: 0.6
+  aggroLossDuration: 5
+  baseCaptureChance: 1
+  stunDuration: 3
+  ambientSounds: []
+  ambientSoundInterval: {x: 6, y: 15}
+  hitSounds: []
+  soundVolume: 0.67
+  resources: []

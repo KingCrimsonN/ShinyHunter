@@ -42,6 +42,7 @@ public class SceneExit : MonoBehaviour, IInteractable
 
     private void OnTriggerEnter(Collider other)
     {
+
         if (!useTrigger || Time.time < armedAt || !other.CompareTag("Player")) return;
         Use();
     }

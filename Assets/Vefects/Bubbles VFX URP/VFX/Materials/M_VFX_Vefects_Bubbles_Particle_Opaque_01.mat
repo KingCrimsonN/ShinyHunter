@@ -1,0 +1,130 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_VFX_Vefects_Bubbles_Particle_Opaque_01
+  m_Shader: {fileID: 4800000, guid: bfabf09a81213f846a478c8b03d47b49, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _LUT:
+        m_Texture: {fileID: 2800000, guid: 8db0b8e5b6c595f45b120a625e4d68e2, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Matcap:
+        m_Texture: {fileID: 2800000, guid: 515e9ca65ba5e2340bd5f04f715fb31a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Normal:
+        m_Texture: {fileID: 2800000, guid: e394230933645e4428ce4e73c2a05fa4, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalTriplanarTexture:
+        m_Texture: {fileID: 2800000, guid: 45f10a9d5101da849979325375a62116, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TriplanarTexture:
+        m_Texture: {fileID: 2800000, guid: 45f10a9d5101da849979325375a62116, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TriplanarTextureWPO:
+        m_Texture: {fileID: 2800000, guid: edba5d18294de3a4daddbf6d71ac0849, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WPOTriplanarTexture:
+        m_Texture: {fileID: 2800000, guid: edba5d18294de3a4daddbf6d71ac0849, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaCutoff: 0.5
+    - _CenterActive: 1
+    - _Cull: 0
+    - _Dst: 10
+    - _EmissionMultiply: 2
+    - _EnvironmentReflections: 1
+    - _FrBias: 0
+    - _FrCenterBias: 0
+    - _FrCenterPower: 3
+    - _FrCenterScale: 1
+    - _FrEmissionMultiply: 3
+    - _FrPower: 5
+    - _FrScale: 1
+    - _FrSolidColor: 0
+    - _FrSolidColorActive: 0
+    - _HueShift: 0
+    - _HueShiftSpeed: 0
+    - _LUTAmplitude: 3
+    - _LUTDesaturate: 0.67
+    - _LUTOffset: 0
+    - _LUTPanSpeed: 0
+    - _MatcapDesaturate: 0
+    - _NormalIntensity: 1
+    - _NormalTiling: 0.7
+    - _NormalTriplanarContrast: 1
+    - _OpacityFrBias: 0
+    - _OpacityFrPower: 1
+    - _OpacityFrScale: 1
+    - _OpacityMax: 1
+    - _OpacityMin: 0
+    - _OpacityOverall: 1
+    - _OverallTilesMultiply: 0.67
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _ReceiveShadows: 1
+    - _Smooth: 0.99
+    - _Smoothness: 0.99
+    - _SpeCular: 0.01
+    - _Spec: 0.01
+    - _SpecularHighlights: 1
+    - _Src: 5
+    - _TriplanarContrast: 1
+    - _UseWorldSpace: 0
+    - _UseWorldSpace1: 0
+    - _WPOIntensity: 0.1
+    - _WPOTriplanarContrast: 0
+    - _ZTest: 2
+    - _ZWrite: 0
+    m_Colors:
+    - _CenterColor: {r: 1, g: 1, b: 1, a: 0}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FrColor: {r: 1, g: 1, b: 1, a: 0}
+    - _FrSolidColor: {r: 1, g: 1, b: 1, a: 0}
+    - _LUTTint: {r: 1, g: 1, b: 1, a: 0}
+    - _MatcapTint: {r: 1, g: 1, b: 1, a: 0}
+    - _NoiseSpeed: {r: 0.1, g: 0.3, b: 0, a: 0}
+    - _NormalTile: {r: 0.1, g: 0.05, b: 0.3, a: 0}
+    - _NormalTileOffsetCustom: {r: 0, g: 0, b: 0, a: 0}
+    - _NormalTileSpeed: {r: 0.0269, g: 0.03, b: 0.02, a: 0}
+    - _WPOTile: {r: 1, g: 1, b: 1, a: 0}
+    - _WPOTileOffsetCustom: {r: 0, g: 0, b: 0, a: 0}
+    - _WPOTileSpeed: {r: 0.05, g: 0.05, b: 0.05, a: 0}
+  m_BuildTextureStacks: []

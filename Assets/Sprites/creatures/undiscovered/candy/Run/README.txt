@@ -1,0 +1,1 @@
+Play the frames in this specific order relative to the sprite sheet: 1-2-3-4-4-3-2-1-1-5-6-7-7-6-5. This would be an animation loop.

@@ -1,0 +1,1 @@
+For the Run/Climb Spritesheet, play in loop the following frame sequence: 1-1-2-3-3-2. 

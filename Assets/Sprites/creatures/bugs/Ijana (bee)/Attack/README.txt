@@ -1,0 +1,1 @@
+For the Attack Spritesheet, play the following sequence: 1-2-3-3-3-2-1

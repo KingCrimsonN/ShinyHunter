@@ -1,0 +1,1 @@
+First, the KO spritesheet. It plays the frames in the following order and sequence: 1-2-2-1. Immediately afterward, it plays the KO idle spritesheet in the same order and sequence as the spritesheet, in a loop.

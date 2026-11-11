@@ -1,1 +1,1 @@
-For the KO Spritesheet, play it in order.
+For the KO Spritesheet, play it in order. Afterwards, play the KOidle Spritesheet in order too.

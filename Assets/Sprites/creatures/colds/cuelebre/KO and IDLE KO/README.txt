@@ -1,0 +1,1 @@
+When the snake is hit, the KO spritesheet plays in this sequence of frames: 1-2-3-3-2. Immediately afterward, the spritesheet switches to the IDLE KO spritesheet, which plays in the normal order and sequence of sprites.

@@ -1,0 +1,1 @@
+For the Idle ANgry SPritesheet, play it in the order of the spritesheet. In loop.

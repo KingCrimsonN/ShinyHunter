@@ -1,0 +1,1 @@
+First play the HIT KO animation only once, play the frames in this order: 1-1-2-3-3-2 (it has to be this way so it blends with the idle KO animation). Then loop the Idle KO animation normally, from 1-5 (with low speed)

@@ -1,0 +1,1 @@
+For the KO Spritesheet, play it in order.

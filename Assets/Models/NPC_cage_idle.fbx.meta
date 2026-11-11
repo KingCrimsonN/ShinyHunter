@@ -3,7 +3,17 @@ guid: cf77d3226f3803b4ca73b1627cbc152c
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Faces
+    second: {fileID: -5061186945149939900, guid: bc4c2d20df5e6044ea88182499f3a93d, type: 3}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cage
+    second: {fileID: 2100000, guid: 0484b1e30846f97439e0c325943f2367, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

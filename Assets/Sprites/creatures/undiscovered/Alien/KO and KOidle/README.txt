@@ -1,0 +1,1 @@
+For the KO Spritesheet, play it in the following frame sequence: 1-2-2-1. Afterwards, play the KOidle Spritesheet in order too.

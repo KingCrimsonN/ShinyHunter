@@ -1,0 +1,1 @@
+The order is exactly like in the spritesheet, but the 4th and 8th frames need to stay double the time, the frames where the chicken has it's legs fully extended jumping. 

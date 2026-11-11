@@ -1674,3 +1674,18 @@ velocity zeroed, so it stops dead instead of coasting. Its sprite animation opti
 centre/top/bottom of its collider, ignoring the player and itself. Camera math rather than `OnBecameVisible`, which
 also fires for shadows and the Scene view camera. Never freezes a Stunned/Captured critter, so the stun still runs
 out and capture works while you stare. Aggression itself is the species' temperament (Aggressive).
+
+## New critter animation sheets sliced and assigned (scripted)
+
+All unsliced sheets under `Sprites/creatures/<family>/<critter>/<Animation>/` were sliced by writing their `.meta`
+directly: import settings copied from an existing sliced sheet (all creature sheets share PPU 100 / max 2048), each
+texture's GUID kept, one sprite per FILLED grid cell (cells 1024x1084, or 1280 wide for the Snipe run; empty cells
+detected from alpha), named `<file>_<n>` in reading order, full-cell rects with a centre pivot. Clips were then added
+to each `CreatureData` following the folder READMEs (no README = sheet order). Rarity index: Base 0, Sparking/Sparkling
+1, Shining 2, Radiant 3. Existing base clips were left alone except where broken. KO -> `Hit` (plays once), KO idle ->
+`Captured` (the looping stunned state CreatureAI switches to 0.5 s into a stun).
+
+Two states were added (appended, so stored state numbers don't shift): `Angry` - played while aggressive instead of
+Move (the Bee's AngryIdle) - and `Perch` - Climber's tree rest; Widemouth's `Idle` is now its GROUND idle
+(GroundIDLE sheets) and its old 4-frame idle became `Perch`. Also fixed: Candy's base Move/Flee pointed at a deleted
+file, Cuelebre Sparking had two Move clips (second -> Flee), Widemouth Radiant idle mixed base and radiant frames.

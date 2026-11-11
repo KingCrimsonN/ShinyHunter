@@ -443,7 +443,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
                 break;
 
             case State.Aggressive:
-                animator?.Play(CreatureAnimState.Move); // chasing reuses the normal movement animation - only the attack itself gets its own state
+                PlayChaseAnimation();
                 break;
 
             case State.Attacking:
@@ -468,6 +468,13 @@ public class CreatureAI : MonoBehaviour, ICapturable
     {
         foreach (var b in behaviours)
             if (b != null && b.isActiveAndEnabled) b.OnStateEntered(state);
+    }
+
+    /// <summary>The chase: the species' Angry animation if it has one (e.g. the Bee), otherwise its normal Move.</summary>
+    private void PlayChaseAnimation()
+    {
+        if (animator != null && !animator.Play(CreatureAnimState.Angry))
+            animator.Play(CreatureAnimState.Move);
     }
 
     private IEnumerator WaitAnChangeAnimation(State newState, float delay)
@@ -611,7 +618,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
         if (staggered)
         {
             staggered = false;
-            animator?.Play(CreatureAnimState.Move);
+            PlayChaseAnimation();
         }
 
         Vector3 toPlayer = player.position - transform.position;

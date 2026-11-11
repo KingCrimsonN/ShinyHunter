@@ -185,7 +185,7 @@ public class Climber : CreatureBehaviour
                 {
                     phase = Phase.Perched;
                     perchTimer = Random.Range(perchTimeRange.x, perchTimeRange.y);
-                    AI.PlayAnimation(CreatureAnimState.Idle);
+                    if (!AI.PlayAnimation(CreatureAnimState.Perch)) AI.PlayAnimation(CreatureAnimState.Idle);
                 }
                 break;
 

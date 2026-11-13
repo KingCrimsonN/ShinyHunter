@@ -1,0 +1,1 @@
+For the idle animation, play it in the exact order and sequence as the spritesheet shows. No changes.

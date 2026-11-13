@@ -93,8 +93,10 @@ public class CreatureData : ScriptableObject
     public float attackCooldown = 5f;
     [Tooltip("Expedition time (seconds) removed from the player per landed attack - see PlayerHealth.TakeDamage.")]
     public float attackDamage = 15f;
-    [Tooltip("How long the attack animation holds the creature in place before it resumes chasing. Damage is applied immediately on landing the attack, not at the end of this window - this is purely how long the recovery/animation hold lasts.")]
+    [Tooltip("How long the attack holds the creature in place before it resumes chasing - the whole attack animation, wind-up and recovery. Never shorter than Attack Damage Delay.")]
     public float attackWindupDuration = 0.5f;
+    [Tooltip("Seconds after the attack starts before the player is actually hit - match it to the frame of the Attack animation where the blow lands, after the wind-up. 0 = hit the moment the attack starts. If the critter is stunned or interrupted before then, the hit never lands.")]
+    [Min(0f)] public float attackDamageDelay = 0f;
     [Tooltip("Seconds an aggressive creature freezes in place (no chasing, no attacking) after being hit without being stunned, before it resumes the chase. 0 = unaffected by hits.")]
     public float hitStaggerDuration = 0.6f;
     [Tooltip("Seconds an aggressive creature stays calm after a stun ends - it drops the chase and won't re-notice the player until this runs out. Without it, it would re-aggro the instant it recovers, since the player is standing right there.")]

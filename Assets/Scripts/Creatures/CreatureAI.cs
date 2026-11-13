@@ -97,6 +97,9 @@ public class CreatureAI : MonoBehaviour, ICapturable
     /// <summary>Counts down after an aggressive creature lands an attack - it can't attack again until this reaches 0, regardless of how close it stays to the player.</summary>
     private float attackCooldownTimer;
 
+    /// <summary>Counts down from CreatureData.attackDamageDelay once an attack starts; the hit lands when it reaches 0. Below 0 = this attack's hit already landed (or there is none pending).</summary>
+    private float attackDamageTimer = -1f;
+
     /// <summary>Counts down after an aggressive creature is hit without being stunned - it holds still until it reaches 0. See TickAggressive.</summary>
     private float staggerTimer;
     /// <summary>True while the stagger's "frozen + hit animation" visuals are active, so they're undone exactly once when it ends.</summary>
@@ -392,6 +395,9 @@ public class CreatureAI : MonoBehaviour, ICapturable
                 newState = State.Aggressive;
         }
 
+        // An attack interrupted before its hit landed (stunned, lost aggro...) never lands.
+        if (newState != State.Attacking) attackDamageTimer = -1f;
+
         // The flinch only lives inside the chase; leaving it (stun, lost
         // interest...) cancels it so it can't leak into a later chase.
         if (newState != State.Aggressive && newState != State.Attacking)
@@ -447,17 +453,17 @@ public class CreatureAI : MonoBehaviour, ICapturable
                 break;
 
             case State.Attacking:
-                // Damage lands immediately on entering this state, not at the
-                // end of the windup - TickAttacking only holds the creature
-                // here (stateTimer) so the attack animation has time to play
-                // and to act as the "recovery" before it can chase/attack
-                // again. This is only ever entered from TickAggressive, which
-                // has JUST verified range and cooldown, so no need to re-check here.
-                stateTimer = data.attackWindupDuration;
+                // The hit lands attackDamageDelay seconds in (after the
+                // animation's wind-up), not on entering - see TickAttacking.
+                // The state lasts the whole attack animation (stateTimer), and
+                // at least until the hit. Only ever entered from TickAggressive,
+                // which has JUST verified range and cooldown.
+                stateTimer = Mathf.Max(data.attackWindupDuration, data.attackDamageDelay);
                 attackCooldownTimer = data.attackCooldown;
+                attackDamageTimer = Mathf.Max(0f, data.attackDamageDelay);
                 StopGround();
                 animator?.Play(CreatureAnimState.Attack);
-                if (PlayerHealth.Instance != null) PlayerHealth.Instance.TakeDamage(data.attackDamage);
+                if (attackDamageTimer <= 0f) LandAttack();
                 break;
         }
 
@@ -653,8 +659,22 @@ public class CreatureAI : MonoBehaviour, ICapturable
     private void TickAttacking()
     {
         stateTimer -= Time.deltaTime;
-        UIManager.Instance.ShowHurtScreen(); // flash the red overlay on the player's screen when hit, same as PlayerHealth.TakeDamage
+
+        if (attackDamageTimer > 0f)
+        {
+            attackDamageTimer -= Time.deltaTime;
+            if (attackDamageTimer <= 0f) LandAttack();
+        }
+
         if (stateTimer <= 0f) EnterState(State.Aggressive); // recovery over - resume the chase (cooldown keeps it from attacking again immediately)
+    }
+
+    /// <summary>The blow lands: damage and the red hurt flash, once per attack. (The flash used to be re-triggered every frame of the attack, holding the screen red for the whole hold.)</summary>
+    private void LandAttack()
+    {
+        attackDamageTimer = -1f;
+        if (PlayerHealth.Instance != null) PlayerHealth.Instance.TakeDamage(data.attackDamage);
+        if (UIManager.Instance != null) UIManager.Instance.ShowHurtScreen();
     }
 
     /// <summary>Horizontal direction AWAY from the player - shared by TickFlee (the ongoing flee target) and BlinkAway (the dash's instant hop), so both agree on "which way is away".</summary>

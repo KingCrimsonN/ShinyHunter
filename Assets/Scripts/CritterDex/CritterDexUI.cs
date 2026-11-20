@@ -41,6 +41,14 @@ public class CritterDexUI : MonoBehaviour
     [SerializeField] private AudioClip flipSound;
     [SerializeField, Range(0f, 1f)] private float flipSoundVolume = 0.5f;
 
+    [Header("Page Number")]
+    [Tooltip("Optional - the page number in the book's corner. Put it outside the two page objects (on the book) so it shows on every page.")]
+    [SerializeField] private TMPro.TMP_Text pageNumberText;
+    [Tooltip("What the index page shows instead of a number (e.g. a Roman \"I\").")]
+    [SerializeField] private string indexPageLabel = "I";
+    [Tooltip("Number format on critter pages - \"00\" = 01, 02... The number is the critter's dex number (its position in the book).")]
+    [SerializeField] private string pageNumberFormat = "00";
+
     [Header("Arrows")]
     [Tooltip("Hidden on the index page (nothing before it).")]
     [SerializeField] private GameObject previousArrow;
@@ -198,6 +206,8 @@ public class CritterDexUI : MonoBehaviour
             if (isIndex || page > list.Count) detailUI.Clear();
             else detailUI.Show(list[page - 1]);
         }
+
+        if (pageNumberText != null) pageNumberText.text = isIndex ? indexPageLabel : page.ToString(pageNumberFormat);
 
         if (previousArrow != null) previousArrow.SetActive(page > 0);
         if (nextArrow != null) nextArrow.SetActive(page < PageCount - 1);

@@ -9,9 +9,8 @@ using UnityEngine;
 /// OnEnable/OnDisable (not Start, which only ever runs once). PlayerHealth
 /// reports a 0-1 RATIO of time remaining, which is what this displays.
 ///
-/// When time runs out it hands off to RunSummaryUI (which fades back to the
-/// hub through SceneTransitionManager once the player is done), or - if no
-/// summary exists - goes straight to the hub through SceneTransitionManager.
+/// Display only: ending the run when time runs out is PlayerHealth.Die's job
+/// (it used to be done here, so the run couldn't end while this was hidden).
 ///
 /// Angle convention (same as CaptureHitAreaUI elsewhere in this project):
 /// degrees, clockwise, 0 = 12 o'clock/top. The needle sweeps a single 90-degree
@@ -39,7 +38,6 @@ public class ExpeditionTimeIndicator : MonoBehaviour
     [SerializeField] private float tickClockPeriod = 60f;
 
     private float tickTimer;
-    private bool depleted;
 
     private void OnEnable()
     {
@@ -71,7 +69,6 @@ public class ExpeditionTimeIndicator : MonoBehaviour
         // currentHealth is still the previous run's ~0 and would end the run
         // instantly. PlayerHealth fires a real update as soon as the run starts.
         float ratio = health.MaxHealth > 0f ? Mathf.Clamp01(health.currentHealth / health.MaxHealth) : 0f;
-        depleted = ratio <= 0f;
         UpdateNeedleRotation(ratio);
     }
 
@@ -84,33 +81,6 @@ public class ExpeditionTimeIndicator : MonoBehaviour
     private void OnHealthChanged(float ratio)
     {
         UpdateNeedleRotation(ratio);
-
-        if (ratio > 0f)
-        {
-            depleted = false;
-        }
-        else if (!depleted)
-        {
-            depleted = true;
-            EndRun();
-        }
-    }
-
-    private void EndRun()
-    {
-        if (RunSummaryUI.Instance != null)
-        {
-            RunSummaryUI.Instance.ShowSummary();
-        }
-        else if (SceneTransitionManager.Instance != null)
-        {
-            if (PlayerHealth.Instance != null) PlayerHealth.Instance.EndRun(); // no summary to stop the clock for us
-            SceneTransitionManager.Instance.TransitionToScene(SceneNames.Hub);
-        }
-        else
-        {
-            Debug.LogError("ExpeditionTimeIndicator: time ran out but there is no RunSummaryUI or SceneTransitionManager to end the run.");
-        }
     }
 
     private void UpdateNeedleRotation(float ratio)

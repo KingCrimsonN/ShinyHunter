@@ -16,7 +16,10 @@ using TMPro;
 ///
 /// Clicking the ingredient box opens a small pop-up (CritterDexIngredientPopupUI)
 /// with its name, description and scent stats - only for a rarity you've
-/// actually caught.
+/// actually caught. Clicking the family badge opens the family pop-up (the same
+/// component, text only - CritterFrames.familyDescriptions); the badge shows its
+/// family's focus sprite on hover (Sprite Swap). The loved/hated scents show
+/// their own icon and their name in the scent's color (CritterFrames).
 /// </summary>
 public class CritterDexDetailUI : MonoBehaviour
 {
@@ -34,6 +37,14 @@ public class CritterDexDetailUI : MonoBehaviour
     [SerializeField] private CritterFrames critterFrames;
     [SerializeField] private Image familyFrame;
     [SerializeField] private Image familyBadge;
+    [Tooltip("Optional - the badge's Button. Empty = the Button on Family Badge's object. Its Transition must be Sprite Swap for the hover sprite.")]
+    [SerializeField] private Button familyButton;
+    [Tooltip("The family pop-up - a CritterDexIngredientPopupUI with only its Description Text assigned.")]
+    [SerializeField] private CritterDexIngredientPopupUI familyPopup;
+
+    [Header("Scent icons (sprite per scent from CritterFrames)")]
+    [SerializeField] private Image favoriteScentIcon;
+    [SerializeField] private Image hatedScentIcon;
 
     [Header("Ingredient Drop (selected rarity)")]
     [SerializeField] private Image resourceIcon;
@@ -54,9 +65,21 @@ public class CritterDexDetailUI : MonoBehaviour
     private CreatureData.Rarity selectedRarity;
     private ResourceData currentResource;
 
+    // What the scent icons/texts look like in the prefab - used when there is no scent to show.
+    private Sprite defaultFavoriteIcon, defaultHatedIcon;
+    private Color defaultFavoriteColor = Color.black, defaultHatedColor = Color.black;
+
     private void Awake()
     {
         if (ingredientButton != null) ingredientButton.onClick.AddListener(OnIngredientClicked);
+
+        if (familyButton == null && familyBadge != null) familyButton = familyBadge.GetComponent<Button>();
+        if (familyButton != null) familyButton.onClick.AddListener(OnFamilyClicked);
+
+        if (favoriteScentIcon != null) defaultFavoriteIcon = favoriteScentIcon.sprite;
+        if (hatedScentIcon != null) defaultHatedIcon = hatedScentIcon.sprite;
+        if (favoriteScentText != null) defaultFavoriteColor = favoriteScentText.color;
+        if (hatedScentText != null) defaultHatedColor = hatedScentText.color;
     }
 
     /// <summary>Called by the book when it turns to this species' page.</summary>
@@ -65,6 +88,7 @@ public class CritterDexDetailUI : MonoBehaviour
         currentSpecies = species;
         selectedRarity = CreatureData.Rarity.Normal; // every freshly-opened page starts on Normal
         CloseIngredientPopup();
+        CloseFamilyPopup();
 
         if (species == null)
         {
@@ -83,8 +107,8 @@ public class CritterDexDetailUI : MonoBehaviour
         if (nameText != null) nameText.text = species.creatureName;
         if (descriptionText != null) descriptionText.text = species.description;
         if (noteText != null) noteText.text = species.note;
-        if (favoriteScentText != null) favoriteScentText.text = species.favoriteScent.ToString();
-        if (hatedScentText != null) hatedScentText.text = species.hatedScent.ToString();
+        ShowScent(favoriteScentText, favoriteScentIcon, species.favoriteScent, critterFrames != null ? critterFrames.favoriteScentIcons : null, defaultFavoriteIcon);
+        ShowScent(hatedScentText, hatedScentIcon, species.hatedScent, critterFrames != null ? critterFrames.hatedScentIcons : null, defaultHatedIcon);
 
         RefreshRarityBadges();
         ShowSelectedRarity();
@@ -95,6 +119,7 @@ public class CritterDexDetailUI : MonoBehaviour
     {
         currentSpecies = null;
         CloseIngredientPopup();
+        CloseFamilyPopup();
         ShowNothing();
     }
 
@@ -153,14 +178,66 @@ public class CritterDexDetailUI : MonoBehaviour
         if (ingredientPopup != null) ingredientPopup.Hide();
     }
 
+    /// <summary>Family badge clicked: opens the family pop-up (or closes it if it's already open).</summary>
+    private void OnFamilyClicked()
+    {
+        if (familyPopup == null || currentSpecies == null) return;
+
+        if (familyPopup.IsOpen)
+        {
+            familyPopup.Hide();
+            return;
+        }
+
+        string text = critterFrames != null
+            ? CritterFrames.Pick(critterFrames.familyDescriptions, (int)currentSpecies.family, currentSpecies.family.ToString())
+            : currentSpecies.family.ToString();
+        familyPopup.ShowText(text);
+    }
+
+    private void CloseFamilyPopup()
+    {
+        if (familyPopup != null) familyPopup.Hide();
+    }
+
     private void SetFamilyFrame(CreatureData species)
     {
-        if (familyFrame == null) return;
-
         int index = (int)species.family;
-        bool valid = critterFrames != null && critterFrames.familyFrames != null && index >= 0 && index < critterFrames.familyFrames.Length;
-        familyFrame.sprite = valid ? critterFrames.familyFrames[index] : null;
-        familyBadge.sprite = valid ? critterFrames.familyBadges[index] : null;
+        if (familyFrame != null) familyFrame.sprite = critterFrames != null ? CritterFrames.Pick(critterFrames.familyFrames, index) : null;
+        if (familyBadge != null) familyBadge.sprite = critterFrames != null ? CritterFrames.Pick(critterFrames.familyBadges, index) : null;
+
+        // Hover/press show this family's focus variant (the button's Transition must be Sprite Swap).
+        // Selected stays on the normal sprite, so the badge doesn't stay "focused" after a click.
+        if (familyButton != null)
+        {
+            var hover = critterFrames != null ? CritterFrames.Pick(critterFrames.familyBadgesHover, index) : null;
+            var states = familyButton.spriteState;
+            states.highlightedSprite = hover;
+            states.pressedSprite = hover;
+            states.selectedSprite = null;
+            familyButton.spriteState = states;
+        }
+    }
+
+    /// <summary>A loved/hated scent: its name in its color, and its icon (CritterFrames).</summary>
+    private void ShowScent(TMP_Text text, Image icon, ScentType scent, Sprite[] icons, Sprite fallbackIcon)
+    {
+        int index = (int)scent;
+        if (text != null)
+        {
+            text.text = scent.ToString();
+            if (critterFrames != null) text.color = CritterFrames.Pick(critterFrames.scentColors, index, text.color);
+        }
+        if (icon != null) icon.sprite = CritterFrames.Pick(icons, index) ?? fallbackIcon;
+    }
+
+    /// <summary>No scent to show (empty page, undiscovered species): the label's own text, color and the generic icons.</summary>
+    private void ResetScents(string label)
+    {
+        if (favoriteScentText != null) { favoriteScentText.text = label; favoriteScentText.color = defaultFavoriteColor; }
+        if (hatedScentText != null) { hatedScentText.text = label; hatedScentText.color = defaultHatedColor; }
+        if (favoriteScentIcon != null) favoriteScentIcon.sprite = defaultFavoriteIcon;
+        if (hatedScentIcon != null) hatedScentIcon.sprite = defaultHatedIcon;
     }
 
     private void ShowNothing()
@@ -170,8 +247,7 @@ public class CritterDexDetailUI : MonoBehaviour
         if (nameText != null) nameText.text = "-";
         if (descriptionText != null) descriptionText.text = "";
         if (noteText != null) noteText.text = "";
-        if (favoriteScentText != null) favoriteScentText.text = "-";
-        if (hatedScentText != null) hatedScentText.text = "-";
+        ResetScents("-");
         if (resourceIcon != null) resourceIcon.enabled = false;
         if (resourceNameText != null) resourceNameText.text = "-";
         if (resourceRarityBadge != null) resourceRarityBadge.Clear();
@@ -187,8 +263,7 @@ public class CritterDexDetailUI : MonoBehaviour
 
         if (nameText != null) nameText.text = "???";
         if (descriptionText != null) descriptionText.text = "???";
-        if (favoriteScentText != null) favoriteScentText.text = "???";
-        if (hatedScentText != null) hatedScentText.text = "???";
+        ResetScents("???");
 
         if (resourceIcon != null) resourceIcon.enabled = false;
         if (resourceNameText != null) resourceNameText.text = "???";

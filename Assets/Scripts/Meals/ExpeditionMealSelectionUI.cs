@@ -47,6 +47,10 @@ public class ExpeditionMealSelectionUI : MonoBehaviour
 
     [SerializeField] private string expeditionSceneName = "Forest";
 
+    [Header("Default meal refusal")]
+    [Tooltip("Played instead of starting the expedition when the player picks the DEFAULT meal while holding ingredients - Auntie won't hand out her meal when you could cook your own. Empty = no refusal (the default is always allowed).")]
+    [SerializeField] private DialogueData defaultMealRefusalDialogue;
+
     /// <summary>What's on offer, in carousel order (the player's bowls, or just the default meal if they have none). Parallel to <see cref="spawned"/>.</summary>
     private readonly List<MealInstance> choices = new List<MealInstance>();
     private readonly List<MealCarouselEntryUI> spawned = new List<MealCarouselEntryUI>();
@@ -206,9 +210,27 @@ public class ExpeditionMealSelectionUI : MonoBehaviour
         else details.Show(choices[selectedIndex]);
     }
 
+    private bool ShouldRefuseDefaultMeal()
+    {
+        return defaultMealRefusalDialogue != null
+            && DialogueManager.Instance != null
+            && ResourceInventoryManager.Instance != null
+            && ResourceInventoryManager.Instance.HasAnyResources;
+    }
+
     private void Confirm()
     {
         if (spawned.Count == 0) return;
+
+        // Auntie's meal is only for when you have nothing to cook with: holding
+        // ingredients, she complains instead and the expedition doesn't start.
+        if (choices[selectedIndex].isDefault && ShouldRefuseDefaultMeal())
+        {
+            Close();
+            var auntie = FindFirstObjectByType<Auntie>();
+            DialogueManager.Instance.StartDialogue(defaultMealRefusalDialogue, auntie != null ? auntie.HeadPoint : (Vector3?)null);
+            return;
+        }
 
         // Start the transition FIRST: if it can't happen (scene missing, a
         // transition already running) the meal must not be consumed.

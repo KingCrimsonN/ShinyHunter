@@ -82,6 +82,12 @@ public class CaptureMinigameController : MonoBehaviour
     [Tooltip("Minimum angular gap enforced between adjacent arcs, on top of their width, so they never touch or overlap.")]
     [SerializeField] private float minGapBetweenAreasDegrees = 10f;
     [SerializeField] private KeyCode hitKey = KeyCode.Mouse0;
+
+    [Header("Capture Power head-start")]
+    [Tooltip("Seconds the wheel sits still after opening before Capture Power breaks its first barrier - so you see it happen. The needle, timer and input wait for the head-start to finish.")]
+    [SerializeField, Min(0f)] private float autoBreakDelay = 0.6f;
+    [Tooltip("Seconds between barriers when it breaks more than one, and after the last before play starts.")]
+    [SerializeField, Min(0f)] private float autoBreakInterval = 0.4f;
     [SerializeField] private float defaultCooldown = 0.3f;
 
     [Header("Audio")]
@@ -114,6 +120,8 @@ public class CaptureMinigameController : MonoBehaviour
 
     private bool ending;
     private bool cooldown;
+    /// <summary>Capture Power is breaking barriers (AutoBreakRoutine) - the wheel is on hold.</summary>
+    private bool autoBreaking;
 
     // ---------------- Per-run config, resolved once in BeginCapture from the equipped tool + creature rarity + active meal ----------------
 
@@ -143,7 +151,7 @@ public class CaptureMinigameController : MonoBehaviour
 
     private void Update()
     {
-        if (!IsRunning) return;
+        if (!IsRunning || autoBreaking) return;
 
         TickNeedle();
         TickBarrierOrbit();
@@ -203,6 +211,8 @@ public class CaptureMinigameController : MonoBehaviour
     public bool BeginCapture(ICapturable creature)
     {
         if (IsRunning || creature == null || !creature.IsStunned) return false;
+        // The run is over (time ran out while the doll was in the air, etc.) - no wheel over the summary.
+        if (PlayerHealth.Instance != null && !PlayerHealth.Instance.IsRunning) return false;
         if (popupRoot != null) popupRoot.SetActive(true);
 
 
@@ -258,17 +268,35 @@ public class CaptureMinigameController : MonoBehaviour
         return true;
     }
 
-    /// <summary>Capture Power head-start: marks some hit areas as already hit, without spending attempts. Only if this creature's family matches the meal's affected family.</summary>
+    /// <summary>
+    /// Capture Power head-start: breaks some barriers without spending attempts.
+    /// Only if this creature's family matches the meal's affected family. Staged
+    /// (AutoBreakRoutine) rather than instant, so the player sees it happen.
+    /// </summary>
     private void ApplyCapturePowerAutoBreak()
     {
         if (ExpeditionMealManager.Instance == null || creatureData == null) return;
 
-        int autoBreakCount = ExpeditionMealManager.Instance.GetCaptureAutoBreakCount(creatureData.family);
-        for (int i = 0; i < autoBreakCount && i < activeHitAreas.Count; i++)
+        int autoBreakCount = Mathf.Min(ExpeditionMealManager.Instance.GetCaptureAutoBreakCount(creatureData.family), activeHitAreas.Count);
+        if (autoBreakCount > 0) StartCoroutine(AutoBreakRoutine(autoBreakCount));
+    }
+
+    /// <summary>Wheel on hold: a beat, then each barrier breaks with its focus effect, one by one, then play starts.</summary>
+    private IEnumerator AutoBreakRoutine(int count)
+    {
+        autoBreaking = true;
+        yield return new WaitForSeconds(autoBreakDelay);
+
+        for (int i = 0; i < count; i++)
         {
             activeHitAreas[i].MarkHit();
+            activeHitAreas[i].PlayBreakFocus();
             hitsScored++;
+            if (hitSound != null) SoundFXManager.instance.PlaySoundFX(hitSound, transform, 0.5f);
+            yield return new WaitForSeconds(autoBreakInterval);
         }
+
+        autoBreaking = false;
     }
 
     private void SetupAttemptsUI()
@@ -374,6 +402,7 @@ public class CaptureMinigameController : MonoBehaviour
     {
         IsRunning = false;
         ending = false;
+        autoBreaking = false; // a ForceEndMinigame mid head-start stops the routine
         cooldown = false; // a CoolDown() coroutine cancelled by ForceEndMinigame would otherwise leave this stuck true forever
 
         float ratio = hitAreaCount > 0 ? (float)hitsScored / hitAreaCount : 0f;

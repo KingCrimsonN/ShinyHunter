@@ -83,7 +83,10 @@ public class RunSummaryUI : MonoBehaviour
         if (popupRoot != null) popupRoot.SetActive(true);
         if (nextButton != null) nextButton.interactable = true;
 
-        PlayerStateManager.Instance.Freeze();
+        // Locked, not just frozen: anything still finishing underneath (a doll in
+        // flight, a scene transition's fade-in, another popup closing) would
+        // otherwise unfreeze the player while the summary is up.
+        PlayerStateManager.Instance.LockForRunEnd();
         RefreshTotalMoneyText();
         ShowPage(0);
     }
@@ -136,7 +139,8 @@ public class RunSummaryUI : MonoBehaviour
         if (popupRoot != null) popupRoot.SetActive(false);
 
         // Stay frozen: SceneTransitionManager holds the freeze through the
-        // fade and releases it once the hub has loaded.
+        // fade and releases it once the hub has loaded (so its Unfreeze must work again).
+        PlayerStateManager.Instance.ReleaseRunEndLock();
         if (SceneTransitionManager.Instance != null && SceneTransitionManager.Instance.TransitionToScene(SceneNames.Hub))
             yield break;
 

@@ -23,6 +23,8 @@ public class MovesWhenUnseen : CreatureBehaviour
     [SerializeField, Range(-0.2f, 0.4f)] private float viewMargin = 0f;
     [Tooltip("What blocks the player's view of it (terrain, trees, rocks...). The player and the critter itself are always ignored.")]
     [SerializeField] private LayerMask occluders = ~0;
+    [Tooltip("Seconds it keeps moving after you look at it, before it freezes - so you catch it mid-step for a split second, and it stops on whatever frame of its walk it had reached. 0 = freezes the instant it's seen.")]
+    [SerializeField, Min(0f)] private float freezeDelay = 0f;
     [Tooltip("Seconds it stays frozen after you look away, before it starts moving.")]
     [SerializeField, Min(0f)] private float unfreezeDelay = 0.1f;
     [Tooltip("Also stop its sprite animation while watched, so it freezes like a statue.")]
@@ -32,6 +34,7 @@ public class MovesWhenUnseen : CreatureBehaviour
     private Camera cachedCamera;
     private bool frozen;
     private float unseenTimer;
+    private float seenTimer;
 
     /// <summary>True while the player is looking at it (see class summary).</summary>
     public bool IsSeen { get; private set; }
@@ -56,12 +59,17 @@ public class MovesWhenUnseen : CreatureBehaviour
         if (IsSeen && mayFreeze)
         {
             unseenTimer = 0f;
-            if (!frozen) Freeze();
+            seenTimer += Time.deltaTime;
+            if (!frozen && seenTimer >= freezeDelay) Freeze();
         }
-        else if (frozen)
+        else
         {
-            unseenTimer += Time.deltaTime;
-            if (!mayFreeze || unseenTimer >= unfreezeDelay) Unfreeze();
+            seenTimer = 0f;
+            if (frozen)
+            {
+                unseenTimer += Time.deltaTime;
+                if (!mayFreeze || unseenTimer >= unfreezeDelay) Unfreeze();
+            }
         }
     }
 

@@ -12,6 +12,9 @@ public class Auntie : MonoBehaviour, IInteractable
     [SerializeField] private Transform lookTarget;
 
 
+    /// <summary>Where to point the camera when she talks (see DialogueManager.StartDialogue's focusPoint).</summary>
+    public Vector3 HeadPoint => DialogueManager.GetHeadPoint(transform, lookTarget);
+
     public void Interact()
     {
         print("INTERACTING");

@@ -28,6 +28,15 @@ public class PlayerStateManager : MonoBehaviour
 
     public bool IsFrozen { get; private set; }
 
+    /// <summary>
+    /// The run has ended (run summary up): the player stays frozen whatever
+    /// else calls Unfreeze() meanwhile - a capture wheel finishing, a scene
+    /// transition fading in, a popup closing. Set by LockForRunEnd, cleared by
+    /// ReleaseRunEndLock (the summary, right before going back to the hub) and,
+    /// as a safety net, by arriving in the hub.
+    /// </summary>
+    public bool RunEndLocked { get; private set; }
+
     /// <summary>Whatever popup most recently froze the player via Freeze(closeOnEscape) - see TryCloseCurrentPopup / UIManager's centralized Escape handling.</summary>
     private Action currentPopupCloser;
 
@@ -57,6 +66,8 @@ public class PlayerStateManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        if (SceneNames.IsHub(scene.name)) RunEndLocked = false;
+
         RefreshReferences();
 
         // A scene load happening while frozen would otherwise leave the NEW
@@ -95,8 +106,23 @@ public class PlayerStateManager : MonoBehaviour
         Cursor.visible = true;
     }
 
+    /// <summary>Freezes the player and keeps them frozen until ReleaseRunEndLock - see RunEndLocked.</summary>
+    public void LockForRunEnd()
+    {
+        RunEndLocked = true;
+        Freeze();
+    }
+
+    /// <summary>Lets Unfreeze() work again. Doesn't unfreeze by itself.</summary>
+    public void ReleaseRunEndLock()
+    {
+        RunEndLocked = false;
+    }
+
     public void Unfreeze()
     {
+        if (RunEndLocked) return; // the run is over - see RunEndLocked
+
         IsFrozen = false;
         currentPopupCloser = null;
         ApplyState(false);

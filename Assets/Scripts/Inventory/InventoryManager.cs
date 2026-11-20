@@ -50,6 +50,23 @@ public class InventoryManager : MonoBehaviour
 
     public event Action OnInventoryChanged;
 
+    /// <summary>What CapturePopupUI shows for one capture.</summary>
+    public struct CaptureInfo
+    {
+        public CreatureData species;
+        public CreatureData.Rarity rarity;
+        public bool doubleYield;
+        /// <summary>First time EVER this species was caught at THIS rarity (a Shining one is new even if Normal ones were caught before).</summary>
+        public bool firstOfRarity;
+    }
+
+    /// <summary>
+    /// Fired by AddCreature - i.e. on every capture (captures are the only way
+    /// critters are added). Static so UI on the persistent Overlay can
+    /// subscribe without caring whether this manager has woken up yet.
+    /// </summary>
+    public static event Action<CaptureInfo> OnCritterCaptured;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -125,9 +142,16 @@ public class InventoryManager : MonoBehaviour
             everCapturedSpecies.Add(species);
             newSpeciesThisRun.Add(species);
         }
-        everCapturedRarities.Add(key);
+        bool firstOfRarity = everCapturedRarities.Add(key); // Add = false if already there
 
         OnInventoryChanged?.Invoke();
+        OnCritterCaptured?.Invoke(new CaptureInfo
+        {
+            species = species,
+            rarity = rarity,
+            doubleYield = doubleYield,
+            firstOfRarity = firstOfRarity,
+        });
     }
 
     /// <summary>Call when a new expedition/run begins, so this-run stats (grid, "new species", etc.) start fresh.</summary>

@@ -164,6 +164,19 @@ public class CritterDexIngredientPopupUI : MonoBehaviour
         Root.SetActive(true);
     }
 
+    /// <summary>
+    /// Text-only use, e.g. the dex's FAMILY pop-up (the same component on a
+    /// pop-up that only has a Description text): sets Description Text and
+    /// opens, in place. Nothing else is touched.
+    /// </summary>
+    public void ShowText(string text)
+    {
+        anchor = null;
+        anchored = false;
+        if (descriptionText != null) descriptionText.text = text;
+        Root.SetActive(true);
+    }
+
     /// <summary>Also wired to the close button automatically (Awake) - no inspector OnClick needed.</summary>
     public void Hide()
     {

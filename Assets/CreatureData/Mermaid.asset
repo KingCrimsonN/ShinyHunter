@@ -29,27 +29,81 @@ MonoBehaviour:
   - animations:
     - state: 0
       frames:
-      - {fileID: 21300000, guid: 277cc14c185d1c74d99226e0d4c5c404, type: 3}
-      frameRate: 0
-      loop: 0
-  - animations:
-    - state: 0
+      - {fileID: -671455423, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: -433389614, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: 1148233553, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: 1148233553, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: -433389614, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: -671455423, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      frameRate: 10
+      loop: 1
+      mirrorEachLoop: 0
+    - state: 3
       frames:
-      - {fileID: 21300000, guid: 4b96d78d98e64724887c0e0dfd6b8f2f, type: 3}
-      frameRate: 0
+      - {fileID: 1155615244, guid: 409cd54c74f4981468dd377771a9234e, type: 3}
+      - {fileID: 2132029647, guid: 409cd54c74f4981468dd377771a9234e, type: 3}
+      frameRate: 10
       loop: 0
+      mirrorEachLoop: 0
+    - state: 4
+      frames:
+      - {fileID: -728988552, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      - {fileID: 188928735, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      - {fileID: -1826149416, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      - {fileID: 37912343, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      - {fileID: 2027580575, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      - {fileID: -1689638849, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      frameRate: 10
+      loop: 1
+      mirrorEachLoop: 0
+    - state: 1
+      frames:
+      - {fileID: -671455423, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: -433389614, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: 1148233553, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: 1148233553, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: -433389614, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: -671455423, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      frameRate: 10
+      loop: 1
+      mirrorEachLoop: 0
+    - state: 2
+      frames:
+      - {fileID: -671455423, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: -433389614, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: 1148233553, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: 1148233553, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: -433389614, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      - {fileID: -671455423, guid: 418b33926fe14a44fae02aa6b07af838, type: 3}
+      frameRate: 14
+      loop: 1
+      mirrorEachLoop: 1
+  - animations:
+    - state: 4
+      frames:
+      - {fileID: -728988552, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      - {fileID: 188928735, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      - {fileID: -1826149416, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      - {fileID: 37912343, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      - {fileID: 2027580575, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      - {fileID: -1689638849, guid: f136fb3e5eb55cc44b16008bf8491258, type: 3}
+      frameRate: 10
+      loop: 1
+      mirrorEachLoop: 0
   - animations:
     - state: 0
       frames:
       - {fileID: 21300000, guid: caed3acbca477fe428b195074dc3e2a6, type: 3}
       frameRate: 0
       loop: 0
+      mirrorEachLoop: 0
   - animations:
     - state: 0
       frames:
       - {fileID: 21300000, guid: 180d2b0a93ad4c242833a996867c042d, type: 3}
       frameRate: 0
       loop: 0
+      mirrorEachLoop: 0
   icons:
   - {fileID: 21300000, guid: f6c425f7b76bdba4e9664404b7a0fdbd, type: 3}
   - {fileID: 21300000, guid: f0e1747b2b9c7fd4d93a8a227838b188, type: 3}
@@ -73,6 +127,7 @@ MonoBehaviour:
   attackCooldown: 5
   attackDamage: 15
   attackWindupDuration: 0.5
+  attackDamageDelay: 0
   hitStaggerDuration: 0.6
   aggroLossDuration: 5
   baseCaptureChance: 1

@@ -23,6 +23,14 @@ public class BrewingStationUI : MonoBehaviour
     [SerializeField] private Transform ingredientGridParent;
     [SerializeField] private BrewIngredientEntryUI ingredientEntryPrefab;
 
+    [Header("Ingredient sorting (optional buttons)")]
+    [Tooltip("Groups by each ingredient's strongest scent, strongest first.")]
+    [SerializeField] private Button sortByStatsButton;
+    [Tooltip("Bug, Plant, Freaky, Warm, Cold - rarest first inside a family.")]
+    [SerializeField] private Button sortByFamilyButton;
+    [Tooltip("Rarest first, then by name.")]
+    [SerializeField] private Button sortByRarityButton;
+
     [Header("Cauldron Slots (right)")]
     [Tooltip("Exactly 8, in order.")]
     [SerializeField] private BrewCauldronSlotUI[] cauldronSlots = new BrewCauldronSlotUI[8];
@@ -54,6 +62,9 @@ public class BrewingStationUI : MonoBehaviour
         if (popupRoot != null) popupRoot.SetActive(false);
 
         if (brewButton != null) brewButton.onClick.AddListener(OnBrewPressed);
+        if (sortByStatsButton != null) sortByStatsButton.onClick.AddListener(() => Sort(r => r.SortByStats()));
+        if (sortByFamilyButton != null) sortByFamilyButton.onClick.AddListener(() => Sort(r => r.SortByFamily()));
+        if (sortByRarityButton != null) sortByRarityButton.onClick.AddListener(() => Sort(r => r.SortByRarityThenName()));
         if (viewMealInventoryButton != null) viewMealInventoryButton.onClick.AddListener(() => MealInventoryPanelUI.Instance?.Show());
 
         for (int i = 0; i < cauldronSlots.Length; i++)
@@ -92,6 +103,14 @@ public class BrewingStationUI : MonoBehaviour
 
         if (popupRoot != null) popupRoot.SetActive(false);
         PlayerStateManager.Instance.Unfreeze();
+    }
+
+    /// <summary>Reorders the ingredient list (the order is shared with the tablet's ingredient inventory) and redraws the grid.</summary>
+    private void Sort(System.Action<ResourceInventoryManager> sort)
+    {
+        if (ResourceInventoryManager.Instance == null) return;
+        sort(ResourceInventoryManager.Instance);
+        RefreshIngredientGrid();
     }
 
     /// <summary>Progression hook - unlocks one of the 4 extra cauldron slots.</summary>

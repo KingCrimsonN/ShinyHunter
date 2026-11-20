@@ -41,6 +41,12 @@ public class PlayerHealth : MonoBehaviour
 
     private bool isRunning;
 
+    /// <summary>True while an expedition's clock is running - false in the hub and once the run has ended (time out / exit door).</summary>
+    public bool IsRunning => isRunning;
+
+    /// <summary>No ticking or damage during a scene transition - the player can't act behind the loading screen, so they can't die there either.</summary>
+    private static bool Transitioning => SceneTransitionManager.Instance != null && SceneTransitionManager.Instance.IsTransitioning;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -89,7 +95,12 @@ public class PlayerHealth : MonoBehaviour
 
     private void Update()
     {
-        if (!isRunning || currentHealth <= 0f) return;
+        if (!isRunning || Transitioning) return;
+        if (currentHealth <= 0f)
+        {
+            Die(); // e.g. reached 0 during a transition, or something set it directly
+            return;
+        }
 
         currentHealth -= poisonRate * Time.deltaTime;
         OnHealthChanged?.Invoke(currentHealth / MaxHealth);
@@ -100,7 +111,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        if (!isRunning) return;
+        if (!isRunning || Transitioning) return;
 
         currentHealth -= damage;
         OnHealthChanged?.Invoke(currentHealth / MaxHealth);
@@ -122,10 +133,25 @@ public class PlayerHealth : MonoBehaviour
         isRunning = false;
     }
 
+    /// <summary>
+    /// Time ran out: the run ends HERE (it used to be the time dial's job, so a
+    /// hidden/disabled dial meant the run never ended and the player could keep
+    /// walking around). The summary stops the clock (EndRun) and locks the player.
+    /// </summary>
     public void Die()
     {
-        // Handle player death logic here
-        Debug.Log("Player has died.");
+        if (!isRunning) return; // already ended
+
+        if (RunSummaryUI.Instance != null)
+        {
+            RunSummaryUI.Instance.ShowSummary(); // calls EndRun
+        }
+        else
+        {
+            EndRun();
+            Debug.LogError("PlayerHealth: time ran out but there is no RunSummaryUI - going straight back to the hub.");
+            if (SceneTransitionManager.Instance != null) SceneTransitionManager.Instance.TransitionToScene(SceneNames.Hub);
+        }
     }
 
     // ---------------- Potion system hooks ----------------

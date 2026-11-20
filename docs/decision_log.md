@@ -1703,3 +1703,52 @@ so it can line up with the Attack animation's strike frame after the wind-up. Th
 An attack interrupted before the hit (stunned, lost aggro, a MovesWhenUnseen critter frozen and released) never lands.
 The red hurt flash now fires once, with the hit - it used to be re-triggered every frame of the attack, holding the
 screen red for the whole attack.
+
+## CritterDex: family pop-up + hover badge, scent icons/colors, page numbers
+
+- **Family pop-up** reuses `CritterDexIngredientPopupUI` (the scene's Family Popup already carried it) through a new
+  text-only `ShowText`, which only sets Description Text. Clicking the family badge toggles it; it closes on every
+  page change. Text = `CritterFrames.familyDescriptions` (placeholder wording).
+- **Hover badge:** `SetFamilyFrame` writes the family's focus sprite (`CritterFrames.familyBadgesHover`) into the
+  badge Button's highlighted/pressed sprites (Sprite Swap transition), per page. Selected is left empty, so the
+  badge doesn't stay focused after a click.
+- **Scents:** loved/hated each show their scent's icon (`favoriteScentIcons` / `hatedScentIcons`) and their name in
+  `scentColors` (defaults sampled from the icon art: Sweet B24E75, Fresh 02B1A0, Putrid 615D4D, Metallic 931E34,
+  Marine 415FBA). Empty/undiscovered pages fall back to the prefab's own icon and text color.
+- **Page number** (`CritterDexUI.pageNumberText`): the index shows `indexPageLabel` ("I"), critter pages their dex
+  number as "00" (01, 02...), matching the mock-ups.
+All dex art/colors live on the `CritterFrames` asset; the sprites were assigned there directly.
+
+## Capture popup; Auntie refuses her meal; run-end lock
+
+- **Capture popup** (`CapturePopupUI` on the Overlay's CapturePopup): `InventoryManager.AddCreature` now fires a
+  static `OnCritterCaptured` with species, rarity, double-yield and `firstOfRarity` (= first time that species was
+  caught at THAT rarity, from `everCapturedRarities`, so a Shining Appy is NEW even after Normal ones). Static so the
+  persistent Overlay can subscribe in Awake regardless of manager wake order; Awake/OnDestroy (not OnEnable) because
+  the popup deactivates itself between toasts. It slides in from wherever it's placed in the prefab, starting just
+  past the left screen edge (measured each time, since the name resizes the layout). Captures queue.
+- **Default meal refusal:** the default (Auntie's) meal is still the only choice when you own no bowls, but picking it
+  while holding any ingredient (`ResourceInventoryManager.HasAnyResources`) closes the popup and plays
+  `AuntieRefusalData` (camera turns to Auntie) instead of starting the expedition. Only ingredients count, not held
+  critters.
+- **Death bug** (dying in the capture wheel / on a loading screen left the player free): several causes.
+  `PlayerHealth.Die()` was empty, and the run ended only through the time dial's `OnHealthChanged` handler, so a
+  hidden dial meant no end at all. A doll still in flight could start a wheel after the summary opened, whose end
+  unfroze the player. A transition's fade-in `Unfreeze()` also fired under a summary opened mid-transition. Fixes:
+  `Die()` now ends the run. The summary freezes with `PlayerStateManager.LockForRunEnd`, which makes `Unfreeze()` a
+  no-op until the summary releases it right before the hub transition (it's also cleared on arriving in the hub).
+  `BeginCapture` refuses once the run is over. The clock and damage pause during scene transitions, so you can't die
+  behind a loading screen.
+
+## Playtest tweaks: freeze delay, staged Capture Power, cauldron sorting
+
+- `MovesWhenUnseen.freezeDelay`: seconds a watched critter keeps moving before it freezes (default 0 = the old
+  instant freeze). The sprite animator is simply disabled on freeze, so it stops on whatever walk frame it reached -
+  mid-step, as intended for the Chasenut.
+- Capture Power's head-start is staged (`CaptureMinigameController.AutoBreakRoutine`): the wheel opens on hold
+  (needle, timer, input, barrier orbit all wait), `autoBreakDelay` later each barrier breaks with
+  `CaptureHitAreaUI.PlayBreakFocus` (pop + flash) and the hit sound, `autoBreakInterval` apart, then play starts.
+  It used to break them instantly on open, which was easy to miss.
+- Cauldron sorting buttons (Stats / Family / Rarity) call one-off reorders on `ResourceInventoryManager`, like the
+  existing rarity sort, so the order is shared with the tablet's ingredient inventory. Stats = grouped by each
+  ingredient's strongest scent (ScentType order), strongest first.

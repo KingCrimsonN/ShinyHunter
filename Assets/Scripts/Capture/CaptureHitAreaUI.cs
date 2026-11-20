@@ -27,6 +27,13 @@ public class CaptureHitAreaUI : MonoBehaviour
 
     [SerializeField] private Sprite brokenEdgeSprite;
 
+    [Header("Break focus (Capture Power head-start)")]
+    [Tooltip("How much the barrier pops when Capture Power breaks it.")]
+    [SerializeField] private float focusPunch = 0.15f;
+    [SerializeField] private float focusDuration = 0.35f;
+    [Tooltip("It flashes this color, then settles on Hit Color.")]
+    [SerializeField] private Color focusFlashColor = Color.white;
+
     private Image startEdgeImage;
     private Image endEdgeImage;
 
@@ -104,6 +111,22 @@ public class CaptureHitAreaUI : MonoBehaviour
         rect.localRotation = Quaternion.Euler(0f, 0f, -newStartAngle);
         PositionEdge(startEdge, 0);
         PositionEdge(endEdge, WidthDegrees);
+    }
+
+    /// <summary>
+    /// The "look here" effect when Capture Power breaks this barrier: a pop
+    /// (scales around the wheel's centre, so the arc bulges outward) and a
+    /// flash. Call after MarkHit.
+    /// </summary>
+    public void PlayBreakFocus()
+    {
+        rect.DOKill(true);
+        rect.localScale = Vector3.one;
+        rect.DOPunchScale(Vector3.one * focusPunch, focusDuration, 6, 0.6f).SetLink(gameObject);
+
+        image.DOKill();
+        image.color = focusFlashColor;
+        image.DOColor(hitColor, focusDuration).SetLink(gameObject);
     }
 
     public void MarkHit()

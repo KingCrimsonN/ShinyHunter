@@ -218,6 +218,13 @@ public class InventoryManager : MonoBehaviour
         return total;
     }
 
+    /// <summary> Is the inventory empty?
+    /// </summary>
+    public bool IsEmpty()
+    {
+        return critters.Count == 0;
+    }
+
     /// <summary>True if this species has EVER been captured at any rarity - survives every unit later being transformed away. What the CritterDex should check for "is this species unlocked" instead of GetTotalCount.</summary>
     public bool HasEverCaptured(CreatureData species)
     {

@@ -215,7 +215,8 @@ public class ExpeditionMealSelectionUI : MonoBehaviour
         return defaultMealRefusalDialogue != null
             && DialogueManager.Instance != null
             && ResourceInventoryManager.Instance != null
-            && ResourceInventoryManager.Instance.HasAnyResources;
+            && ResourceInventoryManager.Instance.HasAnyResources
+            && !InventoryManager.Instance.IsEmpty();
     }
 
     private void Confirm()

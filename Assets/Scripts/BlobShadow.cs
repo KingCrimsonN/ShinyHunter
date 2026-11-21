@@ -6,15 +6,16 @@ public class BlobShadow : MonoBehaviour
     public RaycastHit hit;
     public float offset;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void FixedUpdate()
     {
+        Ray downRay = new Ray(new Vector3(transform.position.x, transform.position.y, transform.position.z), -Vector3.up);
 
-    }
+        Vector3 hitPosition = hit.point;
+        shadow.transform.position = hitPosition;
 
-    // Update is called once per frame
-    void Update()
-    {
+        if (Physics.Raycast(downRay, out hit))
+        {
 
+        }
     }
 }

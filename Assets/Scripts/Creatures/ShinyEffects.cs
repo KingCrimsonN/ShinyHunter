@@ -76,10 +76,20 @@ public class ShinyEffects : MonoBehaviour
             SoundFXManager.instance.PlaySoundFX(clip, transform, spawnSoundVolume);
     }
 
+    public void PlayConstantEffects(bool play)
+    {
+        if (rarity <= 0 || constantEffects == null || rarity >= constantEffects.Length || constantEffects[rarity] == null) return;
+        constantEffects[rarity].GetComponentInChildren<ParticleSystem>(true).Play();
+    }
+
     private void Update()
     {
         if (!burstPending || spawnTrigger != SpawnTrigger.FirstSeen) return;
-        if (IsSeen()) PlaySpawnBurst();
+        if (IsSeen())
+        {
+            PlaySpawnBurst();
+            PlayConstantEffects(true);
+        }
     }
 
     private bool IsSeen()

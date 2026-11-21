@@ -240,7 +240,14 @@ public class CreatureAI : MonoBehaviour, ICapturable
             rolledRarity = RollRarity();
             if (animator != null)
                 animator.Initialize(data.GetVariant(rolledRarity));
-            shinyParticles.SetActive(rolledRarity != CreatureData.Rarity.Normal);
+            if (shinyParticles != null)
+            {
+                shinyParticles.SetActive(rolledRarity != CreatureData.Rarity.Normal);
+                // The new per-rarity shiny FX (FX/Shiny/ShinyFX.prefab) - an older
+                // plain particle object (SparkleAreaYellow) just gets toggled as before.
+                if (shinyParticles.TryGetComponent(out ShinyEffects shinyEffects))
+                    shinyEffects.Setup(rolledRarity);
+            }
         }
 
         if (data.movementMode != CreatureMovementMode.Flying)
@@ -972,9 +979,12 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     public bool TryCapture(float captureChance, float extraDoubleYieldChance = 0f)
     {
-        if (currentState != State.Stunned) return false;
+        return ResolveCapture(Random.value <= Mathf.Clamp01(captureChance), extraDoubleYieldChance);
+    }
 
-        bool success = Random.value <= Mathf.Clamp01(captureChance);
+    public bool ResolveCapture(bool success, float extraDoubleYieldChance = 0f)
+    {
+        if (currentState != State.Stunned) return false;
 
         if (success)
         {

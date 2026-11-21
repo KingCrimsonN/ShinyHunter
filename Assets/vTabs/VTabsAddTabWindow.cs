@@ -816,6 +816,7 @@ namespace VTabs
 
                 allEntries.Add(new TabEntry() { name = "Test Runnder", iconName = "", typeString = "UnityEditor.TestTools.TestRunner.TestRunnerWindow, UnityEditor.TestRunner, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" });
                 allEntries.Add(new TabEntry() { name = "Search", iconName = "d_SearchWindow@2x", typeString = "UnityEditor.Search.SearchWindow, UnityEditor.QuickSearchModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" });
+                allEntries.Add(new TabEntry() { name = "Undo history", iconName = "", typeString = "UnityEditor.UndoHistory, UnityEditor.CoreModule, Version = 0.0.0.0, Culture = neutral, PublicKeyToken = null" });
 
                 allEntries.Add(new TabEntry() { name = "Build Settings", iconName = "", typeString = "UnityEditor.BuildPlayerWindow, UnityEditor.CoreModule, Version = 0.0.0.0, Culture = neutral, PublicKeyToken = null" });
                 allEntries.Add(new TabEntry() { name = "Build Profiles", iconName = "", typeString = "UnityEditor.Build.Profile.BuildProfileWindow, UnityEditor.BuildProfileModule, Version = 0.0.0.0, Culture = neutral, PublicKeyToken = null" });
@@ -899,7 +900,7 @@ namespace VTabs
 
         public static void RememberWindow(EditorWindow window)
         {
-            if (!window.docked) return;
+            if (window.GetMemberValue("m_Parent")?.GetType() != t_DockArea) return;
             if (window.GetType() == t_PropertyEditor) return;
             if (window.GetType() == t_InspectorWindow) return;
             if (window.GetType() == t_ProjectBrowser) return;

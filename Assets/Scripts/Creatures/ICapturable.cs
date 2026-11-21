@@ -42,6 +42,14 @@ public interface ICapturable
     bool TryCapture(float captureChance, float extraDoubleYieldChance = 0f);
 
     /// <summary>
+    /// Same as TryCapture(float) but with the roll already made by the caller -
+    /// CaptureMinigameController rolls when the wheel ends, plays its result
+    /// reveal, and only applies it afterwards. Returns whether it was captured
+    /// (false if it is no longer stunned, even when success was passed).
+    /// </summary>
+    bool ResolveCapture(bool success, float extraDoubleYieldChance = 0f);
+
+    /// <summary>
     /// A capture attempt (the wheel minigame) has begun. The creature must
     /// stay stunned until TryCapture(float) resolves the attempt, however
     /// long the minigame takes - it must NOT recover on its own timer, or a

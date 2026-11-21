@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using DG.Tweening;
 
 /// <summary>
 /// Drives the capture minigame: spins a needle around a wheel with randomly
@@ -88,7 +89,45 @@ public class CaptureMinigameController : MonoBehaviour
     [SerializeField, Min(0f)] private float autoBreakDelay = 0.6f;
     [Tooltip("Seconds between barriers when it breaks more than one, and after the last before play starts.")]
     [SerializeField, Min(0f)] private float autoBreakInterval = 0.4f;
+    [Tooltip("Optional full-screen vignette (e.g. an Image with a dark-edged sprite, Raycast Target OFF) faded in for the head-start only. Leave it inactive or at alpha 0 in the editor - it is reset either way.")]
+    [SerializeField] private Graphic breakVignette;
+    [Tooltip("Vignette opacity while the head-start plays.")]
+    [SerializeField, Range(0f, 1f)] private float vignetteAlpha = 1f;
+    [Tooltip("Seconds to fade the vignette in/out.")]
+    [SerializeField, Min(0f)] private float vignetteFade = 0.2f;
+    [Tooltip("Seconds the nails (attempt icons) take to pop in once the head-start is over.")]
+    [SerializeField, Min(0f)] private float nailsAppearDuration = 0.2f;
     [SerializeField] private float defaultCooldown = 0.3f;
+
+    [Header("Break particles")]
+    [Tooltip("Spawned at a barrier's middle each time one breaks (player hit or Capture Power), under Hit Area Parent. Every ParticleSystem in it is played; the instance is removed after FX Lifetime or when the wheel closes.")]
+    [SerializeField] private GameObject breakParticlesPrefab;
+    [Tooltip("Distance from the wheel centre to spawn it - match the barrier ring's radius (canvas units, like Needle Mark Radius).")]
+    [SerializeField] private float breakParticlesRadius = 100f;
+    [Tooltip("Rotate it so its local up points outward from the wheel at the barrier (for directional bursts). Off = prefab's own rotation.")]
+    [SerializeField] private bool alignBreakParticles = true;
+    [Tooltip("Seconds before a spawned particle instance (break or success) is destroyed.")]
+    [SerializeField, Min(0.1f)] private float fxLifetime = 3f;
+
+    [Header("Result reveal (after the last attempt)")]
+    [Tooltip("What shrinks away with the nails at the end - defaults to the Timer Slider's object.")]
+    [SerializeField] private Transform timerRoot;
+    [Tooltip("Seconds the nails and timer take to shrink away.")]
+    [SerializeField, Min(0f)] private float resultHideDuration = 0.2f;
+    [Tooltip("The doll (Center Icon) first shrinks to this scale...")]
+    [SerializeField, Min(0f)] private float dollShrinkScale = 0.75f;
+    [SerializeField, Min(0f)] private float dollShrinkDuration = 0.35f;
+    [Tooltip("...then bounces up to this scale before the result.")]
+    [SerializeField, Min(0f)] private float dollBounceScale = 1.2f;
+    [SerializeField, Min(0f)] private float dollBounceDuration = 0.3f;
+    [Tooltip("Played at the doll when the capture succeeds (same handling as the break particles).")]
+    [SerializeField] private GameObject successParticlesPrefab;
+    [Tooltip("Seconds the success stays on screen before the wheel closes.")]
+    [SerializeField, Min(0f)] private float successHold = 0.9f;
+    [Tooltip("Seconds the doll takes to vanish on a failed capture.")]
+    [SerializeField, Min(0f)] private float failVanishDuration = 0.25f;
+    [Tooltip("Seconds after vanishing before the wheel closes.")]
+    [SerializeField, Min(0f)] private float failHold = 0.35f;
 
     [Header("Audio")]
     [SerializeField] private AudioClip hitSound;
@@ -122,6 +161,18 @@ public class CaptureMinigameController : MonoBehaviour
     private bool cooldown;
     /// <summary>Capture Power is breaking barriers (AutoBreakRoutine) - the wheel is on hold.</summary>
     private bool autoBreaking;
+    /// <summary>The result reveal is playing (ResultRoutine) - no input, the wheel is frozen.</summary>
+    private bool revealing;
+
+    // Result is rolled ONCE when the wheel ends (RollResult) and applied to the creature when it closes (CloseMinigame).
+    private bool resultRolled;
+    private bool rolledSuccess;
+    private bool resultSoundPlayed;
+
+    private readonly List<GameObject> activeFx = new List<GameObject>();
+    private Vector3 dollBaseScale = Vector3.one;
+    private Color dollBaseColor = Color.white;
+    private Vector3 needleBaseScale = Vector3.one;
 
     // ---------------- Per-run config, resolved once in BeginCapture from the equipped tool + creature rarity + active meal ----------------
 
@@ -147,11 +198,19 @@ public class CaptureMinigameController : MonoBehaviour
         Instance = this;
 
         if (popupRoot != null) popupRoot.SetActive(false);
+        HideVignetteNow();
+        if (timerRoot == null && timerSlider != null) timerRoot = timerSlider.transform;
+        if (centerIcon != null)
+        {
+            dollBaseScale = centerIcon.rectTransform.localScale;
+            dollBaseColor = centerIcon.color;
+        }
+        if (needleTransform != null) needleBaseScale = needleTransform.localScale;
     }
 
     private void Update()
     {
-        if (!IsRunning || autoBreaking) return;
+        if (!IsRunning || autoBreaking || revealing) return;
 
         TickNeedle();
         TickBarrierOrbit();
@@ -164,7 +223,7 @@ public class CaptureMinigameController : MonoBehaviour
             if (!ending)
             {
                 ending = true;
-                StartCoroutine(WaitAndEnd(0.5f)); // short delay so player sees the last hit/miss feedback
+                StartCoroutine(EndSequence(0.5f)); // short delay so player sees the last hit/miss feedback, then the result reveal
             }
 
     }
@@ -225,6 +284,11 @@ public class CaptureMinigameController : MonoBehaviour
 
         ending = false;
         cooldown = false;
+        revealing = false;
+        resultRolled = false;
+        rolledSuccess = false;
+        resultSoundPlayed = false;
+        ResetRevealVisuals(); // defensive - the previous close already did this
 
         // Cached once - the player can't swap tools while frozen mid-minigame
         // (ToolEquipController is disabled by PlayerStateManager.Freeze below),
@@ -285,19 +349,58 @@ public class CaptureMinigameController : MonoBehaviour
     private IEnumerator AutoBreakRoutine(int count)
     {
         autoBreaking = true;
+
+        // Nails stay hidden until play starts; the vignette darkens the edges so the eye goes to the wheel.
+        if (attemptsParent != null) attemptsParent.SetActive(false);
+        if (breakVignette != null)
+        {
+            breakVignette.DOKill();
+            breakVignette.gameObject.SetActive(true);
+            breakVignette.color = WithAlpha(breakVignette.color, 0f);
+            breakVignette.DOFade(vignetteAlpha, vignetteFade).SetLink(breakVignette.gameObject);
+        }
+
         yield return new WaitForSeconds(autoBreakDelay);
 
         for (int i = 0; i < count; i++)
         {
             activeHitAreas[i].MarkHit();
             activeHitAreas[i].PlayBreakFocus();
+            SpawnBreakParticles(activeHitAreas[i]);
             hitsScored++;
             if (hitSound != null) SoundFXManager.instance.PlaySoundFX(hitSound, transform, 0.5f);
             yield return new WaitForSeconds(autoBreakInterval);
         }
 
+        if (breakVignette != null)
+            breakVignette.DOFade(0f, vignetteFade).SetLink(breakVignette.gameObject)
+                .OnComplete(() => breakVignette.gameObject.SetActive(false));
+        ShowNails();
+
         autoBreaking = false;
     }
+
+    /// <summary>The attempt nails come back (popping in) once the head-start is done.</summary>
+    private void ShowNails()
+    {
+        if (attemptsParent == null || attemptsParent.activeSelf) return;
+
+        attemptsParent.SetActive(true);
+        var t = attemptsParent.transform;
+        t.DOKill();
+        t.localScale = Vector3.zero;
+        t.DOScale(1f, nailsAppearDuration).SetEase(Ease.OutBack).SetLink(attemptsParent);
+    }
+
+    private void HideVignetteNow()
+    {
+        if (breakVignette == null) return;
+        breakVignette.DOKill();
+        breakVignette.color = WithAlpha(breakVignette.color, 0f);
+        breakVignette.gameObject.SetActive(false);
+    }
+
+    private static Color WithAlpha(Color c, float a) { c.a = a; return c; }
 
     private void SetupAttemptsUI()
     {
@@ -369,6 +472,7 @@ public class CaptureMinigameController : MonoBehaviour
             if (!area.IsHit && area.ContainsAngle(needleAngle))
             {
                 area.MarkHit();
+                SpawnBreakParticles(area);
                 hitsScored++;
                 hitSomething = true;
                 break;
@@ -393,17 +497,16 @@ public class CaptureMinigameController : MonoBehaviour
         StartCoroutine(CoolDown());
     }
 
-    /// <param name="forceEnd">
-    /// True when ending because something else took over the player (see
-    /// ForceEndMinigame): the player is deliberately left FROZEN for that
-    /// caller instead of being released here.
-    /// </param>
-    private void EndMinigame(bool forceEnd = false)
+    /// <summary>
+    /// Rolls the capture ONCE, from the hits plus the meal's and the tool's
+    /// bonuses. Nothing is applied to the creature yet - CloseMinigame does that
+    /// after the reveal, so the world capture effects and the capture popup
+    /// still happen as the wheel closes, not hidden behind it.
+    /// </summary>
+    private bool RollResult()
     {
-        IsRunning = false;
-        ending = false;
-        autoBreaking = false; // a ForceEndMinigame mid head-start stops the routine
-        cooldown = false; // a CoolDown() coroutine cancelled by ForceEndMinigame would otherwise leave this stuck true forever
+        if (resultRolled) return rolledSuccess;
+        resultRolled = true;
 
         float ratio = hitAreaCount > 0 ? (float)hitsScored / hitAreaCount : 0f;
 
@@ -418,13 +521,94 @@ public class CaptureMinigameController : MonoBehaviour
             toolBonus = equippedToolForThisRun.bonusFamilyCaptureChance;
 
         ratio = Mathf.Clamp01(ratio + mealBonus + toolBonus);
+        rolledSuccess = targetCreature != null && UnityEngine.Random.value <= ratio;
+        return rolledSuccess;
+    }
+
+    /// <summary>
+    /// The end of a normal run: a beat so the last hit/miss reads, then the
+    /// reveal - nails and timer shrink away, the doll shrinks, bounces up, and
+    /// either bursts (success particles) or vanishes - then the wheel closes.
+    /// </summary>
+    private IEnumerator EndSequence(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        revealing = true;
+        bool success = RollResult();
+
+        HideForReveal(attemptsParent != null ? attemptsParent.transform : null);
+        HideForReveal(timerRoot);
+        // The needle and the marks it left on the doll go too. The needle's Animator is paused
+        // so its clips can't write the scale back over the tween.
+        if (needleAnimator != null) needleAnimator.enabled = false;
+        HideForReveal(needleTransform);
+        foreach (var mark in activeNeedleMarks)
+            if (mark != null) HideForReveal(mark.transform);
+        if (resultHideDuration > 0f) yield return new WaitForSeconds(resultHideDuration);
+
+        RectTransform doll = centerIcon != null && centerIcon.enabled ? centerIcon.rectTransform : null;
+        if (doll != null)
+        {
+            doll.DOKill();
+            var anticipation = DOTween.Sequence()
+                .Append(doll.DOScale(dollBaseScale * dollShrinkScale, dollShrinkDuration).SetEase(Ease.OutQuad))
+                .Append(doll.DOScale(dollBaseScale * dollBounceScale, dollBounceDuration).SetEase(Ease.OutBack))
+                .SetLink(doll.gameObject);
+            yield return anticipation.WaitForCompletion();
+        }
+
+        PlayResultSound(success);
+        if (success)
+        {
+            if (doll != null)
+            {
+                SpawnFx(successParticlesPrefab, doll.parent, doll.localPosition, Quaternion.identity);
+                doll.DOPunchScale(dollBaseScale * 0.1f, 0.3f, 6, 0.5f).SetLink(doll.gameObject);
+            }
+            else SpawnFx(successParticlesPrefab, hitAreaParent, Vector3.zero, Quaternion.identity);
+            if (successHold > 0f) yield return new WaitForSeconds(successHold);
+        }
+        else
+        {
+            if (doll != null)
+            {
+                doll.DOScale(0f, failVanishDuration).SetEase(Ease.InBack).SetLink(doll.gameObject);
+                centerIcon.DOFade(0f, failVanishDuration).SetLink(doll.gameObject);
+            }
+            float wait = failVanishDuration + failHold;
+            if (wait > 0f) yield return new WaitForSeconds(wait);
+        }
+
+        CloseMinigame();
+    }
+
+    /// <summary>
+    /// Applies the rolled result to the creature and closes the wheel.
+    /// </summary>
+    /// <param name="forceEnd">
+    /// True when ending because something else took over the player (see
+    /// ForceEndMinigame): the player is deliberately left FROZEN for that
+    /// caller instead of being released here.
+    /// </param>
+    private void CloseMinigame(bool forceEnd = false)
+    {
+        bool rolled = RollResult(); // already rolled unless force-ended before the reveal
+
+        IsRunning = false;
+        ending = false;
+        autoBreaking = false; // a ForceEndMinigame mid head-start stops the routine
+        revealing = false;
+        HideVignetteNow();
+        ResetRevealVisuals();
+        cooldown = false; // a CoolDown() coroutine cancelled by ForceEndMinigame would otherwise leave this stuck true forever
 
         // The tool is remembered from when the wheel STARTED (equippedToolForThisRun) -
         // the doll was consumed the moment the throw landed, so for the last
         // one in a stack the live inventory no longer has it.
         float extraYieldChance = equippedToolForThisRun != null ? equippedToolForThisRun.extraIngredientChance : 0f;
 
-        bool success = targetCreature != null && targetCreature.TryCapture(ratio, extraYieldChance);
+        bool success = targetCreature != null && targetCreature.ResolveCapture(rolled, extraYieldChance);
 
         if (popupRoot != null) popupRoot.SetActive(false);
 
@@ -445,18 +629,92 @@ public class CaptureMinigameController : MonoBehaviour
         targetCreature = null;
         creatureData = null;
 
-        if (success)
-            SoundFXManager.instance.PlaySoundFX(successSound, transform, 0.5f);
-        else
-            SoundFXManager.instance.PlaySoundFX(failSound, transform, 0.5f);
+        if (!resultSoundPlayed) PlayResultSound(success);
 
         OnMinigameEnded?.Invoke(success);
     }
 
-    private IEnumerator WaitAndEnd(float delay)
+    private void PlayResultSound(bool success)
     {
-        yield return new WaitForSeconds(delay);
-        EndMinigame();
+        resultSoundPlayed = true;
+        var clip = success ? successSound : failSound;
+        if (clip != null && SoundFXManager.instance != null)
+            SoundFXManager.instance.PlaySoundFX(clip, transform, 0.5f);
+    }
+
+    private void HideForReveal(Transform t)
+    {
+        if (t == null || !t.gameObject.activeInHierarchy) return;
+        t.DOKill();
+        t.DOScale(0f, resultHideDuration).SetEase(Ease.InBack).SetLink(t.gameObject);
+    }
+
+    /// <summary>Puts everything the head-start and the reveal touched back to its editor state.</summary>
+    private void ResetRevealVisuals()
+    {
+        if (attemptsParent != null)
+        {
+            attemptsParent.transform.DOKill();
+            attemptsParent.transform.localScale = Vector3.one;
+            attemptsParent.SetActive(true);
+        }
+        if (timerRoot != null)
+        {
+            timerRoot.DOKill();
+            timerRoot.localScale = Vector3.one;
+        }
+        if (needleTransform != null)
+        {
+            needleTransform.DOKill();
+            needleTransform.localScale = needleBaseScale;
+        }
+        if (needleAnimator != null) needleAnimator.enabled = true;
+        // (needle marks are destroyed on close - ClearNeedleMarks - so they need no reset)
+        if (centerIcon != null)
+        {
+            centerIcon.rectTransform.DOKill();
+            centerIcon.DOKill();
+            centerIcon.rectTransform.localScale = dollBaseScale;
+            centerIcon.color = dollBaseColor;
+        }
+        ClearFx();
+    }
+
+    /// <summary>Break particles at the barrier's middle, on the barrier ring.</summary>
+    private void SpawnBreakParticles(CaptureHitAreaUI area)
+    {
+        if (breakParticlesPrefab == null || area == null || hitAreaParent == null) return;
+
+        Quaternion rotation = Quaternion.Euler(0f, 0f, -area.MidAngle); // clockwise-from-top -> Unity Z
+        Vector3 position = rotation * Vector3.up * breakParticlesRadius;
+        SpawnFx(breakParticlesPrefab, hitAreaParent, position, alignBreakParticles ? rotation : Quaternion.identity);
+    }
+
+    private void SpawnFx(GameObject prefab, Transform parent, Vector3 localPosition, Quaternion localRotation)
+    {
+        if (prefab == null || parent == null) return;
+
+        var fx = Instantiate(prefab, parent, false);
+        var t = fx.transform;
+        t.localPosition = new Vector3(localPosition.x, localPosition.y, prefab.transform.localPosition.z);
+        t.localRotation = localRotation * prefab.transform.localRotation;
+        t.SetAsLastSibling(); // draws over the wheel (UI particle renderers sort by sibling order)
+
+        foreach (var ps in fx.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ps.Clear(false);
+            ps.Play(false);
+        }
+
+        activeFx.Add(fx);
+        Destroy(fx, fxLifetime);
+    }
+
+    private void ClearFx()
+    {
+        foreach (var fx in activeFx)
+            if (fx != null) Destroy(fx);
+        activeFx.Clear();
     }
 
     private IEnumerator CoolDown()
@@ -605,7 +863,7 @@ public class CaptureMinigameController : MonoBehaviour
     {
         if (!IsRunning) return;
 
-        StopAllCoroutines(); // cancel any pending WaitAndEnd/CoolDown
-        EndMinigame(forceEnd: true);
+        StopAllCoroutines(); // cancel any pending EndSequence/CoolDown - mid-reveal it resolves with the result already rolled
+        CloseMinigame(forceEnd: true);
     }
 }

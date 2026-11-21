@@ -1585,7 +1585,7 @@ namespace VTabs
 
 
 
-        const string version = "2.1.8";
+        const string version = "2.1.9";
 
     }
 }

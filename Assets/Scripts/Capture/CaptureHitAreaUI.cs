@@ -45,6 +45,8 @@ public class CaptureHitAreaUI : MonoBehaviour
     public float BaseStartAngle { get; private set; }
     public float WidthDegrees { get; private set; }
     public bool IsHit { get; private set; }
+    /// <summary>The arc's centre angle (same clockwise-from-top convention) - where break particles spawn.</summary>
+    public float MidAngle => StartAngle + WidthDegrees * 0.5f;
 
     private void Awake()
     {

@@ -101,7 +101,12 @@ public class BrewingStationUI : MonoBehaviour
     public void Close()
     {
 
-        if (popupRoot != null) popupRoot.SetActive(false);
+        // if (popupRoot != null) popupRoot.SetActive(false);
+        if (PlayerStateManager.Instance != null && PlayerStateManager.Instance.IsFrozen)
+        {
+            PlayerStateManager.Instance.TryCloseCurrentPopup();
+            return;
+        }
         PlayerStateManager.Instance.Unfreeze();
     }
 

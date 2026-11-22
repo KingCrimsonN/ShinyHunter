@@ -40,6 +40,10 @@ public class UIManager : MonoBehaviour
     [Tooltip("HUD roots visible ONLY in the hub.")]
     [SerializeField] private GameObject[] hubOnlyElements;
 
+    [Header("SFX")]
+    [Tooltip("The sound played when the tablet opens or closes.")]
+    [SerializeField] private AudioClip tabletSound;
+
     public bool extraOpened;
 
     public static UIManager Instance { get; private set; }
@@ -250,7 +254,11 @@ public class UIManager : MonoBehaviour
             creatureInventoryUI.SetActive(open);
 
         if (open)
+        {
             LockPlayer();
+            if (tabletSound != null)
+                SoundFXManager.instance.PlaySoundFX(tabletSound, transform, 1f);
+        }
         else
             UnlockPlayer();
     }

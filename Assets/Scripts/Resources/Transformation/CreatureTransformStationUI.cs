@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -39,12 +40,14 @@ public class CreatureTransformStationUI : MonoBehaviour
     [SerializeField] private Transform selectionGridParent;
     [Tooltip("Shared floating icon shown while dragging. UI Image under this popup's Canvas, Raycast Target OFF, inactive by default.")]
     [SerializeField] private Image dragIconTemplate;
+    [SerializeField] private Image blackoutBackground;
 
     [Header("Pop-ups")]
     [Tooltip("Shown when a critter is clicked: the ingredient it would give. The same CritterDexIngredientPopupUI script the dex uses (this scene's own instance).")]
     [SerializeField] private CritterDexIngredientPopupUI ingredientPopup;
     [Tooltip("Shown after a transformation: the ingredients you received, with a close button that only closes the pop-up.")]
     [SerializeField] private TransformResultPopupUI resultPopup;
+    [SerializeField] private AudioClip transformSound;
 
     /// <summary>The critters staged for transformation, in the order they were staged.</summary>
     private readonly List<CapturedCritter> staged = new List<CapturedCritter>();
@@ -254,6 +257,8 @@ public class CreatureTransformStationUI : MonoBehaviour
         var grants = new Dictionary<ResourceData, int>();
         var consumed = new List<CapturedCritter>();
 
+        if (transformSound != null) SoundFXManager.instance.PlaySoundFX(transformSound, this.transform, 1f);
+
         foreach (var critter in staged)
         {
             if (!IsHeld(critter)) continue; // left the inventory some other way while staged
@@ -274,7 +279,12 @@ public class CreatureTransformStationUI : MonoBehaviour
             ResourceInventoryManager.Instance.AddResource(grant.Key, grant.Value);
 
         if (ingredientPopup != null) ingredientPopup.Hide();
-        if (resultPopup != null) resultPopup.Show(grants); // only this pop-up closes with its button - the table stays open
+        if (resultPopup != null)
+        {
+            blackoutBackground.gameObject.SetActive(true);
+            blackoutBackground.DOFade(0.7f, 0.25f).From(0f).SetEase(Ease.OutQuad);
+            resultPopup.Show(grants); // only this pop-up closes with its button - the table stays open
+        }
 
         OnTransformCompleted?.Invoke();
     }

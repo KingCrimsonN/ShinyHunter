@@ -18,6 +18,7 @@ public class SceneTransitionManager : MonoBehaviour
     [Tooltip("How long to hold on full black after the new scene has loaded, before fading back in.")]
     [SerializeField] private float holdDuration = 0.25f;
     [SerializeField] private float fadeInDuration = 1f;
+    [SerializeField] private AudioClip transitionSound;
 
     private void Awake()
     {
@@ -105,7 +106,7 @@ public class SceneTransitionManager : MonoBehaviour
     {
         IsTransitioning = true;
         if (PlayerStateManager.Instance != null) PlayerStateManager.Instance.Freeze();
-
+        SoundFXManager.instance.PlaySoundFX(transitionSound, transform, 5f);
         yield return Fade(0f, 1f, fadeOutDuration);
 
         SceneManager.LoadScene(sceneName);

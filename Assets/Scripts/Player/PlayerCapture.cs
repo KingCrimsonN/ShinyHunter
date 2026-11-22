@@ -18,7 +18,7 @@ public class PlayerCapture : MonoBehaviour
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Animator handAnimator;
     [SerializeField] private AudioClip hitSound;
-    [SerializeField] private AudioClip swingSound;
+    [SerializeField] private AudioClip[] swingSounds;
 
     [Header("Stick Hit")]
     [Tooltip("How far the stick reaches, measured to the nearest point of the creature.")]
@@ -60,7 +60,7 @@ public class PlayerCapture : MonoBehaviour
         Camera cam = playerCamera != null ? playerCamera : Camera.main;
 
         if (handAnimator != null) handAnimator.SetTrigger("Hit");
-        SoundFXManager.instance.PlaySoundFX(swingSound, transform, 0.5f);
+        SoundFXManager.instance.PlayRandomSoundFX(swingSounds, transform, 0.5f);
 
         if (cam == null) return;
 

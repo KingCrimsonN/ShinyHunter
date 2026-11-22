@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 /// <summary>
 /// The pop-up shown when a transformation finishes: a grid of the ingredients
@@ -21,6 +22,7 @@ public class TransformResultPopupUI : MonoBehaviour
     [SerializeField] private Transform gridParent;
     [SerializeField] private TransformResultEntryUI entryPrefab;
     [SerializeField] private Button closeButton;
+    [SerializeField] private Image blackoutBackground;
 
     private GameObject Root => popupRoot != null ? popupRoot : gameObject;
 
@@ -53,11 +55,13 @@ public class TransformResultPopupUI : MonoBehaviour
         }
 
         Root.SetActive(true);
+        Root.transform.DOScale(Vector3.one, 0.25f).From(Vector3.zero).SetEase(Ease.OutBack);
     }
 
     /// <summary>Also wired to the close button automatically (Awake) - no inspector OnClick needed.</summary>
     public void Hide()
     {
-        Root.SetActive(false);
+        Root.transform.DOScale(Vector3.zero, 0.25f).From(Vector3.one).SetEase(Ease.InBack).OnComplete(() => Root.SetActive(false));
+        blackoutBackground.DOFade(0f, 0.25f).From(0.7f).SetEase(Ease.OutQuad).OnComplete(() => blackoutBackground.gameObject.SetActive(false));
     }
 }

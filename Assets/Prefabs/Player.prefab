@@ -190,7 +190,11 @@ MonoBehaviour:
   playerCamera: {fileID: 6508941327524661382}
   handAnimator: {fileID: 7078496411271982349}
   hitSound: {fileID: 8300000, guid: 06958b48c43be7541ad7a0e27b88f2ff, type: 3}
-  swingSound: {fileID: 8300000, guid: fbc478e090e2a554b97a2ccbc342a531, type: 3}
+  swingSounds:
+  - {fileID: 8300000, guid: c00529c626c133247931c93440fdf9f7, type: 3}
+  - {fileID: 8300000, guid: 0ff50eb4325218f4d9afd00129cfad36, type: 3}
+  - {fileID: 8300000, guid: 6913620dd5c17cd4b9b3839ac4a1a02e, type: 3}
+  - {fileID: 8300000, guid: 1fa16abed4104cc47a270c034bef5109, type: 3}
   hitRange: 2.5
   hitRadius: 0.5
   hitKey: 323

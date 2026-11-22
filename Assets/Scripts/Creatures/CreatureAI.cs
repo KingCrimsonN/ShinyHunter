@@ -522,7 +522,8 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
             if (dist <= EffectiveDetectionRadius && !isChasingOrAttacking)
             {
-                playerSpottedParticles?.Play();
+                if (playerSpottedParticles != null && !playerSpottedParticles.isPlaying)
+                    playerSpottedParticles?.Play();
                 EnterState(State.Aggressive);
             }
             else if (isChasingOrAttacking && dist >= data.fleeDistance)
@@ -538,7 +539,8 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
         if (dist <= EffectiveDetectionRadius && currentState != State.Flee)
         {
-            playerSpottedParticles?.Play();
+            if (playerSpottedParticles != null && !playerSpottedParticles.isPlaying)
+                playerSpottedParticles?.Play();
             EnterState(State.Flee);
         }
         else if (currentState == State.Flee && dist >= data.fleeDistance)

@@ -144,3 +144,15 @@ via index-entry click, side arrows, or bookmarks, all through one flip animation
 | `World/PlayerSpawnPoint.cs` | Marker on the spawn prefab - position + facing (forward) |
 
 `PlayerHealth` and `InventoryManager` start a new run only when entering an expedition scene from the hub, so the clock and captures carry across grid scenes.
+
+## Settings (player options)
+
+| File | Notes |
+|---|---|
+| `Settings/GameSettings.cs` | Static, no scene object. Loads from PlayerPrefs and applies before the first scene (`RuntimeInitializeOnLoadMethod`), audio again on the first frame. `Set*` apply immediately and stage to PlayerPrefs; `Save()` flushes (panel close, app quit). Read-only values for gameplay: `MouseSensitivity` (multiplier, read by `FirstPersonController.HandleLook`), `CurrentLanguage` + `LanguageChanged` (saved only, nothing translated yet). |
+| `Settings/GameSettingsConfig.cs` | `Assets/Resources/GameSettingsConfig.asset` (loaded by name). Mixer refs + exposed parameter names, volume defaults, sensitivity range/default. |
+| `Settings/SettingsMenuUI.cs` | The panel. Optional refs to each row's control (Option prefab: Dropdown/Toggle/Slider). Fills dropdown options and slider ranges in code, writes changes straight to GameSettings, `Open`/`Close` (Escape closes). Doesn't freeze the player. |
+
+Audio routing: Music.mixer and SoundFX.mixer output into Master.mixer's Master group; each mixer exposes its Master
+volume (`MasterVolume`, `MusicVolume`, `SFXVolume`). An AudioSource only obeys a slider if its Output is set to that
+mixer's group.

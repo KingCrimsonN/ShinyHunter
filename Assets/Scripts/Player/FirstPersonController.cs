@@ -20,6 +20,7 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float gravity = -20f;
 
     [Header("Look")]
+    [Tooltip("Base look speed. The player's Mouse Sensitivity setting (GameSettings) multiplies this.")]
     [SerializeField] private float mouseSensitivity = 2f;
     [SerializeField] private float minPitch = -80f;
     [SerializeField] private float maxPitch = 80f;
@@ -155,8 +156,10 @@ public class FirstPersonController : MonoBehaviour
 
     private void HandleLook()
     {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+        // mouseSensitivity is the designed base; the player's settings slider scales it (1 = as designed).
+        float sensitivity = mouseSensitivity * GameSettings.MouseSensitivity;
+        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
         transform.Rotate(Vector3.up * mouseX);
 

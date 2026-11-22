@@ -1804,3 +1804,29 @@ All dex art/colors live on the `CritterFrames` asset; the sprites were assigned 
   looks. World-space critter particles keep their original materials.
 - The reveal also shrinks away the needle and the needle marks on the doll. The needle's Animator is disabled during
   the reveal (re-enabled on close) so its clips can't write the scale back over the tween.
+
+## Settings menu
+
+- `GameSettings` is a static class rather than another persistent singleton: settings must work in every scene
+  (main menu has no GameManagers; pressing Play from a level must still apply them) and hold no scene refs. It
+  loads/applies itself via `RuntimeInitializeOnLoadMethod`; statics are reset in SubsystemRegistration for
+  disabled domain reload. Mixer references can't live on a static class, so they're in
+  `Resources/GameSettingsConfig.asset` (also the balance-style defaults, per convention 10).
+- Settings apply immediately (no Apply/Revert). PlayerPrefs.Save only on panel close / app quit, not per slider tick.
+- First run takes the window mode, resolution, quality and VSync the game already has, so it doesn't override
+  Player Settings with made-up defaults. Quality is applied before VSync because changing the quality level resets
+  `vSyncCount`.
+- Window modes: Fullscreen = exclusive, Borderless = FullScreenWindow, Windowed. Resolution list = distinct
+  sizes from `Screen.resolutions` (refresh rates merged), biggest first.
+- Mouse sensitivity is a multiplier on `FirstPersonController.mouseSensitivity` (1 = as designed), so the designed
+  base stays tunable separately.
+- Volumes: slider 0-1 -> dB via 20*log10 (0 -> -80 dB), set through exposed mixer parameters. AudioMixer.SetFloat
+  can be ignored before the first frame, so audio is applied again from a hidden one-shot object's Start.
+- Found during the reconciliation: the three mixers were independent (Music/SoundFX not routed into Master), had no
+  exposed parameters, and only the level scenes' music used Music.mixer - the SFX AudioSource prefab and the Hub
+  music had no output group. Routed Music/SoundFX into Master and exposed the volumes; the AudioSource outputs
+  are set in the Editor.
+- Language is saved and has a `LanguageChanged` event, but nothing is translated yet.
+- AudioSources created or configured in code get their Output from `GameSettings.SfxGroup` / `MusicGroup` (the
+  mixer's Master group, found via the config). `CreatureAudio` uses SfxGroup unless its `outputGroup` override is
+  set - it's added to critters at runtime by CreatureAI, so an Inspector-only field would be empty on most of them.

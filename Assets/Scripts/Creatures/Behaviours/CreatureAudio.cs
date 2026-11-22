@@ -18,6 +18,8 @@ public class CreatureAudio : CreatureBehaviour
     [SerializeField] private float maxDistance = 25f;
     [Tooltip("Random pitch range per sound, so repeats don't sound identical. (1,1) = off.")]
     [SerializeField] private Vector2 pitchRange = new Vector2(0.92f, 1.08f);
+    [Tooltip("Mixer group to play through. Empty = the SoundFX mixer (GameSettings.SfxGroup), so the SFX volume slider applies.")]
+    [SerializeField] private UnityEngine.Audio.AudioMixerGroup outputGroup;
 
     private AudioSource source;
     private float ambientTimer;
@@ -31,6 +33,7 @@ public class CreatureAudio : CreatureBehaviour
         source.rolloffMode = AudioRolloffMode.Linear;
         source.minDistance = minDistance;
         source.maxDistance = maxDistance;
+        source.outputAudioMixerGroup = outputGroup != null ? outputGroup : GameSettings.SfxGroup;
 
         // Random first delay, so a group spawned together doesn't call in unison.
         ScheduleAmbient(firstTime: true);

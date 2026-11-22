@@ -27,6 +27,7 @@ decision log).
 - `Inventory/`, `Tools/`, `Resources/` — the three separate inventories
 - `Spawning/` — weighted creature spawners
 - `World/` — world-grid travel: `SceneExit`, `ScenePlayerSpawns`, `PlayerSpawnPoint`
+- `Settings/` — player settings: static `GameSettings` (PlayerPrefs), `GameSettingsConfig` (Resources), `SettingsMenuUI` panel
 - `CaptureMinigame/`, `CreatureTransform/`, `Dialogue/`, `Shop/`, `Meals/`,
   `RunSummary/`, `CritterDex/`, `UI/` — feature systems, each roughly
   self-contained

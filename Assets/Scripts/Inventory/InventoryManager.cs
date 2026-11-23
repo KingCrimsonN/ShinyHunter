@@ -48,7 +48,18 @@ public class InventoryManager : MonoBehaviour
     /// <summary>Species that became "ever captured" for the first time during the CURRENT run - cleared by ResetRunTracking().</summary>
     private readonly HashSet<CreatureData> newSpeciesThisRun = new HashSet<CreatureData>();
 
+    /// <summary>
+    /// (species, rarity) caught for the first time and not yet looked at in the
+    /// CritterDex - drives the "new" badges (dex grid entry, rarity button,
+    /// tablet Notes tab). Cleared per entry by MarkSeenInDex when its page shows that rarity.
+    /// </summary>
+    private readonly HashSet<(CreatureData species, CreatureData.Rarity rarity)> newInDex =
+        new HashSet<(CreatureData, CreatureData.Rarity)>();
+
     public event Action OnInventoryChanged;
+
+    /// <summary>Something became new, or was seen, in the CritterDex. Static so Overlay UI can subscribe before this manager wakes.</summary>
+    public static event Action OnDexNewChanged;
 
     /// <summary>What CapturePopupUI shows for one capture.</summary>
     public struct CaptureInfo
@@ -143,8 +154,10 @@ public class InventoryManager : MonoBehaviour
             newSpeciesThisRun.Add(species);
         }
         bool firstOfRarity = everCapturedRarities.Add(key); // Add = false if already there
+        if (firstOfRarity) newInDex.Add(key);
 
         OnInventoryChanged?.Invoke();
+        if (firstOfRarity) OnDexNewChanged?.Invoke();
         OnCritterCaptured?.Invoke(new CaptureInfo
         {
             species = species,
@@ -152,6 +165,28 @@ public class InventoryManager : MonoBehaviour
             doubleYield = doubleYield,
             firstOfRarity = firstOfRarity,
         });
+    }
+
+    // ---------------- CritterDex "new" badges ----------------
+
+    /// <summary>This species was caught at this rarity for the first time and hasn't been looked at in the dex yet.</summary>
+    public bool IsNewInDex(CreatureData species, CreatureData.Rarity rarity) => newInDex.Contains((species, rarity));
+
+    /// <summary>Any rarity of this species is new in the dex.</summary>
+    public bool IsNewInDex(CreatureData species)
+    {
+        foreach (var entry in newInDex)
+            if (entry.species == species) return true;
+        return false;
+    }
+
+    /// <summary>Anything at all is new in the dex (the tablet's Notes tab badge).</summary>
+    public bool HasAnyNewInDex => newInDex.Count > 0;
+
+    /// <summary>The dex showed this species at this rarity - its "new" badge goes away.</summary>
+    public void MarkSeenInDex(CreatureData species, CreatureData.Rarity rarity)
+    {
+        if (newInDex.Remove((species, rarity))) OnDexNewChanged?.Invoke();
     }
 
     /// <summary>Call when a new expedition/run begins, so this-run stats (grid, "new species", etc.) start fresh.</summary>

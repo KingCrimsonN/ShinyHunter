@@ -37,6 +37,10 @@ public class ExpeditionTimeIndicator : MonoBehaviour
     [Tooltip("Seconds for the inner clock to complete one full 360-degree rotation.")]
     [SerializeField] private float tickClockPeriod = 60f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource tickAudioSource;
+    private bool timeRunningOut;
+
     private float tickTimer;
 
     private void OnEnable()

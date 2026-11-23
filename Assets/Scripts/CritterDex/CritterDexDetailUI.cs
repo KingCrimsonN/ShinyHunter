@@ -86,7 +86,7 @@ public class CritterDexDetailUI : MonoBehaviour
     public void Show(CreatureData species)
     {
         currentSpecies = species;
-        selectedRarity = CreatureData.Rarity.Normal; // every freshly-opened page starts on Normal
+        selectedRarity = FirstNewRarity(species); // opens on what's new (rarest first), otherwise Normal
         CloseIngredientPopup();
         CloseFamilyPopup();
 
@@ -110,8 +110,18 @@ public class CritterDexDetailUI : MonoBehaviour
         ShowScent(favoriteScentText, favoriteScentIcon, species.favoriteScent, critterFrames != null ? critterFrames.favoriteScentIcons : null, defaultFavoriteIcon);
         ShowScent(hatedScentText, hatedScentIcon, species.hatedScent, critterFrames != null ? critterFrames.hatedScentIcons : null, defaultHatedIcon);
 
+        ShowSelectedRarity(); // before the badges: showing a rarity clears its "new" badge
         RefreshRarityBadges();
-        ShowSelectedRarity();
+    }
+
+    /// <summary>The rarest rarity of this species that's still new in the dex, or Normal if none is.</summary>
+    private static CreatureData.Rarity FirstNewRarity(CreatureData species)
+    {
+        var inventory = InventoryManager.Instance;
+        if (species != null && inventory != null)
+            for (int i = (int)CreatureData.Rarity.Legendary; i >= 0; i--)
+                if (inventory.IsNewInDex(species, (CreatureData.Rarity)i)) return (CreatureData.Rarity)i;
+        return CreatureData.Rarity.Normal;
     }
 
     /// <summary>Called by the book when it leaves for the index page, so nothing stale (or an open pop-up) is left on the hidden page.</summary>
@@ -138,6 +148,10 @@ public class CritterDexDetailUI : MonoBehaviour
 
         bool rarityOwned = CritterDexIcons.IsRarityDiscovered(currentSpecies, selectedRarity);
         CritterDexIcons.Apply(portraitImage, currentSpecies, selectedRarity, portraitStyle);
+
+        // Looked at now - no longer "new".
+        if (rarityOwned && InventoryManager.Instance != null)
+            InventoryManager.Instance.MarkSeenInDex(currentSpecies, selectedRarity);
 
         currentResource = currentSpecies.GetResource(selectedRarity);
         if (resourceIcon != null)

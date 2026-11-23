@@ -77,6 +77,7 @@ via index-entry click, side arrows, or bookmarks, all through one flip animation
 | `CritterDexIngredientPopupUI.cs` | Name / description / 5 scent values of the shown ingredient, with a close button |
 | `CritterDexBookmarksUI.cs` | Index bookmark + one per family, wired in code; marks the active one, disables families with no critters |
 | `CritterDexIcons.cs` | `CritterDexIconStyle` + the shared 3-state icon rule (caught / locked silhouette `icons[4]` / undiscovered) used by grid entry, rarity buttons and portrait |
+| `CritterDexNewIndicator.cs` | Notification badge outside the dex (tablet Notes tab): shown while `InventoryManager.HasAnyNewInDex`. Grid entries / rarity buttons have their own optional `newBadge`; a critter page opens on its rarest new rarity, and showing a rarity calls `MarkSeenInDex` |
 
 ## Dialogue
 

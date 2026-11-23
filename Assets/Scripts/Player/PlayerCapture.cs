@@ -31,7 +31,22 @@ public class PlayerCapture : MonoBehaviour
     [Tooltip("Seconds between stick swings - stops it being spammed. The swing animation/sound are gated too, not just the damage.")]
     [SerializeField] private float hitCooldown = 0.5f;
 
+    [Header("Target Marker (lock-on)")]
+    [Tooltip("Show a small marker on the critter the stick would hit right now - in reach and on the crosshair.")]
+    [SerializeField] private bool showTargetMarker = true;
+    [Tooltip("The marker sprite. Empty = a small soft dot.")]
+    [SerializeField] private Sprite targetMarkerSprite;
+    [SerializeField] private Color targetMarkerColor = new Color(1f, 1f, 1f, 0.85f);
+    [Tooltip("Marker height as a fraction of the screen height - stays this size at any distance.")]
+    [SerializeField, Range(0.005f, 0.2f)] private float targetMarkerScreenSize = 0.025f;
+    [Tooltip("Seconds it takes to shrink from Pop Scale onto the critter when a new critter comes into reach.")]
+    [SerializeField, Min(0f)] private float targetMarkerPopDuration = 0.12f;
+    [SerializeField, Min(1f)] private float targetMarkerPopScale = 1.6f;
+    [Tooltip("Seconds to fade in/out.")]
+    [SerializeField, Min(0f)] private float targetMarkerFade = 0.1f;
+
     private float nextHitTime;
+    private TargetLockMarker marker;
 
     public bool isActive;
 
@@ -45,11 +60,38 @@ public class PlayerCapture : MonoBehaviour
     {
         if (!isActive)
         {
+            if (marker != null) marker.Clear();
             return;
         }
 
+        UpdateTargetMarker();
+
         if (Input.GetKeyDown(hitKey))
             TrySwingStick();
+    }
+
+    private void OnDisable()
+    {
+        if (marker != null) marker.Clear();
+    }
+
+    private void OnDestroy()
+    {
+        if (marker != null) Destroy(marker.gameObject);
+    }
+
+    /// <summary>Same targeting as the swing itself, so the marker is exactly "a click now hits this".</summary>
+    private void UpdateTargetMarker()
+    {
+        if (!showTargetMarker) return;
+
+        if (marker == null)
+            marker = TargetLockMarker.Create(targetMarkerSprite, targetMarkerColor, targetMarkerScreenSize,
+                targetMarkerPopDuration, targetMarkerPopScale, targetMarkerFade);
+
+        Camera cam = playerCamera != null ? playerCamera : Camera.main;
+        if (cam != null && CreatureTargeting.TryFind(cam.transform, hitRange, hitRadius, out CreatureTarget target))
+            marker.SetTarget(target);
     }
 
     private void TrySwingStick()

@@ -35,12 +35,14 @@ public class CritterDexGridUI : MonoBehaviour
     private void OnEnable()
     {
         if (InventoryManager.Instance != null) InventoryManager.Instance.OnInventoryChanged += Refresh;
+        InventoryManager.OnDexNewChanged += Refresh; // "new" badges
         Refresh();
     }
 
     private void OnDisable()
     {
         if (InventoryManager.Instance != null) InventoryManager.Instance.OnInventoryChanged -= Refresh;
+        InventoryManager.OnDexNewChanged -= Refresh;
     }
 
     private void Refresh()

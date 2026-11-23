@@ -1830,3 +1830,25 @@ All dex art/colors live on the `CritterFrames` asset; the sprites were assigned 
 - AudioSources created or configured in code get their Output from `GameSettings.SfxGroup` / `MusicGroup` (the
   mixer's Master group, found via the config). `CreatureAudio` uses SfxGroup unless its `outputGroup` override is
   set - it's added to critters at runtime by CreatureAI, so an Inspector-only field would be empty on most of them.
+
+## Target marker, ballistic doll throw, dex "new" badges
+
+- Target marker moved from the doll to the STICK: `PlayerCapture` owns a `TargetLockMarker` and feeds it the exact
+  target its swing would hit (same `CreatureTargeting.TryFind(hitRange, hitRadius)`), every frame while active. So
+  it means "a click now hits this", whatever tool is held. A small camera-facing sprite (soft dot if none set),
+  constant screen size, pops in / fades out; no red/yellow/green states. The old LineRenderer ring
+  (`CaptureTargetIndicator`) is deleted; its `CaptureTargetState` enum now lives in VoodooDoll.cs (only the doll's
+  own Classify uses it).
+- Doll throw is ballistic (`ThrownDoll`, added at runtime to the projectile prefab - Rigidbody + sphere collider
+  added if missing, player colliders ignored). At a critter: the arc is COMPUTED (p0 + v0 t + g t^2/2, v0 solved
+  to land on the critter; T from the arc height, T = sqrt(8h/g)) and bent toward the critter if it drifts - so
+  colliders on the way can't ruin a good throw. On arrival it asks the doll whether it caught (same rule as
+  before: alive + stunned -> BeginCapture/consume). If not - or with no target at all - it becomes a real physics
+  body (gravity, bounces, rolls), lies there for `missedDollLifetime`, then shrinks away. A doll whose thrower was
+  destroyed mid-flight just counts as a miss.
+- The doll visual is a camera-facing sprite, so the "tumble" is a roll around the view axis; ThrownDoll disables
+  the prefab's Billboard and does the facing itself. Rigidbody rotation is frozen (rotation is purely visual).
+- Dex "new": `InventoryManager.newInDex` = (species, rarity) caught for the first time and not looked at yet.
+  Showing that rarity on its dex page clears it (`MarkSeenInDex`); a page opens on its rarest new rarity so the new
+  thing is what you see. Static `OnDexNewChanged` for the Overlay (Notes tab `CritterDexNewIndicator`) and the grid.
+  Not saved anywhere yet - like the rest of InventoryManager, it lasts for the play session.

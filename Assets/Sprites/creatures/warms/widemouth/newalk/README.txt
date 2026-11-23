@@ -1,0 +1,6 @@
+For the new ground running Widemouth animation, he will be doing "Sonic the Hedgegog" like jumps until he reaches a tree. Those jumps can be one after te other going kinda fast, or with litle stops, or both. Animation references for both cases (full jumps in case of stopping and fast jumps in case of doing them consecutively) are in this folder. 
+Anyway, you should follow this sequence for the Full jump animation: 1-2-3-4-5-4-2-1. And this sequence for the fast jump animation: 2-3-4-5-4-2. 
+
+The animation movement has to remind a litle bit of the bird run, where the critter goes from side to side. Not as fast as the bird animation, but the similar vibes.
+
+Lastly, this is the new "walking" animation, the climbing one stays the same. In fact, would be cool for the widemouth to be making jumps until he reaches the tree, no matter at which height he reaches it, and start climbing (instead of always ending at the bottom of the tree and start climbing from there i don't know if it made sense xd)

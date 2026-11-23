@@ -17,6 +17,8 @@ public class CritterDexRarityBadgeUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text label;
     [SerializeField] private GameObject selectedHighlight;
+    [Tooltip("Optional small 'new' icon - shown while this rarity is caught but not yet looked at in the dex.")]
+    [SerializeField] private GameObject newBadge;
     [SerializeField] private CritterDexIconStyle iconStyle = new CritterDexIconStyle();
 
     private CreatureData.Rarity rarity;
@@ -33,6 +35,8 @@ public class CritterDexRarityBadgeUI : MonoBehaviour, IPointerClickHandler
 
         if (label != null) label.text = rarity.ToString();
         if (selectedHighlight != null) selectedHighlight.SetActive(selected && clickable);
+        if (newBadge != null)
+            newBadge.SetActive(species != null && InventoryManager.Instance != null && InventoryManager.Instance.IsNewInDex(species, rarity));
     }
 
     public void OnPointerClick(PointerEventData eventData)

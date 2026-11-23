@@ -157,6 +157,10 @@ MonoBehaviour:
   poisonRate: 1
   baseMaxHealth: 300
   currentHealth: 100
+  damageSounds:
+  - {fileID: 8300000, guid: ffa628b8745ee264ebf5a7a3b16aaccf, type: 3}
+  - {fileID: 8300000, guid: 9975846ed2d67054db39887019a6aecd, type: 3}
+  - {fileID: 8300000, guid: 5596687c39dbab84f8fb81ddb7abfbc5, type: 3}
 --- !u!114 &1211967219885297843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -171,6 +175,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StewInventoryManager
   baseCapacity: 3
   sharedCapacity: 0
+  maxSlots: 6
 --- !u!114 &3262025588632473575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,3 +205,4 @@ MonoBehaviour:
   fadeOutDuration: 1
   holdDuration: 0.25
   fadeInDuration: 1
+  transitionSound: {fileID: 8300000, guid: 034798504fc724945ab273b6b2a5f0ad, type: 3}

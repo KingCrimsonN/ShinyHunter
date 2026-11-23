@@ -30,6 +30,7 @@ public class PlayerHealth : MonoBehaviour
     [Tooltip("Permanent base value - change this via AddPermanentMaxHealth for upgrades, not directly.")]
     [SerializeField] private float baseMaxHealth = 300f;
     [SerializeField] public float currentHealth;
+    [SerializeField] private AudioClip[] damageSounds;
 
     /// <summary>Additive bonus/penalty for the CURRENT run only - cleared when returning to the hub. "For one run" potions use this, and (as of the capture-time rework) so does Chrono Power's per-capture bonus - see ExpeditionMealManager.ApplyChronoBonusIfMatching.</summary>
     private float temporaryMaxHealthModifier;
@@ -115,6 +116,8 @@ public class PlayerHealth : MonoBehaviour
 
         currentHealth -= damage;
         OnHealthChanged?.Invoke(currentHealth / MaxHealth);
+
+        SoundFXManager.instance?.PlayRandomSoundFX(damageSounds, transform, 1f);
 
         if (currentHealth <= 0f)
             Die();

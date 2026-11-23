@@ -43,9 +43,15 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float handBobHorizontalAmount = 0.015f;
     [SerializeField] private float handBobSmoothSpeed = 10f;
 
+    [Header("Knockback")]
+    [Tooltip("How quickly a knockback shove dies down (per second) - higher = shorter, snappier push.")]
+    [SerializeField, Min(0.1f)] private float knockbackDamping = 6f;
+
     private CharacterController controller;
     private float pitch;
     private Vector3 velocity;
+    /// <summary>Horizontal shove from a hit (ApplyKnockback), added on top of walking and decaying to zero.</summary>
+    private Vector3 knockbackVelocity;
 
     private Vector3 cameraBasePosition;
     private Vector3 handsBasePosition;
@@ -186,8 +192,27 @@ public class FirstPersonController : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
 
-        Vector3 finalMove = move * speed + Vector3.up * velocity.y;
+        Vector3 finalMove = move * speed + Vector3.up * velocity.y + knockbackVelocity;
         controller.Move(finalMove * Time.deltaTime);
+
+        knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, 1f - Mathf.Exp(-knockbackDamping * Time.deltaTime));
+    }
+
+    /// <summary>
+    /// Shoves the player (a critter's attack landing - CreatureAI.KnockBackPlayer).
+    /// The horizontal part slides them back and dies down over a moment; the
+    /// upward part is a small hop, handled by the normal gravity.
+    /// </summary>
+    public void ApplyKnockback(Vector3 impulse)
+    {
+        knockbackVelocity += new Vector3(impulse.x, 0f, impulse.z);
+        if (impulse.y > 0f) velocity.y = Mathf.Max(velocity.y, impulse.y);
+    }
+
+    private void OnDisable()
+    {
+        // Frozen (popup, dialogue...): don't save the shove up for when they're released.
+        knockbackVelocity = Vector3.zero;
     }
 
     private void HandleBob()

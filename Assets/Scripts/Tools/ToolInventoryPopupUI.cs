@@ -134,6 +134,16 @@ public class ToolInventoryPopupUI : MonoBehaviour
 
     private void TogglePopup()
     {
+        // The panel is a tab of the tablet's inventory: let UIManager switch tabs (so it never stacks
+        // over Creatures/Resources), and only while the inventory is actually open.
+        var ui = UIManager.Instance;
+        if (ui != null)
+        {
+            if (ui.IsInventoryOpen)
+                ui.ShowInventoryTab(popupRoot.activeSelf ? UIManager.InventoryTab.Creatures : UIManager.InventoryTab.Tools);
+            return;
+        }
+
         bool opening = !popupRoot.activeSelf;
         popupRoot.SetActive(opening);
         if (opening) Refresh();

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// The CritterDex as a BOOK. Page 0 is the index (the grid of every critter);
@@ -59,6 +60,20 @@ public class CritterDexUI : MonoBehaviour
     [Tooltip("Off (default): opening the dex always starts on the index. On: it reopens on whichever page was open last.")]
     [SerializeField] private bool reopenOnLastPage = false;
 
+    [Header("Input (Input System)")]
+    [Tooltip("Optional: an action from an Input Actions asset for 'previous page'. Empty = built-in bindings: Left Arrow, A, gamepad D-pad left, left shoulder.")]
+    [SerializeField] private InputActionReference previousPageAction;
+    [Tooltip("Optional: an action for 'next page'. Empty = built-in bindings: Right Arrow, D, gamepad D-pad right, right shoulder.")]
+    [SerializeField] private InputActionReference nextPageAction;
+    [Tooltip("Optional: an action for 'back to the index'. Empty = built-in bindings: Up Arrow, W, Backspace, gamepad D-pad up.")]
+    [SerializeField] private InputActionReference indexPageAction;
+
+    private InputAction previousInput;
+    private InputAction nextInput;
+    private InputAction indexInput;
+    /// <summary>The built-in fallback actions - ours to enable/disable/dispose. Asset actions are only borrowed.</summary>
+    private readonly HashSet<InputAction> ownedInputActions = new HashSet<InputAction>();
+
     private List<CreatureData> ordered;
     private int currentPage;          // the page actually on screen
     private int targetPage;           // where we're heading (differs from currentPage only mid-flip)
@@ -85,13 +100,66 @@ public class CritterDexUI : MonoBehaviour
     private void Awake()
     {
         if (pageContainer != null) containerBaseScale = pageContainer.localScale;
+        SetupInput();
     }
+
+    private void OnDestroy()
+    {
+        foreach (var action in ownedInputActions) action.Dispose();
+        ownedInputActions.Clear();
+    }
+
+    /// <summary>
+    /// Page turning from keyboard/gamepad, through the Input System so controller
+    /// support only needs bindings, not code. Each action is either the assigned
+    /// asset action or a built-in one with keyboard + gamepad bindings.
+    /// </summary>
+    private void SetupInput()
+    {
+        previousInput = Resolve(previousPageAction, "DexPreviousPage", "<Keyboard>/leftArrow", "<Keyboard>/a", "<Gamepad>/dpad/left", "<Gamepad>/leftShoulder");
+        nextInput = Resolve(nextPageAction, "DexNextPage", "<Keyboard>/rightArrow", "<Keyboard>/d", "<Gamepad>/dpad/right", "<Gamepad>/rightShoulder");
+        indexInput = Resolve(indexPageAction, "DexIndexPage", "<Keyboard>/upArrow", "<Keyboard>/w", "<Keyboard>/backspace", "<Gamepad>/dpad/up");
+    }
+
+    private InputAction Resolve(InputActionReference reference, string name, params string[] fallbackBindings)
+    {
+        if (reference != null && reference.action != null) return reference.action;
+
+        var action = new InputAction(name, InputActionType.Button);
+        foreach (var binding in fallbackBindings) action.AddBinding(binding);
+        ownedInputActions.Add(action);
+        return action;
+    }
+
+    private void SubscribeInput(bool subscribe)
+    {
+        foreach (var (action, handler) in new (InputAction, Action<InputAction.CallbackContext>)[]
+                 { (previousInput, OnPreviousInput), (nextInput, OnNextInput), (indexInput, OnIndexInput) })
+        {
+            if (action == null) continue;
+            if (subscribe)
+            {
+                action.performed += handler;
+                action.Enable(); // an asset action may be shared - enabling it again is harmless
+            }
+            else
+            {
+                action.performed -= handler;
+                if (ownedInputActions.Contains(action)) action.Disable(); // never disable a borrowed asset action others may use
+            }
+        }
+    }
+
+    private void OnPreviousInput(InputAction.CallbackContext _) => PreviousPage();
+    private void OnNextInput(InputAction.CallbackContext _) => NextPage();
+    private void OnIndexInput(InputAction.CallbackContext _) => GoToIndex();
 
     private void OnEnable()
     {
         Rebuild();
 
         if (gridUI != null) gridUI.OnSpeciesClicked += HandleSpeciesClicked;
+        SubscribeInput(true);
 
         int start = reopenOnLastPage ? Mathf.Clamp(currentPage, 0, PageCount - 1) : 0;
         targetPage = start;
@@ -101,6 +169,7 @@ public class CritterDexUI : MonoBehaviour
     private void OnDisable()
     {
         if (gridUI != null) gridUI.OnSpeciesClicked -= HandleSpeciesClicked;
+        SubscribeInput(false);
 
         // The tablet closing mid-flip must not leave the pages squashed flat.
         if (flipSequence != null) flipSequence.Kill();

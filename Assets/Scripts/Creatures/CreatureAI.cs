@@ -102,6 +102,11 @@ public class CreatureAI : MonoBehaviour, ICapturable
 
     /// <summary>Counts down after an aggressive creature is hit without being stunned - it holds still until it reaches 0. See TickAggressive.</summary>
     private float staggerTimer;
+
+    // Knockback after a non-stunning hit while aggressive - see StartKnockback / TickKnockback.
+    private float knockbackElapsed = -1f; // < 0 = none in progress
+    private float knockbackTravelled;
+    private Vector3 knockbackDirection;
     /// <summary>True while the stagger's "frozen + hit animation" visuals are active, so they're undone exactly once when it ends.</summary>
     private bool staggered;
 
@@ -345,6 +350,8 @@ public class CreatureAI : MonoBehaviour, ICapturable
             case State.Aggressive: TickAggressive(); break;
             case State.Attacking: TickAttacking(); break;
         }
+
+        TickKnockback();
 
         if (groundMover != null && hasGroundTarget && AgentReady)
             groundMover.MoveTowards(groundTarget, groundSpeed);
@@ -684,6 +691,73 @@ public class CreatureAI : MonoBehaviour, ICapturable
         attackDamageTimer = -1f;
         if (PlayerHealth.Instance != null) PlayerHealth.Instance.TakeDamage(data.attackDamage);
         if (UIManager.Instance != null) UIManager.Instance.ShowHurtScreen();
+        KnockBackPlayer();
+    }
+
+    private FirstPersonController playerController;
+
+    /// <summary>
+    /// Shoves the player away from this critter (data.attackKnockbackSpeed /
+    /// Upward) - call wherever one of its attacks lands (LandAttack, Climber's pounce).
+    /// </summary>
+    public void KnockBackPlayer()
+    {
+        if (player == null || data.attackKnockbackSpeed <= 0f && data.attackKnockbackUpward <= 0f) return;
+
+        if (playerController == null) playerController = player.GetComponentInParent<FirstPersonController>();
+        if (playerController == null) return;
+
+        Vector3 away = player.position - transform.position;
+        away.y = 0f;
+        away = away.sqrMagnitude > 0.0001f ? away.normalized : -player.forward; // right on top of it: shove backwards
+        playerController.ApplyKnockback(away * data.attackKnockbackSpeed + Vector3.up * data.attackKnockbackUpward);
+    }
+
+    /// <summary>Begins the push away from the player after a non-stunning hit (aggressive only).</summary>
+    private void StartKnockback()
+    {
+        if (data.hitKnockbackDistance <= 0f || player == null) return;
+
+        knockbackDirection = GetFleeDirection();
+        knockbackElapsed = 0f;
+        knockbackTravelled = 0f;
+    }
+
+    /// <summary>
+    /// Moves the critter along the knockback, eased out (fast, then settling).
+    /// Ground: NavMeshAgent.Move, which keeps it on the NavMesh and stops at its
+    /// edges. Flying: direct move, stopping short of anything solid - like BlinkAway.
+    /// </summary>
+    private void TickKnockback()
+    {
+        if (knockbackElapsed < 0f) return;
+        if (currentState == State.Stunned || currentState == State.Captured)
+        {
+            knockbackElapsed = -1f;
+            return;
+        }
+
+        knockbackElapsed += Time.deltaTime;
+        float t = Mathf.Clamp01(knockbackElapsed / data.hitKnockbackDuration);
+        float eased = 1f - (1f - t) * (1f - t);
+        float step = data.hitKnockbackDistance * eased - knockbackTravelled;
+        knockbackTravelled += step;
+        Vector3 delta = knockbackDirection * step;
+
+        if (data.movementMode == CreatureMovementMode.Flying)
+        {
+            Vector3 origin = bodyCollider != null ? bodyCollider.bounds.center : transform.position;
+            bool blocked = false;
+            foreach (var hit in Physics.RaycastAll(origin, knockbackDirection, step + 0.3f, ~0, QueryTriggerInteraction.Ignore))
+                if (hit.collider != null && !hit.collider.transform.IsChildOf(transform)) { blocked = true; break; }
+            if (!blocked) transform.position += delta;
+        }
+        else if (AgentReady)
+        {
+            agent.Move(delta);
+        }
+
+        if (t >= 1f) knockbackElapsed = -1f;
     }
 
     /// <summary>Horizontal direction AWAY from the player - shared by TickFlee (the ongoing flee target) and BlinkAway (the dash's instant hop), so both agree on "which way is away".</summary>
@@ -925,6 +999,7 @@ public class CreatureAI : MonoBehaviour, ICapturable
             if (currentState != State.Aggressive && currentState != State.Attacking && aggroBlockedTimer <= 0f)
                 EnterState(State.Aggressive);
             staggerTimer = data.hitStaggerDuration; // after EnterState - leaving the chase would clear it
+            StartKnockback();
             return;
         }
 

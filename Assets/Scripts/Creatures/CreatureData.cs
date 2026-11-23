@@ -99,6 +99,14 @@ public class CreatureData : ScriptableObject
     [Min(0f)] public float attackDamageDelay = 0f;
     [Tooltip("Seconds an aggressive creature freezes in place (no chasing, no attacking) after being hit without being stunned, before it resumes the chase. 0 = unaffected by hits.")]
     public float hitStaggerDuration = 0.6f;
+    [Tooltip("When aggressive and hit WITHOUT being stunned, it's pushed this far away from the player (metres) - out of stick reach, so it can't just be hit again and again. The stunning hit doesn't push. 0 = no knockback.")]
+    [Min(0f)] public float hitKnockbackDistance = 1.5f;
+    [Tooltip("Seconds the knockback push takes (eases out).")]
+    [Min(0.01f)] public float hitKnockbackDuration = 0.2f;
+    [Tooltip("When its attack lands, the player is shoved away at this speed (m/s), slowing down quickly. 0 = no shove.")]
+    [Min(0f)] public float attackKnockbackSpeed = 7f;
+    [Tooltip("Upward part of that shove (m/s) - a little lift makes it read as a hit.")]
+    [Min(0f)] public float attackKnockbackUpward = 2f;
     [Tooltip("Seconds an aggressive creature stays calm after a stun ends - it drops the chase and won't re-notice the player until this runs out. Without it, it would re-aggro the instant it recovers, since the player is standing right there.")]
     public float aggroLossDuration = 5f;
 
@@ -115,6 +123,8 @@ public class CreatureData : ScriptableObject
     public Vector2 ambientSoundInterval = new Vector2(6f, 15f);
     [Tooltip("Played when it is hit - also when a reckless critter runs into something.")]
     public AudioClip[] hitSounds;
+    [Tooltip("Played when it is stunned.")]
+    public AudioClip[] stunSounds;
     [Range(0f, 1f)] public float soundVolume = 1f;
 
     [Header("Resources")]

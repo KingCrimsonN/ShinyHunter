@@ -54,6 +54,7 @@ public class CreatureAudio : CreatureBehaviour
     public override void OnHit(bool stunned)
     {
         if (AI.Data != null) PlayRandom(AI.Data.hitSounds);
+        if (stunned && AI.Data != null) PlayRandom(AI.Data.stunSounds);
     }
 
     private void ScheduleAmbient(bool firstTime)

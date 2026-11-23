@@ -377,6 +377,7 @@ public class Climber : CreatureBehaviour
             {
                 if (PlayerHealth.Instance != null) PlayerHealth.Instance.TakeDamage(AI.Data.attackDamage);
                 if (UIManager.Instance != null) UIManager.Instance.ShowHurtScreen();
+                AI.KnockBackPlayer();
             }
         }
 

@@ -129,12 +129,18 @@ MonoBehaviour:
   attackWindupDuration: 0.5
   attackDamageDelay: 0
   hitStaggerDuration: 0.6
+  hitKnockbackDistance: 1.5
+  hitKnockbackDuration: 0.2
+  attackKnockbackSpeed: 7
+  attackKnockbackUpward: 2
   aggroLossDuration: 5
   baseCaptureChance: 1
   stunDuration: 3
   ambientSounds: []
   ambientSoundInterval: {x: 6, y: 15}
   hitSounds: []
+  stunSounds:
+  - {fileID: 8300000, guid: 24b8a8296bb1ef744be043bc95fe15d4, type: 3}
   soundVolume: 0.67
   resources:
   - {fileID: 11400000, guid: cba458c92e27a1a48a13dae58e01805c, type: 2}

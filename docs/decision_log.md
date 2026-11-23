@@ -1864,3 +1864,25 @@ All dex art/colors live on the `CritterFrames` asset; the sprites were assigned 
   of SoundFXManager: that spawns a GameObject per sound, too heavy at 20+ blips a second. Each blip Stops the
   previous one - overlapping blips at fast text speeds turn to mush.
 - Optional `sentencePause`/`commaPause` (default 0) give the typing a speaking rhythm.
+
+## Playtest tweaks: refusal voice, dex keys, inventory tabs, knockback
+
+- `AuntieRefusalData` is its own DialogueData, so it had no voice (voice is per DialogueData). Copied Auntie's voice
+  into it. Any other DialogueData for the same speaker needs the same voice.
+- Dex page turning via the Input System (first use of it in the project; Active Input Handling is "Both"):
+  `CritterDexUI` has optional `InputActionReference`s for previous/next/index; empty = built-in actions with keyboard
+  + gamepad bindings (arrows/A/D, W/Up/Backspace for the index, D-pad, shoulders). Asset actions are borrowed (never
+  disabled/disposed); built-in ones are owned. Enabled only while the dex page is open (OnEnable/OnDisable).
+- Inventory tabs stacked because nothing owned "which tab is visible": opening the tablet only turned Creatures on,
+  leaving a previously opened Tools/Resources panel on, and T toggled the Tools panel by itself (also re-locking the
+  cursor inside the tablet). Now `UIManager.ShowInventoryTab` shows exactly one; opening the tablet / the inventory
+  page always lands on Creatures; T asks UIManager to switch tabs and does nothing unless the inventory is open.
+  The existing tab buttons' OnClick wiring still works; `ShowCreaturesTab/ShowToolsTab/ShowResourcesTab` are single-call
+  replacements.
+- Aggressive critter hit (not stunned) -> pushed `hitKnockbackDistance` (1.5 m) away over `hitKnockbackDuration`,
+  eased out, on top of the existing stagger. Ground: NavMeshAgent.Move (stays on the NavMesh); flying: direct move
+  that stops at obstacles. With attackRange 1.5 + 1.5 m it ends past the stick's 2.5 m reach, so hits can't be
+  chained. The stunning hit doesn't push (it has to stay capturable). Skipped while a behaviour is in control.
+- Critter attack lands -> `CreatureAI.KnockBackPlayer` -> `FirstPersonController.ApplyKnockback`: horizontal shove
+  added to movement and decayed exponentially (`knockbackDamping`), plus a small hop through normal gravity. Cleared
+  when the controller is disabled (frozen), so it isn't saved up. Also on the Climber's pounce.

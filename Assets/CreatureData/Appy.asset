@@ -36,6 +36,7 @@ MonoBehaviour:
       - {fileID: 1041458556, guid: ff451c55f36ac044eb00ef966b57eb7e, type: 3}
       frameRate: 8
       loop: 1
+      mirrorEachLoop: 0
     - state: 1
       frames:
       - {fileID: 851819751, guid: 0cd29d0fef931d548967424cc4ce1d70, type: 3}
@@ -44,6 +45,7 @@ MonoBehaviour:
       - {fileID: -694250193, guid: 0cd29d0fef931d548967424cc4ce1d70, type: 3}
       frameRate: 8
       loop: 1
+      mirrorEachLoop: 0
     - state: 2
       frames:
       - {fileID: 851819751, guid: 0cd29d0fef931d548967424cc4ce1d70, type: 3}
@@ -52,6 +54,7 @@ MonoBehaviour:
       - {fileID: -694250193, guid: 0cd29d0fef931d548967424cc4ce1d70, type: 3}
       frameRate: 15
       loop: 1
+      mirrorEachLoop: 0
     - state: 3
       frames:
       - {fileID: 1323877596, guid: ef441694f42d82a4595fd6ac92cc2aa4, type: 3}
@@ -60,6 +63,7 @@ MonoBehaviour:
       - {fileID: -1876994972, guid: ef441694f42d82a4595fd6ac92cc2aa4, type: 3}
       frameRate: 10
       loop: 0
+      mirrorEachLoop: 0
   - animations:
     - state: 0
       frames:
@@ -73,6 +77,7 @@ MonoBehaviour:
       - {fileID: 1210776982, guid: 9ef004c4ddd1c154c9bcda7830bbae93, type: 3}
       frameRate: 8
       loop: 1
+      mirrorEachLoop: 0
     - state: 3
       frames:
       - {fileID: 2012508657, guid: 102e3de09beae8548b737f953d73cbf3, type: 3}
@@ -81,6 +86,7 @@ MonoBehaviour:
       - {fileID: -1672730468, guid: 102e3de09beae8548b737f953d73cbf3, type: 3}
       frameRate: 10
       loop: 0
+      mirrorEachLoop: 0
   - animations:
     - state: 0
       frames:
@@ -94,6 +100,7 @@ MonoBehaviour:
       - {fileID: -1712258189, guid: 4edda5f1fa8e05d49916237d4b7dfb60, type: 3}
       frameRate: 8
       loop: 1
+      mirrorEachLoop: 0
     - state: 3
       frames:
       - {fileID: 1087937478, guid: 083fecba8e934ae4c8d4401a35692425, type: 3}
@@ -102,6 +109,7 @@ MonoBehaviour:
       - {fileID: -912475402, guid: 083fecba8e934ae4c8d4401a35692425, type: 3}
       frameRate: 10
       loop: 0
+      mirrorEachLoop: 0
   - animations:
     - state: 0
       frames:
@@ -114,6 +122,7 @@ MonoBehaviour:
       - {fileID: 817060864, guid: 0422a7f8d53c5304c9b9702dbc07438e, type: 3}
       frameRate: 8
       loop: 1
+      mirrorEachLoop: 0
     - state: 3
       frames:
       - {fileID: 483432856, guid: a394b69d25aaccb49930c3b03b2a6b72, type: 3}
@@ -122,6 +131,7 @@ MonoBehaviour:
       - {fileID: -792418597, guid: a394b69d25aaccb49930c3b03b2a6b72, type: 3}
       frameRate: 10
       loop: 0
+      mirrorEachLoop: 0
   icons:
   - {fileID: 21300000, guid: b2f3f557d8ecd9d489f55ab49a0c1304, type: 3}
   - {fileID: 21300000, guid: 338a6899898b3634d9468e83021e7b9f, type: 3}
@@ -145,13 +155,20 @@ MonoBehaviour:
   attackCooldown: 5
   attackDamage: 15
   attackWindupDuration: 0.5
+  attackDamageDelay: 0
   hitStaggerDuration: 0.6
+  hitKnockbackDistance: 1.5
+  hitKnockbackDuration: 0.2
+  attackKnockbackSpeed: 7
+  attackKnockbackUpward: 2
   aggroLossDuration: 5
   baseCaptureChance: 1
   stunDuration: 3
   ambientSounds: []
   ambientSoundInterval: {x: 6, y: 15}
   hitSounds: []
+  stunSounds:
+  - {fileID: 8300000, guid: 24b8a8296bb1ef744be043bc95fe15d4, type: 3}
   soundVolume: 1
   resources:
   - {fileID: 11400000, guid: 7c710158c463bd844abb7cb9b5d884a0, type: 2}

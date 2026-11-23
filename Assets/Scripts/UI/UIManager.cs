@@ -34,6 +34,16 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private TMP_Text interactionText;
 
+    [Header("Inventory tabs (Creatures is creatureInventoryUI above)")]
+    [Tooltip("The Tools tab's panel root. Empty = the ToolInventoryPopupUI's popup under this Overlay.")]
+    [SerializeField] private GameObject toolsPanel;
+    [Tooltip("The Resources tab's panel. Empty = the object named 'ResourcesPanel' under the Inventory Page.")]
+    [SerializeField] private GameObject resourcesPanel;
+
+    public enum InventoryTab { Creatures, Tools, Resources }
+    public InventoryTab CurrentInventoryTab { get; private set; }
+    private ToolInventoryPopupUI toolsPopup;
+
     [Header("Scene-dependent visibility")]
     [Tooltip("Extra HUD roots visible ONLY on expeditions. The expedition time/health dial and the tool hotbar are found automatically - no need to list them.")]
     [SerializeField] private GameObject[] expeditionOnlyElements;
@@ -59,7 +69,46 @@ public class UIManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += OnSceneLoaded;
+
+        FindInventoryTabs();
     }
+
+    private void FindInventoryTabs()
+    {
+        toolsPopup = GetComponentInChildren<ToolInventoryPopupUI>(true);
+        if (resourcesPanel == null && inventoryPage != null)
+        {
+            foreach (var t in inventoryPage.GetComponentsInChildren<Transform>(true))
+                if (t.name == "ResourcesPanel") { resourcesPanel = t.gameObject; break; }
+        }
+    }
+
+    /// <summary>The tablet is open on the Inventory page.</summary>
+    public bool IsInventoryOpen => tabletUI != null && tabletUI.activeSelf && inventoryPage != null && inventoryPage.activeSelf;
+
+    /// <summary>
+    /// Shows exactly one inventory tab and hides the other two - the one place
+    /// that decides which is visible, so they can never stack.
+    /// </summary>
+    public void ShowInventoryTab(InventoryTab tab)
+    {
+        CurrentInventoryTab = tab;
+
+        if (creatureInventoryUI != null) creatureInventoryUI.SetActive(tab == InventoryTab.Creatures);
+        if (resourcesPanel != null) resourcesPanel.SetActive(tab == InventoryTab.Resources);
+
+        if (toolsPanel != null) toolsPanel.SetActive(tab == InventoryTab.Tools);
+        else if (toolsPopup != null)
+        {
+            if (tab == InventoryTab.Tools) toolsPopup.Show(); // Show also refreshes its grid
+            else toolsPopup.Hide();
+        }
+    }
+
+    // For the tab buttons' OnClick (one call each instead of three).
+    public void ShowCreaturesTab() => ShowInventoryTab(InventoryTab.Creatures);
+    public void ShowToolsTab() => ShowInventoryTab(InventoryTab.Tools);
+    public void ShowResourcesTab() => ShowInventoryTab(InventoryTab.Resources);
 
     public void HideWelcomeScreen()
     {
@@ -250,8 +299,8 @@ public class UIManager : MonoBehaviour
     private void SetTabletOpen(bool open)
     {
         tabletUI.SetActive(open);
-        if (creatureInventoryUI != null)
-            creatureInventoryUI.SetActive(open);
+        if (open) ShowInventoryTab(InventoryTab.Creatures); // always opens on Creatures, whatever tab was left open
+        else if (creatureInventoryUI != null) creatureInventoryUI.SetActive(false);
 
         if (open)
         {
@@ -308,7 +357,11 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void ShowInventoryPage() => SetActivePage(inventoryPage);
+    public void ShowInventoryPage()
+    {
+        SetActivePage(inventoryPage);
+        ShowInventoryTab(InventoryTab.Creatures);
+    }
     public void ShowMapPage() => SetActivePage(mapPage);
     public void ShowSettingsPage() => SetActivePage(settingsPage);
     public void ShowCritterDexPage() => SetActivePage(critterDexPage);

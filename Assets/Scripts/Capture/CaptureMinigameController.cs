@@ -548,6 +548,7 @@ public class CaptureMinigameController : MonoBehaviour
         if (resultHideDuration > 0f) yield return new WaitForSeconds(resultHideDuration);
 
         RectTransform doll = centerIcon != null && centerIcon.enabled ? centerIcon.rectTransform : null;
+        PlayResultSound(success);
         if (doll != null)
         {
             doll.DOKill();
@@ -558,7 +559,7 @@ public class CaptureMinigameController : MonoBehaviour
             yield return anticipation.WaitForCompletion();
         }
 
-        PlayResultSound(success);
+
         if (success)
         {
             if (doll != null)

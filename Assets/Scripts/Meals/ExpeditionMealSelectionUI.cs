@@ -212,11 +212,12 @@ public class ExpeditionMealSelectionUI : MonoBehaviour
 
     private bool ShouldRefuseDefaultMeal()
     {
-        return defaultMealRefusalDialogue != null
+        if (defaultMealRefusalDialogue != null
             && DialogueManager.Instance != null
-            && ResourceInventoryManager.Instance != null
-            && ResourceInventoryManager.Instance.HasAnyResources
-            && !InventoryManager.Instance.IsEmpty();
+            && ResourceInventoryManager.Instance != null)
+            return (ResourceInventoryManager.Instance.HasAnyResources || !InventoryManager.Instance.IsEmpty());
+
+        return false;
     }
 
     private void Confirm()

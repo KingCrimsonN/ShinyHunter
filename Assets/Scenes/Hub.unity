@@ -2394,7 +2394,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.00005081437}
+  m_AnchoredPosition: {x: 0, y: 0.056966808}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &95609897
@@ -44711,6 +44711,9 @@ MonoBehaviour:
   details: {fileID: 2106954437}
   acceptButton: {fileID: 222036327}
   dumpButton: {fileID: 430633750}
+  mealReadySound: {fileID: 8300000, guid: dd3b29266f269fe4cbad86f1d717c54c, type: 3}
+  acceptSound: {fileID: 8300000, guid: a8cf9c72ae974e04faa04908be24630e, type: 3}
+  dumpSound: {fileID: 8300000, guid: c102160e8be090447b6c420580458b5a, type: 3}
 --- !u!114 &1827866091
 MonoBehaviour:
   m_ObjectHideFlags: 0

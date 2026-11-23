@@ -5456,8 +5456,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 246507424}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.9444529}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: -0.000012397766, y: -11.522949}
   m_SizeDelta: {x: 48.7752, y: 43.0458}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -7572,7 +7572,7 @@ GameObject:
   - component: {fileID: 1815759412}
   - component: {fileID: 1815759411}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: Version
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7617,7 +7617,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0.0.4 Pre-Alpha
+  m_text: 0.2.2 Pre-Alpha
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 557997c5c9aaaf54bb217ddc9eb185d8, type: 2}
   m_sharedMaterial: {fileID: 7621470812954134647, guid: 557997c5c9aaaf54bb217ddc9eb185d8, type: 2}

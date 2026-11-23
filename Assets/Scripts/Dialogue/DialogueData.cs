@@ -15,6 +15,9 @@ public class DialogueData : ScriptableObject
     public string npcName;
     public Sprite npcIcon;
 
+    [Tooltip("This speaker's typing sound and conversation-open sound. No blips = DialogueManager's Default Voice.")]
+    public DialogueVoice voice = new DialogueVoice();
+
     [Tooltip("Where the conversation begins the FIRST time - e.g. an introduction.")]
     public DialogueNodeData startNode;
 

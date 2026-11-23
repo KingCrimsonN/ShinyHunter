@@ -35,6 +35,17 @@ public class DialogueManager : MonoBehaviour
 
     [Header("Typewriter")]
     [SerializeField] private float charactersPerSecond = 40f;
+    [Tooltip("Extra pause after . ! ? (seconds) - gives the text a speaking rhythm. 0 = off.")]
+    [SerializeField, Min(0f)] private float sentencePause = 0f;
+    [Tooltip("Extra pause after , ; : (seconds). 0 = off.")]
+    [SerializeField, Min(0f)] private float commaPause = 0f;
+
+    [Header("Sound")]
+    [Tooltip("Used for any DialogueData whose own voice has no blips.")]
+    [SerializeField] private DialogueVoice defaultVoice = new DialogueVoice();
+    [Tooltip("Played when any conversation opens, unless the speaker's voice has its own Open Sound.")]
+    [SerializeField] private AudioClip defaultOpenSound;
+    [SerializeField, Range(0f, 1f)] private float openSoundVolume = 0.7f;
 
     [Header("Camera")]
     [Tooltip("Seconds the camera takes to turn toward the NPC when a dialogue starts (only for NPCs that pass a focus point - see StartDialogue).")]
@@ -61,6 +72,12 @@ public class DialogueManager : MonoBehaviour
 
     private readonly List<GameObject> spawnedChoiceButtons = new List<GameObject>();
 
+    // Own 2D sources (added in code, routed to the SFX mixer): blips cut each other off so
+    // fast text stays crisp instead of piling up; the open sound has its own so a blip can't cut it.
+    private AudioSource blipSource;
+    private AudioSource oneShotSource;
+    private int lettersSinceBlip;
+
     /// <summary>
     /// Every DialogueData the player has already started once this session -
     /// decides startNode (first time) vs repeatNode (after). Kept here, not on
@@ -82,6 +99,62 @@ public class DialogueManager : MonoBehaviour
 
         if (popupRoot != null) popupRoot.SetActive(false);
         choiceButtonParent.gameObject.SetActive(false);
+
+        blipSource = CreateSource();
+        oneShotSource = CreateSource();
+    }
+
+    private AudioSource CreateSource()
+    {
+        var source = gameObject.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.loop = false;
+        source.spatialBlend = 0f; // UI sound - same everywhere
+        source.outputAudioMixerGroup = GameSettings.SfxGroup;
+        return source;
+    }
+
+    /// <summary>The voice of whoever is talking now.</summary>
+    private DialogueVoice CurrentVoice =>
+        currentData != null && currentData.voice != null && currentData.voice.HasBlips ? currentData.voice : defaultVoice;
+
+    private void PlayOpenSound()
+    {
+        AudioClip clip = currentData != null && currentData.voice != null && currentData.voice.openSound != null
+            ? currentData.voice.openSound
+            : defaultOpenSound;
+        if (clip != null && oneShotSource != null) oneShotSource.PlayOneShot(clip, openSoundVolume);
+    }
+
+    /// <summary>One revealed character: a blip every lettersPerBlip letters; spaces and punctuation are silent (and don't count).</summary>
+    private void PlayBlipFor(char character)
+    {
+        if (!char.IsLetterOrDigit(character)) return;
+
+        var voice = CurrentVoice;
+        if (voice == null || !voice.HasBlips || blipSource == null) return;
+
+        if (lettersSinceBlip++ % Mathf.Max(1, voice.lettersPerBlip) != 0) return;
+
+        var clip = voice.blips[UnityEngine.Random.Range(0, voice.blips.Length)];
+        if (clip == null) return;
+
+        blipSource.Stop(); // cut the previous blip - overlapping blips turn to mush
+        blipSource.clip = clip;
+        blipSource.volume = voice.volume;
+        blipSource.pitch = UnityEngine.Random.Range(voice.pitchRange.x, voice.pitchRange.y);
+        blipSource.Play();
+    }
+
+    /// <summary>Extra beat after punctuation, for a speaking rhythm.</summary>
+    private float PauseAfter(char character)
+    {
+        switch (character)
+        {
+            case '.': case '!': case '?': return sentencePause;
+            case ',': case ';': case ':': return commaPause;
+            default: return 0f;
+        }
     }
 
     private void Update()
@@ -164,6 +237,7 @@ public class DialogueManager : MonoBehaviour
         }
 
         if (popupRoot != null) popupRoot.SetActive(true);
+        PlayOpenSound();
 
         OnDialogueStarted?.Invoke();
         SetNode(entryNode);
@@ -299,11 +373,18 @@ public class DialogueManager : MonoBehaviour
         }
 
         float delay = charactersPerSecond > 0f ? 1f / charactersPerSecond : 0f;
+        lettersSinceBlip = 0; // every line starts with a blip
 
         for (int visible = 1; visible <= total; visible++)
         {
+            char character = lineText != null ? lineText.textInfo.characterInfo[visible - 1].character : line[visible - 1];
+
             if (lineText != null) lineText.maxVisibleCharacters = visible;
-            if (delay > 0f) yield return new WaitForSeconds(delay);
+            PlayBlipFor(character);
+
+            // No pause after the line's last character - the line is done.
+            float wait = delay + (visible < total ? PauseAfter(character) : 0f);
+            if (wait > 0f) yield return new WaitForSeconds(wait);
             else yield return null;
         }
 

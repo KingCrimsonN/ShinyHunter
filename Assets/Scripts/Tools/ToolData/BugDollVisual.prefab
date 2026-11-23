@@ -31,6 +31,7 @@ Transform:
   m_LocalScale: {x: 0.08, y: 0.08, z: 0.08}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7322503228042834697}
   - {fileID: 5873736518659783556}
   - {fileID: 7235109639562982436}
   m_Father: {fileID: 0}
@@ -186,6 +187,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FireballSharpMissileFire
       objectReference: {fileID: 0}
+    - target: {fileID: 1692925882083106, guid: 0f1b2459d75650547b2868319447ee69, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4699508089434530, guid: 0f1b2459d75650547b2868319447ee69, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -239,4 +244,90 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 4699508089434530, guid: 0f1b2459d75650547b2868319447ee69, type: 3}
   m_PrefabInstance: {fileID: 7239808870358304134}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &7322503228042665255
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 880502584763594960}
+    m_Modifications:
+    - target: {fileID: 130620, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_Name
+      value: SmokeWhiteSoftTrail
+      objectReference: {fileID: 0}
+    - target: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 19884158, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: UVModule.mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 19884158, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: UVModule.sprites.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 19884158, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: UVModule.sprites.Array.data[0].sprite
+      value: 
+      objectReference: {fileID: -1652487345, guid: 4e46dfb027416d1469f8173f45f9f86f, type: 3}
+    - target: {fileID: 19884158, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: UVModule.sprites.Array.data[1].sprite
+      value: 
+      objectReference: {fileID: 1002489553, guid: 4e46dfb027416d1469f8173f45f9f86f, type: 3}
+    - target: {fileID: 19884158, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: UVModule.sprites.Array.data[2].sprite
+      value: 
+      objectReference: {fileID: 1451640185, guid: 4e46dfb027416d1469f8173f45f9f86f, type: 3}
+    - target: {fileID: 19884158, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+      propertyPath: UVModule.sprites.Array.data[3].sprite
+      value: 
+      objectReference: {fileID: 856010737, guid: 4e46dfb027416d1469f8173f45f9f86f, type: 3}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+--- !u!4 &7322503228042834697 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 437806, guid: 7fbf28e38426f594ca08c5af19f086b7, type: 3}
+  m_PrefabInstance: {fileID: 7322503228042665255}
   m_PrefabAsset: {fileID: 0}

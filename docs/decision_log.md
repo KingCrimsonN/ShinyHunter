@@ -1852,3 +1852,15 @@ All dex art/colors live on the `CritterFrames` asset; the sprites were assigned 
   Showing that rarity on its dex page clears it (`MarkSeenInDex`); a page opens on its rarest new rarity so the new
   thing is what you see. Static `OnDexNewChanged` for the Overlay (Notes tab `CritterDexNewIndicator`) and the grid.
   Not saved anywhere yet - like the rest of InventoryManager, it lasts for the play session.
+
+## Dialogue sounds (typing "voice")
+
+- Undertale/Celeste-style: the typewriter plays a short blip as letters appear (every `lettersPerBlip` letters;
+  spaces/punctuation silent and not counted; counter resets per line so each line starts with one). Random clip +
+  random pitch in `pitchRange` per blip. Skipping the typewriter plays nothing more.
+- Voice is per speaker (`DialogueData.voice`) with a `defaultVoice` on DialogueManager as fallback, so every NPC
+  can sound different without per-node setup.
+- DialogueManager adds its own two 2D AudioSources (blips / one-shots) routed to `GameSettings.SfxGroup` instead
+  of SoundFXManager: that spawns a GameObject per sound, too heavy at 20+ blips a second. Each blip Stops the
+  previous one - overlapping blips at fast text speeds turn to mush.
+- Optional `sentencePause`/`commaPause` (default 0) give the typing a speaking rhythm.

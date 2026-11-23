@@ -131,12 +131,16 @@ MonoBehaviour:
   handAnimator: {fileID: 3206963109186164866}
   hitSound: {fileID: 8300000, guid: 32f565ba94f200f49adb407cce64e873, type: 3}
   swingSound: {fileID: 8300000, guid: 14b16ff40093aba47bc467e148746cab, type: 3}
-  captureRange: 3
+  captureRange: 7
   aimForgiveness: 0.5
-  showTargetMarker: 1
-  outOfRangeMarkerExtra: 4
   dollProjectilePrefab: {fileID: 7507899826975959131, guid: b7f6110d76be4cd429151efdefb5e627, type: 3}
   captureParticlesPrefab: {fileID: 1132206551871088, guid: cb8a83b63e008134da9393db9af8915f, type: 3}
-  throwDuration: 0.4
   throwOrigin: {fileID: 0}
-  missThrowDistance: 5
+  arcHeight: 0.13
+  arcHeightPerMeter: 0.03
+  maxFlightTime: 0.4
+  missThrowSpeed: 5
+  missThrowUpward: 2.5
+  tumbleSpeed: 450
+  missedDollLifetime: 2.5
+  dollColliderRadius: 0

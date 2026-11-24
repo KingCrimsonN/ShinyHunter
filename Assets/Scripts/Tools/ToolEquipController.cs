@@ -68,7 +68,22 @@ public class ToolEquipController : MonoBehaviour
         HandleNumberKeyInput();
 
         if (Input.GetKeyDown(useKey))
+        {
+
             TryUseCurrentTool();
+
+        }
+    }
+
+    private IEnumerator AnimationDelay()
+    {
+        if (CanUse)
+        {
+            handAnimator?.SetTrigger("Throw");
+        }
+        yield return new WaitForSeconds(0.1f);
+        nextUseTime = Time.time + (currentToolData != null ? currentToolData.useCooldown : 0f);
+        currentToolInstance.UseTool();
     }
 
     private void TryUseCurrentTool()
@@ -78,8 +93,9 @@ public class ToolEquipController : MonoBehaviour
         // cooldown started. Uses Time.time, so it also pauses with timeScale 0.
         if (currentToolInstance == null || Time.time < nextUseTime) return;
 
-        nextUseTime = Time.time + (currentToolData != null ? currentToolData.useCooldown : 0f);
-        currentToolInstance.UseTool();
+        StartCoroutine(AnimationDelay());
+
+
         // No consumption logic here anymore - HandleToolConsumed (subscribed
         // whenever a tool is spawned, see SwapToolRoutine) handles it
         // whenever the TOOL says it's actually ready, not the instant

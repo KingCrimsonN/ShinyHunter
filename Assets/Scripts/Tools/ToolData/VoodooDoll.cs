@@ -1,3 +1,5 @@
+using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 
 /// <summary>How a click with the doll would go on the creature being aimed at (VoodooDoll.Classify).</summary>
@@ -137,6 +139,7 @@ public class VoodooDoll : ToolBehaviour
 
         Vector3 start = throwOrigin != null ? throwOrigin.position : transform.position;
         var doll = ThrownDoll.Spawn(dollProjectilePrefab, start, dollColliderRadius, PlayerColliders());
+        HideDelay(); // hide the in-hand sprite so it doesn't overlap the thrown one
 
         if (critter != null)
         {
@@ -150,6 +153,26 @@ public class VoodooDoll : ToolBehaviour
         {
             Transform cam = Camera.main != null ? Camera.main.transform : transform;
             doll.LaunchFree(cam.forward * missThrowSpeed + Vector3.up * missThrowUpward, tumbleSpeed, missedDollLifetime);
+        }
+    }
+
+    public override void HideDelay()
+    {
+        StartCoroutine(ShowDelayCoroutine(0.35f));
+
+    }
+
+    private IEnumerator ShowDelayCoroutine(float delay = 0.1f)
+    {
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+            spriteRenderer.enabled = false;
+        yield return new WaitForSeconds(delay);
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.enabled = true;
+            Vector3 ogSize = transform.localScale;
+            gameObject.transform.DOScale(ogSize, 0.1f).From(Vector3.zero).SetEase(Ease.OutBack);
         }
     }
 

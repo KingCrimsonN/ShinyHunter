@@ -44,4 +44,6 @@ public class ToolBehaviour : MonoBehaviour
     /// frame (and keep running while the player is frozen).
     /// </summary>
     public virtual void OnHeldUpdate() { }
+
+    public virtual void HideDelay() { }
 }

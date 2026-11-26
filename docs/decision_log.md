@@ -1689,3 +1689,17 @@ Two states were added (appended, so stored state numbers don't shift): `Angry` -
 Move (the Bee's AngryIdle) - and `Perch` - Climber's tree rest; Widemouth's `Idle` is now its GROUND idle
 (GroundIDLE sheets) and its old 4-frame idle became `Perch`. Also fixed: Candy's base Move/Flee pointed at a deleted
 file, Cuelebre Sparking had two Move clips (second -> Flee), Widemouth Radiant idle mixed base and radiant frames.
+
+## Chasenut sheets; attack damage delay; mirrored walk loops
+
+Chasenut's sheets (`Sprites/creatures/plants/chasenut/`) went through the same scripted slicing/assignment: Idle
+(replacing the static frame), KO -> Hit, IdleKO -> Captured, Run -> Move/Flee, all four variants, sheet order per the
+READMEs. Its run sheet is a single step ("rotate it for the other direction"), so `CreatureAnimationClip.mirrorEachLoop`
+was added: `CreatureSpriteAnimator` flips the sprite (flipX) each time a looping clip restarts, and resets the flip on
+every new clip, so the steps alternate sides and no other animation inherits a flip.
+
+**Damage delay:** `CreatureData.attackDamageDelay` - seconds after an attack starts before the hit lands (`LandAttack`),
+so it can line up with the Attack animation's strike frame after the wind-up. The attack state lasts at least that long.
+An attack interrupted before the hit (stunned, lost aggro, a MovesWhenUnseen critter frozen and released) never lands.
+The red hurt flash now fires once, with the hit - it used to be re-triggered every frame of the attack, holding the
+screen red for the whole attack.

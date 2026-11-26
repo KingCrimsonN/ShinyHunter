@@ -50,6 +50,7 @@ public class CreatureSpriteAnimator : MonoBehaviour
         frameIndex = 0;
         frameTimer = 0f;
         onOneShotComplete = onComplete;
+        spriteRenderer.flipX = false; // a mirrored loop (mirrorEachLoop) never carries into the next clip
 
         spriteRenderer.sprite = currentClip.frames[0];
         return true;
@@ -72,6 +73,7 @@ public class CreatureSpriteAnimator : MonoBehaviour
             if (currentClip.loop)
             {
                 frameIndex = 0;
+                if (currentClip.mirrorEachLoop) spriteRenderer.flipX = !spriteRenderer.flipX;
                 spriteRenderer.sprite = currentClip.frames[frameIndex];
             }
             else
